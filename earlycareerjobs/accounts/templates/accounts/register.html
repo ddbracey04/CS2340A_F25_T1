@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class = "login-page-bg">
+    <div class = "container d-flex justify-content-center align-items-center" style = "min-height: 100vh;">
+        <div class = "col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow p-3 mb-4 rounded">
+            <div class = "card-body">
+                <h2>Register</h2>
+                <hr />
+                <form method = "POST" action = "{% url 'accounts:accounts.register.html' %}">
+                    {%csrf_token%}
+                    {{ template_data.form.non_field_errors }}
+
+                    {% for field in template_data.form.visible_fields %}
+                    <div class = "form-group">
+                        <label for = "{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}
+                        <div class = "invalid-feedback d-block">
+                            {{ error }}
+                        </div>
+
+                        {% endfor %}
+                        {% if field.help_text %}
+                        <small class = "form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    {% endfor %}
+                    <button type = "submit" class = "btn btn-primary">Register Now</button>
+                </form>
+            </div>`
+        </div>
+    </div>
+</div>
+{% endblock content%}
