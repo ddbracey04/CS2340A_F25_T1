@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load static %}
 <div class="p-3">
   <div class="container">
     <div class="row mt-3">
@@ -15,9 +16,15 @@
 
 <script>
   const map = L.map('map').setView([33.7722, -84.3902], 13); // Centered on GT at zoom level 13
-
+  
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap contributors'}).addTo(map);
-
 </script>
+
+{% for job in template_data.jobs %}
+    <script>
+        L.marker(["{{job.lat}}", "{{job.lon}}"]).addTo(map).bindPopup(`<strong>${"{{job.title}}"}</strong><br>${"{{job.description}}"}`);
+    </script>
+{% endfor %}
+
 {% endblock %}
 
