@@ -5,14 +5,12 @@ from django.contrib import messages
 from .forms import CustomUserCreationForm
 from .models import CustomUser
 
-# 注册视图
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
             
-            # 根据角色设置额外字段
             if user.role == CustomUser.Role.RECRUITER:
                 user.company_name = form.cleaned_data.get('company_name')
             elif user.role == CustomUser.Role.JOB_SEEKER:
@@ -21,7 +19,6 @@ def register(request):
             
             user.save()
             
-            # 自动登录用户
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=password)
@@ -34,24 +31,22 @@ def register(request):
     
     return render(request, 'registration/register.html', {'form': form})
 
-# 管理员检查装饰器
 def admin_required(function):
     def wrap(request, *args, **kwargs):
         if request.user.is_authenticated and request.user.role == CustomUser.Role.ADMIN:
             return function(request, *args, **kwargs)
         else:
-            messages.error(request, '您没有权限访问此页面。')
+            messages.error(request, 'You do not have permission to access this page.')
             return redirect('home')
     return wrap
 
-# 用户管理视图（仅管理员可访问）
 @login_required
 @admin_required
 def user_management(request):
     users = CustomUser.objects.all()
     return render(request, 'admin/user_management.html', {'users': users})
 
-# 编辑用户视图
+
 @login_required
 @admin_required
 def edit_user(request, user_id):
