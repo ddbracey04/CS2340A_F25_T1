@@ -40,7 +40,7 @@ def index(request):
         if data.get("visa_sponsorship"):
             jobs = jobs.filter(visa_sponsorship=True)
 
-    template_data = {"title": "Job Search"}
+    template_data = {"title": "TODO: Title"}
 
     context = {
         "template_data": template_data,
