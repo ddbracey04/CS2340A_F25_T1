@@ -39,7 +39,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                   {% if user.is_staff or user.is_superuser %}
-                    <li><a class="dropdown-item" href="{% url 'users.admin:index' %}">Manage</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users.user_management' %}">Manage</a></li>
                     <li><hr class="dropdown-divider"></li>
                   {% endif %}
                   <li><hr class="dropdown-divider"></li>
