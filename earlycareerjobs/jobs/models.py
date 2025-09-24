@@ -10,7 +10,8 @@ class Job(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     lat = models.FloatField()
     lon = models.FloatField()
-    # user = models.ForeignKey(User, on_delete=models.CASCADE)
+    users = models.ManyToManyField(CustomUser)
+    
     def __str__(self):
         return str(self.id) + ' - ' + self.title
 

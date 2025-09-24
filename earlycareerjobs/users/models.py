@@ -8,6 +8,8 @@ class CustomUser(AbstractUser):
         RECRUITER = 'recruiter', _('Recruiter')
         ADMIN = 'admin', _('Administrator')
     
+    id = models.AutoField(primary_key=True)
+
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
