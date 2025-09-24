@@ -30,7 +30,7 @@
              id="navbarNavAltMarkup">
           <div class="navbar-nav ms-auto navbar-ml">
             <a class="nav-link" href="{% url 'home.about' %}">About</a>
-            <a class="nav-link" href= "{% url 'recruiters.index' %}">Recruiters</a>
+            <a class="nav-link" href= "{% url 'jobs.index' %}">Jobs</a>
             <a class="nav-link" href="{% url 'map.index' %}">Map</a>
             {% if user.is_authenticated %}
               <li class="nav-item dropdown">

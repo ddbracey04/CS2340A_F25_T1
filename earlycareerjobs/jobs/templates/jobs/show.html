@@ -5,10 +5,10 @@
   <div class="container">
     <div class="row mt-3">
       <div class="col-md-6 mx-auto mb-3">
-        <h2>{{ template_data.recruiter.name }}</h2>
+        <h2>{{ template_data.job.title }}</h2>
         <hr />
-        <p><b>Description:</b> {{ template_data.recruiter.description }}</p> <!--
-        <p><b>Price:</b> ${{ template_data.recruiter.price }}</p> -->
+        <p><b>Description:</b> {{ template_data.job.description }}</p> <!--
+        <p><b>Price:</b> ${{ template_data.job.price }}</p> -->
     {% if user.is_authenticated %}
       {% if not template_data.has_applied %}
         <div class="container mt-4">
@@ -18,7 +18,7 @@
             <div class="card-body">
             <b class="text-start">Start your application
               </b><br /><br />
-            <form method="POST" action= "{% url 'recruiters.start_application' id=template_data.recruiter.id %}">
+            <form method="POST" action= "{% url 'jobs.start_application' id=template_data.job.id %}">
               {% csrf_token %}
               <p>
               <label for="user_note">Personalized Note:</label>
@@ -42,7 +42,7 @@
           <div class="row justify-content-center">
             <div class="col-12">
               <div class="alert alert-success" role="alert">
-                You have already applied to this recruiter.
+                You have already applied to this job.
               </div>
             </div>
           </div>
@@ -51,7 +51,7 @@
     {% endif %}
       </div>
       <div class="col-md-6 mx-auto mb-3 text-center">
-        <img src="{{ template_data.recruiter.image.url }}" class="rounded img-card-400" />
+        <img src="{{ template_data.job.image.url }}" class="rounded img-card-400" />
       </div>
     </div>
   </div>

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from job.models import Job
+from jobs.models import Job
 
 # Create your views here.
 def index(request):

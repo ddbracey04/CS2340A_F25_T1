@@ -41,8 +41,7 @@ INSTALLED_APPS = [
     'home',
     'users',
     'map',
-    'job',
-    'recruiters',
+    'jobs',
 ]
 
 MIDDLEWARE = [
