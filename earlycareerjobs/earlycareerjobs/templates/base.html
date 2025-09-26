@@ -44,6 +44,9 @@
                   {% endif %}
                   <li><hr class="dropdown-divider"></li>
                   <li>
+                    {% if user.is_job_seeker%}
+                      <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a>
+                    {% endif %}
                     <form id="logout-form" method="post" action="{% url 'users.logout' %}">
                       {% csrf_token %}
                       <button type="submit" class="dropdown-item">Logout</button>
