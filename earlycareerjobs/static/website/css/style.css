@@ -3012,3 +3012,12 @@ ol {
 	background-color: #00008B;
 	padding-top: 150px;
 }
+.profile-page-bg {
+	background-color: #00008B;
+	padding-top: 150px;
+	color: white;
+}
+
+.profile-page-bg label{
+	color: white !important;
+}

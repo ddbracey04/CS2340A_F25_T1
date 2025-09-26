@@ -118,7 +118,7 @@
             <div class="row">
                 <div class="col-lg-3 col-md-3">
                     <div class="header__logo">
-                        <a href="./index.html"><img src="{% static 'website/img/logo.png' %}" alt=""></a>
+                        <a href="{% url 'home.index' %}"><img src="{% static 'website/img/logo.png' %}" alt=""></a>
                     </div>
                 </div>
                 <div class="col-lg-9 col-md-9">
@@ -149,6 +149,10 @@
                             {% else %}
                             <li><a href="{% url 'accounts:accounts.register.html' %}">Register</a></li>
                             <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                            {% endif %}
+                            {% if request.user.is_authenticated %}
+                            <li><a href="{% url 'profile.detail' username=request.user.username %}">My Profile</a></li>
+                            <li><a href="{% url 'profile.edit' %}">Edit Profile</a></li>
                             {% endif %}
                         </ul>
                     </nav>
@@ -592,7 +596,7 @@
                     <div class="col-lg-4 col-md-6 col-sm-12">
                         <div class="footer__text-about">
                             <div class="footer__logo">
-                                <a href="./index.html"><img src="{% static 'website/img/logo.png' %}" alt=""></a>
+                                <a href="{% url 'home.index' %}"><img src="{% static 'website/img/logo.png' %}" alt=""></a>
                             </div>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
                                 ut labore et dolore magna aliqua. Quis ipsum suspendisse ultrices gravida viverra maecen
