@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .forms import CustomUserCreationForm
 from .models import CustomUser
+from jobs.models import Application, Job
 
 def register(request):
     if request.method == 'POST':
@@ -72,3 +73,13 @@ def toggle_user_status(request, user_id):
     status = "activate" if user.is_active else "inactivate"
     messages.success(request, f'User {user.username} is {status}')
     return redirect('user_management')
+
+@login_required
+def view_jobs(request):
+
+    applications = Application.objects.filter(user=request.user).select_related('job')
+    context = {
+        'applications': applications,
+    }
+    
+    return render(request, 'job_seeker_pages/view_jobs.html', context)
