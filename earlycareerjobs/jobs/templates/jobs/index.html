@@ -4,45 +4,109 @@
 <div class="p-3">
   <div class="container">
     <div class="row mt-3">
-      <div class="col mx-auto mb-3">
+      <div class="col mx-auto text-center mb-3">
         <div class="d-flex justify-content-between align-items-center">
-          <h2 class="mb-0">Job Listings</h2>
-          {% if user.is_authenticated and user.is_recruiter %}
-          <a href="{% url 'jobs.create' %}" class="btn btn-primary">Post a Job</a>
-          {% endif %}
+          <h4>Job Listings</h4>
+            {% if user.is_authenticated and user.is_recruiter %}
+              <a href="{% url 'jobs.create' %}" class="btn btn-primary">Post a Job</a>
+            {% endif %}
         </div>
-        <hr />
-        <p class="card-text">
-          <form method="GET">
-            <div class="row">
-              <div class="col-auto">
-                <div class="input-group col-auto">
-                  <div class="input-group-text">Search</div>
-                  <input type="text" class="form-control" name="search">
+    <form method="get" class="row g-3">
+      <div class="col-md-4">
+        {{ context.form.title.label_tag }}
+        {{ context.form.title }}
+      </div>
+      <div class="col-md-4">
+        {{ context.form.skills.label_tag }}
+        {{ context.form.skills }}
+      </div>
+      <div class="col-md-4">
+        {{ context.form.work_style.label_tag }}
+        {{ context.form.work_style }}
+      </div>
+
+      <div class="col-md-4">
+        {{ context.form.city.label_tag }}
+        {{ context.form.city }}
+      </div>
+      <div class="col-md-4">
+        {{ context.form.state.label_tag }}
+        {{ context.form.state }}
+      </div>
+      <div class="col-md-4">
+        {{ context.form.country.label_tag }}
+        {{ context.form.country }}
+      </div>
+
+      <div class="col-md-4">
+        {{ context.form.salary_min.label_tag }}
+        {{ context.form.salary_min }}
+      </div>
+      <div class="col-md-4">
+        {{ context.form.salary_max.label_tag }}
+        {{ context.form.salary_max }}
+      </div>
+      <div class="col-md-4 d-flex align-items-center">
+        <div class="form-check mt-3">
+          {{ context.form.visa_sponsorship }}
+          {{ context.form.visa_sponsorship.label_tag }}
+        </div>
+      </div>
+
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary me-2">Search</button>
+        <a href="{% url 'jobs.index' %}" class="btn btn-secondary">Reset</a>
+      </div>
+    </form>
+
+    <div class="row mt-4">
+      <div class="col-12">
+        <ul class="list-group">
+          <!-- {% for job in context.jobs %}
+            <li class="list-group-item">
+              <h5 class="mb-1">{{ job.title }}</h5>
+              <div class="small text-muted mb-1">
+                {{ job.city }}{% if job.state %}, {{ job.state }}{% endif %}{% if job.country %}, {{ job.country }}{% endif %}
+              </div>
+              <div class="mb-1">
+                <strong>Work style:</strong> {{ job.get_work_style_display }}
+                | <strong>Visa sponsorship:</strong> {% if job.visa_sponsorship %}Yes{% else %}No{% endif %}
+              </div>
+              <div class="mb-1">
+                <strong>Salary:</strong>
+                {% if job.salary_min %}${{ job.salary_min|floatformat:"0" }}{% endif %}
+                {% if job.salary_min and job.salary_max %} - {% endif %}
+                {% if job.salary_max %}${{ job.salary_max|floatformat:"0" }}{% endif %}
+              </div>
+              {% if job.skills %}
+                <div class="mb-0">
+                  <strong>Skills:</strong> {{ job.skills }}
+                </div>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li class="list-group-item">No jobs match your filters yet.</li>
+          {% endfor %} -->
+          <div class="row">
+            {% for job in context.jobs %}
+            <div class="col-md-4 col-lg-3 mb-2">
+              <div class="p-2 card align-items-center pt-4">
+                <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
+                <div class="card-body text-center">
+                  <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
+                    {{ job.title }}
+                  </a>
                 </div>
               </div>
-              <div class="col-auto">
-                <button class="btn bg-dark text-white" type="submit">Search</button>
-              </div>
             </div>
-          </form>
-        </p>
-      </div>
-    </div>
-    <div class="row">
-      {% for job in template_data.jobs %}
-      <div class="col-md-4 col-lg-3 mb-2">
-        <div class="p-2 card align-items-center pt-4">
-          <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
-          <div class="card-body text-center">
-            <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
-              {{ job.title }}
-            </a>
+            {% empty %}
+              <li class="list-group-item">No jobs match your filters yet.</li>
+            {% endfor %}
           </div>
-        </div>
+        </ul>
       </div>
-      {% endfor %}
     </div>
   </div>
 </div>
+
 {% endblock content %}

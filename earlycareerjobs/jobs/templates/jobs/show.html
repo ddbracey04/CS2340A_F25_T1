@@ -14,6 +14,27 @@
         <hr />
         <p><b>Description:</b> {{ template_data.job.description }}</p> <!--
         <p><b>Price:</b> ${{ template_data.job.price }}</p> -->
+        <li class="list-group-item">
+          <h5 class="mb-1">{{ job.title }}</h5>
+          <div class="small text-muted mb-1">
+            {{ job.city }}{% if job.state %}, {{ job.state }}{% endif %}{% if job.country %}, {{ job.country }}{% endif %}
+          </div>
+          <div class="mb-1">
+            <strong>Work style:</strong> {{ job.get_work_style_display }}
+            | <strong>Visa sponsorship:</strong> {% if job.visa_sponsorship %}Yes{% else %}No{% endif %}
+          </div>
+          <div class="mb-1">
+            <strong>Salary:</strong>
+            {% if job.salary_min %}${{ job.salary_min|floatformat:"0" }}{% endif %}
+            {% if job.salary_min and job.salary_max %} - {% endif %}
+            {% if job.salary_max %}${{ job.salary_max|floatformat:"0" }}{% endif %}
+          </div>
+          {% if job.skills %}
+            <div class="mb-0">
+              <strong>Skills:</strong> {{ job.skills }}
+            </div>
+          {% endif %}
+      </li>
     {% if user.is_authenticated and user.is_jobseeker %}
       {% if not template_data.has_applied %}
         <div class="container mt-4">

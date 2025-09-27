@@ -1,20 +1,65 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Job, Application
-from .forms import JobForm
+from .forms import JobSearchForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib import messages
 
 def index(request):
-    search_term = request.GET.get('search')
-    if search_term:
-        jobs = Job.objects.filter(title__icontains=search_term)
-    else:
-        jobs = Job.objects.all()
-    template_data = {}
-    template_data['title'] = 'Jobs'
-    template_data['jobs'] = jobs
-    return render(request, 'jobs/index.html', {'template_data': template_data})
+    # search_term = request.GET.get('search')
+    # if search_term:
+    #     jobs = Job.objects.filter(title__icontains=search_term)
+    # else:
+    #     jobs = Job.objects.all()
+    # template_data = {}
+    # template_data['title'] = 'Jobs'
+    # template_data['jobs'] = jobs
+
+
+    form = JobSearchForm(request.GET or None)
+    jobs = Job.objects.all()
+
+    if form.is_valid():
+        data = form.cleaned_data
+
+        if data.get("title"):
+            jobs = jobs.filter(title__icontains=data["title"])
+
+        if data.get("skills"):
+            skill_terms = [term.strip() for term in data["skills"].split(",") if term.strip()]
+            for term in skill_terms:
+                jobs = jobs.filter(skills__icontains=term)
+
+        if data.get("city"):
+            jobs = jobs.filter(city__iexact=data["city"])
+
+        if data.get("state"):
+            jobs = jobs.filter(state__iexact=data["state"])
+
+        if data.get("country"):
+            jobs = jobs.filter(country__iexact=data["country"])
+
+        if data.get("salary_min") is not None:
+            jobs = jobs.filter(salary_min__gte=data["salary_min"])
+
+        if data.get("salary_max") is not None:
+            jobs = jobs.filter(salary_max__lte=data["salary_max"])
+
+        if data.get("work_style"):
+            jobs = jobs.filter(work_style=data["work_style"])
+
+        if data.get("visa_sponsorship"):
+            jobs = jobs.filter(visa_sponsorship=True)
+
+    template_data = {"title": "TODO: Title"}
+
+    context = {
+        "template_data": template_data,
+        "form": form,
+        "jobs": jobs,
+    }
+
+    return render(request, 'jobs/index.html', {'template_data': template_data, 'context': context})
 
 def show(request, id):
     job = Job.objects.get(id=id)
@@ -52,14 +97,14 @@ def create_job(request):
         return HttpResponseForbidden()
 
     if request.method == 'POST':
-        form = JobForm(request.POST, request.FILES)
+        form = JobSearchForm(request.POST, request.FILES)
         if form.is_valid():
             job = form.save()
             job.users.add(request.user)
             messages.success(request, 'Job posted successfully.')
             return redirect('jobs.show', id=job.id)
     else:
-        form = JobForm()
+        form = JobSearchForm()
 
     return render(request, 'jobs/form.html', {'form': form, 'mode': 'create'})
 
@@ -72,12 +117,12 @@ def edit_job(request, id):
         return HttpResponseForbidden()
 
     if request.method == 'POST':
-        form = JobForm(request.POST, request.FILES, instance=job)
+        form = JobSearchForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
             form.save()
             messages.success(request, 'Job updated successfully.')
             return redirect('jobs.show', id=job.id)
     else:
-        form = JobForm(instance=job)
+        form = JobSearchForm(instance=job)
 
     return render(request, 'jobs/form.html', {'form': form, 'mode': 'edit', 'job': job})
