@@ -29,12 +29,44 @@
         <div class="collapse navbar-collapse"
              id="navbarNavAltMarkup">
           <div class="navbar-nav ms-auto navbar-ml">
-            <a class="nav-link"
+            
+            <!-- New Application Tab -->
+            <a class="nav-link {% if request.resolver_match.url_name == 'application_create' %}active{% endif %}"
+               href="{% url 'application_create' %}">New Application</a>
+            
+            <!-- Track Applications Tab -->
+            <a class="nav-link {% if request.resolver_match.url_name == 'track_applications' %}active{% endif %}"
+               href="{% url 'track_applications' %}">Track Applications</a>
+            
+            <!-- About Tab -->
+            <a class="nav-link {% if request.resolver_match.url_name == 'home.about' %}active{% endif %}"
                href="{% url 'home.about' %}">About</a>
+            
+            <!-- Login/Logout -->
+            {% if user.is_authenticated %}
+              <span class="nav-link text-light">Hello, {{ user.username }}!</span>
+              <a class="nav-link" href="{% url 'admin:logout' %}">Logout</a>
+            {% else %}
+              <a class="nav-link" href="{% url 'admin:login' %}">Login</a>
+            {% endif %}
+            
           </div>
         </div>
       </div>
     </nav>
+    
+    <!-- Messages Display -->
+    <div class="container mt-3">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    
     <!-- Header -->
     <div>
       {% block content %}
@@ -54,10 +86,9 @@
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
             <b>LINKS</b>
             <hr />
-            <p><a class="nav-link"
-              href="{% url 'home.about' %}">
-              About
-            </a></p>
+            <p><a class="nav-link" href="{% url 'home.about' %}">About</a></p>
+            <p><a class="nav-link" href="{% url 'application_create' %}">New Application</a></p>
+            <p><a class="nav-link" href="{% url 'track_applications' %}">Track Applications</a></p>
           </div>
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
             <b>CONTACT</b>

@@ -6,4 +6,6 @@ urlpatterns = [
     path('applications/', views.application_list, name='application_list'),
     path('applications/new/', views.application_create, name='application_create'),
     path('applications/<int:pk>/edit/', views.application_edit, name='application_edit'),
+    path('track-applications/', views.track_applications, name='track_applications'),
+    path('update-status/<int:application_id>/', views.update_application_status, name='update_application_status'),
 ]
