@@ -4,12 +4,13 @@ from users.models import CustomUser
 # Create your models here.
 class Job(models.Model):
     class WorkStyle(models.TextChoices):
+        ANY    = "", ""
         REMOTE = "remote", "Remote"
         ONSITE = "onsite", "On-site"
         HYBRID = "hybrid", "Hybrid"
 
     id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
     skills = models.CharField(max_length=500, blank=True)  
     description = models.TextField()
     image = models.ImageField(upload_to='job_images/')
@@ -25,7 +26,8 @@ class Job(models.Model):
     work_style = models.CharField(
         max_length=10,
         choices=WorkStyle.choices,
-        default=WorkStyle.ONSITE,
+        default=WorkStyle.ANY,
+        blank=True
     )
     visa_sponsorship = models.BooleanField(default=False)
     
