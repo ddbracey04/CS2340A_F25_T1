@@ -14,7 +14,7 @@
         <hr />
         <p><b>Description:</b> {{ template_data.job.description }}</p> <!--
         <p><b>Price:</b> ${{ template_data.job.price }}</p> -->
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and user.is_jobseeker %}
       {% if not template_data.has_applied %}
         <div class="container mt-4">
         <div class="row justify-content-center">

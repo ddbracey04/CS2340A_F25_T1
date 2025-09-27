@@ -80,6 +80,10 @@ def view_jobs(request):
     applications = Application.objects.filter(user=request.user).select_related('job')
     context = {
         'applications': applications,
+        'jobs': Job.objects.all(),
     }
     
-    return render(request, 'job_seeker_pages/view_jobs.html', context)
+    if request.user.is_job_seeker():
+        return render(request, 'job_seeker_pages/view_jobs.html', context)
+    else:
+        return render(request, 'recruiter_pages/view_jobs.html', context)
