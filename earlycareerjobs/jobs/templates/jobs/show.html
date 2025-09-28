@@ -93,6 +93,7 @@
                   <br />
                   {{application.user_note}}
                   </p>
+                  <a href="{% url 'profile.view' username=application.user.username %}" class="btn btn-secondary">View Applicant's Profile</a>
                 </div>
               </div>
             {% empty %}
