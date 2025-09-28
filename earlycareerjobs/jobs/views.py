@@ -109,11 +109,12 @@ def show(request, id):
     has_applied = False
     if request.user.is_authenticated:
         has_applied = Application.objects.filter(job=job, user=request.user).exists()
-        can_edit = request.user.is_admin() or request.user in job.users.all()
+        can_edit = request.user.is_admin() or (request.user.is_recruiter() and request.user in job.users.all())
     else:
         can_edit = False
     template_data['has_applied'] = has_applied
     template_data['can_edit'] = can_edit
+    template_data['applications'] = Application.objects.filter(job=job)
     return render(request, 'jobs/show.html', {'template_data': template_data})
 
 @login_required
@@ -125,7 +126,7 @@ def start_application(request, id):
         application.job = job
         application.user = request.user
         application.save()
-        
+
         job.users.add(request.user)
         job.save()
         return redirect('jobs.show', id=id)
