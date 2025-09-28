@@ -90,7 +90,7 @@ def index(request):
     if data.get("visa_sponsorship") and data.get("visa_sponsorship") != '':
         jobs = jobs.filter(visa_sponsorship=True)
 
-    template_data = {"title": "TODO: Title"}
+    template_data = {"title": "Early Career Jobs"}
 
     context = {
         "template_data": template_data,
