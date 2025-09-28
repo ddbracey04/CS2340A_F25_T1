@@ -15,7 +15,7 @@
     <nav class="p-3 navbar navbar-dark bg-dark navbar-expand-lg">
       <div class="container">
         <a class="navbar-brand" href="{% url 'home.index' %}">
-          <img src="{% static 'img/logo.jpg' %}" alt="logo" height="40" />
+          <img src="{% static 'img/logo.png' %}" alt="logo" height="40" />
         </a>
         <button class="navbar-toggler" 
                 type="button"
@@ -84,32 +84,40 @@
       <div class="container">
         <div class="row mt-3 text-white">
           <div class="col-md-6 col-lg-6 col-xl-6 mx-auto mb-4">
-            <b>TODO: Title</b>
+            <b>Early Career Jobs</b>
             <hr />
             <p>
               TODO: Footer Text
             </p>
           </div>
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
-            <b>LINKS</b>
+            <b>Links</b>
             <hr />
             <p><a class="nav-link"
               href="{% url 'home.about' %}">
               About
             </a></p>
+            <p><a class="nav-link"
+              href="{% url 'jobs.index' %}">
+              Jobs
+            </a></p>
+            <p><a class="nav-link"
+              href="{% url 'map.index' %}">
+              Map
+            </a></p>
           </div>
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
-            <b>CONTACT</b>
+            <b>Contact</b>
             <hr />
             <p><i class="fas fa-home me-2"></i>
-              TODO: Address
+              800 Atlantic Dr NW, Atlanta, GA 30318
             </p>
             <p><i class="fas fa-envelope me-2"></i>
-              TODO: Email
+              gburdell3@gatech.edu
             </p>
-            <p><i class="fas fa-phone me-2"></i>
+            <!-- <p><i class="fas fa-phone me-2"></i>
               TODO: Phone Number
-            </p>
+            </p> -->
           </div>
         </div>
       </div>
@@ -117,15 +125,15 @@
     <section class="p-3 ms-footer-bottom bg-dark">
       <div class="container d-flex justify-content-between">
         <div class="me-5 text-white">
-          <span>TODO: Update -- DESIGNED BY
-            <a href="https://www.x.com/danielgarax"
+          <span>Designed by: Shreema Vijayakumar, Cinthya C Amaya, Dylan D Bracey, Yashaswini Pandibabu, Jennefer Bennet, and Yuhan Wei
+            <!-- <a href="https://www.x.com/danielgarax"
               target="_blank">DANIEL CORREA</a> &
             <a href="https://www.x.com/greglim81"
-              target="_blank">GREG LIM</a>
+              target="_blank">GREG LIM</a> -->
           </span>
         </div>
         <div class="text-white">
-          <span>© Copyright - 2024</span>
+          <span>© Copyright - 2025</span>
         </div>
       </div>
     </section>
