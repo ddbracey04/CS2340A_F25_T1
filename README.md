@@ -1,5 +1,13 @@
 # CS2340A_F25_T1
 
+## Running Early Career Jobs App Locally
+To run the app locally from scratch, follow the following procedure:
+1. If the code is zipped up, unzip the code
+2. Navigate to the top earlycareerjobs directory (the one that contains manage.py, not the earlycareerjobs django app)
+3. Run `python manage.py migrate --run-syncdb`
+4. Run `python manage.py runserver`
+5. Go to `127.0.0.1:8000` in a web browser to access the Early Career Jobs app
+
 ## Good Coding Practices and Procedures
 
 ### Git Branches
