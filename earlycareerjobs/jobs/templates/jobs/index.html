@@ -87,18 +87,42 @@
           {% empty %}
             <li class="list-group-item">No jobs match your filters yet.</li>
           {% endfor %} -->
+          <hr>
           <div class="row">
+            <h4>Your Jobs</h4>
             {% for job in context.jobs %}
-            <div class="col-md-4 col-lg-3 mb-2">
-              <div class="p-2 card align-items-center pt-4">
-                <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
-                <div class="card-body text-center">
-                  <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
-                    {{ job.title }}
-                  </a>
+              {% if user in job.users.all %}
+              <div class="col-md-4 col-lg-3 mb-2">
+                <div class="p-2 card align-items-center pt-4">
+                  <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
+                  <div class="card-body text-center">
+                    <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
+                      {{ job.title }}
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
+              {% endif %}
+            {% empty %}
+              <li class="list-group-item">No jobs match your filters yet.</li>
+            {% endfor %}
+          </div>
+          <hr>
+          <div class="row">
+            <h4>Other Jobs</h4>
+            {% for job in context.jobs %}
+              {% if user not in job.users.all %}
+              <div class="col-md-4 col-lg-3 mb-2">
+                <div class="p-2 card align-items-center pt-4">
+                  <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
+                  <div class="card-body text-center">
+                    <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
+                      {{ job.title }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
             {% empty %}
               <li class="list-group-item">No jobs match your filters yet.</li>
             {% endfor %}
