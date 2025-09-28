@@ -16,7 +16,7 @@
         <hr />
         <p><b>Description:</b> {{ template_data.job.description }}</p> <!--
         <p><b>Price:</b> ${{ template_data.job.price }}</p> -->
-        <li class="list-group-item">
+        <!-- <li class="list-group-item">
           <h5 class="mb-1">{{ job.title }}</h5>
           <div class="small text-muted mb-1">
             {{ job.city }}{% if job.state %}, {{ job.state }}{% endif %}{% if job.country %}, {{ job.country }}{% endif %}
@@ -36,7 +36,40 @@
               <strong>Skills:</strong> {{ job.skills }}
             </div>
           {% endif %}
-      </li>
+        </li> -->
+
+        {% if template_data.job.skills %}
+            <!-- <p><strong>Skills:</strong><br>{{ template_data.job.skills|linebreaks }}</p> -->
+            <p><strong>Skills:</strong><br>{{ template_data.job.skills }}</p>
+        {% endif %}
+
+        {% if template_data.job.work_style %}
+            <p><strong>Work Style:</strong> {{ template_data.job.work_style }}</p>
+        {% endif %}
+
+        {% if template_data.job.salary_min and template_data.job.salary_max %}
+            <p><strong>Salary:</strong> {{ template_data.job.salary_min }} - {{ template_data.job.salary_max }}</p>
+        {% elif template_data.job.salary_min %}
+            <p><strong>Min Salary:</strong> {{ template_data.job.salary_min }}</p>
+        {% elif template_data.job.salary_max %}
+            <p><strong>Max Salary:</strong> {{ template_data.job.salary_max }}</p>
+        {% endif %}
+
+        {% if template_data.job.city %}
+            <p><strong>Loation:</strong> {{ template_data.job.city }}{% if template_data.job.state %}, {{ template_data.job.state }}{% endif %}{% if template_data.job.country %}, {{ template_data.job.country }}{% endif %}</p>
+        {% elif template_data.job.state %}
+            <p><strong>Loation:</strong> {{ template_data.job.state }}{% if template_data.job.country %}, {{ template_data.job.country }}{% endif %}</p>
+        {% elif template_data.job.country %}
+            <p><strong>Loation:</strong> {{ template_data.job.country }}</p>
+        {% endif %}
+
+        {% if template_data.job.visa_sponsorship %}
+            <p><strong>Sponsors Visas</strong></p>
+        {% else %}
+            <p><strong>Does Not Sponsor Visas</strong></p>
+        {% endif %}
+        
+
     {% if user.is_authenticated %}
       {% if user.is_job_seeker %}
         {% if not template_data.has_applied %}
