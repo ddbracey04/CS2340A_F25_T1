@@ -29,7 +29,7 @@
         <div class="collapse navbar-collapse"
              id="navbarNavAltMarkup">
           <div class="navbar-nav ms-auto navbar-ml">
-            <a class="nav-link" href="{% url 'home.about' %}">About</a>
+            <!-- <a class="nav-link" href="{% url 'home.about' %}">About</a> -->
             <a class="nav-link" href= "{% url 'jobs.index' %}">Jobs</a>
             <a class="nav-link" href="{% url 'map.index' %}">Map</a>
             {% if user.is_authenticated %}
@@ -39,14 +39,14 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                   {% if user.is_staff or user.is_superuser %}
-                    <li><a class="dropdown-item" href="{% url 'users.user_management' %}">Manage</a></li>
-                    <li><hr class="dropdown-divider"></li>
+                    <!-- <li><a class="dropdown-item" href="{% url 'users.user_management' %}">Manage</a></li>
+                    <li><hr class="dropdown-divider"></li> -->
                   {% endif %}
                   {% if user.is_recruiter %}
                     <li><a class="dropdown-item" href="{% url 'jobs.create' %}">Post a Job</a></li>
                     <li><hr class="dropdown-divider"></li>
                   {% endif %}
-                  <li><hr class="dropdown-divider"></li>
+                  <!-- <li><hr class="dropdown-divider"></li> -->
                   <li>
                     {% if user.is_job_seeker %}
                       <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a> -->
@@ -97,10 +97,10 @@
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
             <b>Links</b>
             <hr />
-            <p><a class="nav-link"
+            <!-- <p><a class="nav-link"
               href="{% url 'home.about' %}">
               About
-            </a></p>
+            </a></p> -->
             <p><a class="nav-link"
               href="{% url 'jobs.index' %}">
               Jobs
