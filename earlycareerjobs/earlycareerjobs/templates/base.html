@@ -50,6 +50,8 @@
                   <li>
                     {% if user.is_job_seeker %}
                       <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a>
+                      <a class="dropdown-item" href="{% url 'profile.view' username=request.user.username %}"> My Profile</a>
+                      <a class="dropdown-item" href="{% url 'profile.edit' %}"> Edit Profile</a>
                     {% elif user.is_recruiter %}
                       <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Job Listings</a>
                     {% endif %}

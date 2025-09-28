@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class = "profile-page-bg">
+    <div class="container" style="margin-top: 100px;">
+        <h2>{{ owner.username }}'s Profile</h2>
+
+        {% if profile.headline %}
+            <p><strong>Headline:</strong> {{ profile.headline }}</p>
+        {% endif %}
+
+        {% if profile.skills %}
+            <p><strong>Skills:</strong><br>{{ profile.skills|linebreaks }}</p>
+        {% endif %}
+
+        {% if profile.education %}
+            <p><strong>Education:</strong><br>{{ profile.education|linebreaks }}</p>
+        {% endif %}
+
+        {% if profile.experience %}
+            <p><strong>Work Experience:</strong><br>{{ profile.experience|linebreaks }}</p>
+        {% endif %}
+
+        {% if profile.linkedin %}
+            <p><strong>LinkedIn:</strong> <a href="{{ profile.linkedin }}" target="_blank">{{ profile.linkedin }}</a></p>
+        {% endif %}
+
+        {% if profile.github %}
+            <p><strong>GitHub:</strong> <a href="{{ profile.github }}" target="_blank">{{ profile.github }}</a></p>
+        {% endif %}
+        
+        {% if profile.website %}
+            <p><strong>Website:</strong> <a href="{{ profile.website }}" target="_blank">{{ profile.website }}</a></p>
+        {% endif %}
+
+        <div class="container" style="margin-top: 20px;"></div>
+        <a class="btn btn-secondary" href="{% url 'profile.edit' %}">Edit Profile</a>
+    </div>
+</div>
+<div class = "profile-page-bg mb-5">
+    <div class="container" style="margin-top: 100px;"></div>
+</div>
+{% endblock content %}
