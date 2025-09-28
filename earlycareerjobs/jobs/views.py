@@ -125,6 +125,9 @@ def start_application(request, id):
         application.job = job
         application.user = request.user
         application.save()
+        
+        job.users.add(request.user)
+        job.save()
         return redirect('jobs.show', id=id)
     else:
         return redirect('jobs.show', id=id)
