@@ -6,7 +6,7 @@
 {% if jobs %}
     <ul>
         {% for job in jobs %}
-        {% if user in job.users %}
+        {% if user in job.users.all %}
             <li>
                 <strong>{{ job.title }}</strong><br>
             </li>

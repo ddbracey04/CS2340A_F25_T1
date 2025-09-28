@@ -8,49 +8,99 @@
         <div class="d-flex justify-content-between align-items-center">
           <h2 class="mb-0">{{ template_data.job.title }}</h2>
           {% if template_data.can_edit %}
-          <a href="{% url 'jobs.edit' id=template_data.job.id %}" class="btn btn-secondary">Edit Job</a>
+            {% if not user.is_job_seeker %}
+              <a href="{% url 'jobs.edit' id=template_data.job.id %}" class="btn btn-secondary">Edit Job</a>
+            {% endif %}
           {% endif %}
         </div>
         <hr />
         <p><b>Description:</b> {{ template_data.job.description }}</p> <!--
         <p><b>Price:</b> ${{ template_data.job.price }}</p> -->
-    {% if user.is_authenticated and user.is_jobseeker %}
-      {% if not template_data.has_applied %}
-        <div class="container mt-4">
-        <div class="row justify-content-center">
-          <div class="col-12">
-          <div class="card shadow p-3 mb-4 rounded">
-            <div class="card-body">
-            <b class="text-start">Start your application
-              </b><br /><br />
-            <form method="POST" action= "{% url 'jobs.start_application' id=template_data.job.id %}">
-              {% csrf_token %}
-              <p>
-              <label for="user_note">Personalized Note:</label>
-              <textarea name="user_note" required
-              class="form-control"
-              id="user_note"></textarea>
-              </p>
-              <div class="text-center">
-              <button type="submit" class="btn bg-dark text-white">
-                Apply!
-              </button>
-              </div>
-            </form>
+        <li class="list-group-item">
+          <h5 class="mb-1">{{ job.title }}</h5>
+          <div class="small text-muted mb-1">
+            {{ job.city }}{% if job.state %}, {{ job.state }}{% endif %}{% if job.country %}, {{ job.country }}{% endif %}
+          </div>
+          <div class="mb-1">
+            <strong>Work style:</strong> {{ job.get_work_style_display }}
+            | <strong>Visa sponsorship:</strong> {% if job.visa_sponsorship %}Yes{% else %}No{% endif %}
+          </div>
+          <div class="mb-1">
+            <strong>Salary:</strong>
+            {% if job.salary_min %}${{ job.salary_min|floatformat:"0" }}{% endif %}
+            {% if job.salary_min and job.salary_max %} - {% endif %}
+            {% if job.salary_max %}${{ job.salary_max|floatformat:"0" }}{% endif %}
+          </div>
+          {% if job.skills %}
+            <div class="mb-0">
+              <strong>Skills:</strong> {{ job.skills }}
             </div>
-          </div>
-          </div>
-        </div>
-        </div>
-      {% else %}
-        <div class="container mt-4">
+          {% endif %}
+      </li>
+    {% if user.is_authenticated %}
+      {% if user.is_job_seeker %}
+        {% if not template_data.has_applied %}
+          <div class="container mt-4">
           <div class="row justify-content-center">
             <div class="col-12">
-              <div class="alert alert-success" role="alert">
-                You have already applied to this job.
+            <div class="card shadow p-3 mb-4 rounded">
+              <div class="card-body">
+              <b class="text-start">Start your application
+                </b><br /><br />
+              <form method="POST" action= "{% url 'jobs.start_application' id=template_data.job.id %}">
+                {% csrf_token %}
+                <p>
+                <label for="user_note">Personalized Note:</label>
+                <textarea name="user_note" required
+                class="form-control"
+                id="user_note"></textarea>
+                </p>
+                <div class="text-center">
+                <button type="submit" class="btn bg-dark text-white">
+                  Apply!
+                </button>
+                </div>
+              </form>
+              </div>
+            </div>
+            </div>
+          </div>
+          </div>
+        {% else %}
+          <div class="container mt-4">
+            <div class="row justify-content-center">
+              <div class="col-12">
+                <div class="alert alert-success" role="alert">
+                  You have already applied to this job.
+                </div>
               </div>
             </div>
           </div>
+        {% endif %}
+      {% else %}
+        <div class="container mt-4">
+        <div class="row justify-content-center">
+          <div class="col-12"> 
+          <h4>Job Applicants</h4>
+            {% for application in template_data.applications %}
+              <div class="card p-3 mb-4 rounded">
+                <div class="card-body">
+                <b class="text-start">{{application.user.username}}</b>
+                  <br />
+                  {{application.date}}
+                  <br />
+                  <p>
+                  <br />
+                  {{application.user_note}}
+                  </p>
+                  <a href="{% url 'profile.view' username=application.user.username %}" class="btn btn-secondary">View Applicant's Profile</a>
+                </div>
+              </div>
+            {% empty %}
+              
+            {% endfor %}
+          </div>
+        </div>
         </div>
       {% endif %}
     {% endif %}
