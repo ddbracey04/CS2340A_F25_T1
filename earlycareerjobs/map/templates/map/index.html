@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col-md-6 mx-auto mb-3 text-center">
+        <h2>Job Locations Map</h2>
+      </div>
+    </div>
+  <div id="map" style="height: 500px; margin-top: 20px; margin-bottom: 10px;"></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+<form method="POST" action= "{% url 'map.select_location' %}" id="jobSelectForm" style="display: none;">
+  {% if user.is_authenticated %}
+    {% if user.is_recruiter or user.is_admin %}
+      {% csrf_token %}
+      <select name="jobId" id="jobSelectDropdown">
+        {% if user.is_recruiter %}
+          {% for job in template_data.jobs %}
+            {% if request.user in job.users.all %}
+              <option value="{{ job.id }}">{{ job.title }}</option>
+            {% endif %}
+          {% endfor %}
+        {% elif user.is_admin %}
+          {% for job in template_data.jobs %}
+            <option value="{{ job.id }}">{{ job.title }}</option>
+          {% endfor %}
+        {% endif %}
+      </select>
+      <input type="hidden" name="lat" id="latField">
+      <input type="hidden" name="lon" id="lonField">
+      <div class="text-center">
+        <button type="submit" class="btn bg-dark text-white" id='saveJobBtn'>
+          Save
+        </button>
+      </div>
+    {% endif %}
+  {% endif %}
+</form>
+
+<script>
+  const map = L.map('map').setView([33.7722, -84.3902], 13); // Centered on GT at zoom level 13
+  
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap contributors'}).addTo(map);
+
+  map.on('click', function(e)
+  {
+    var lat = e.latlng.lat;
+    var lon = e.latlng.lng;
+
+    let selectHTML = document.getElementById("jobSelectForm").outerHTML;
+    selectHTML = selectHTML.replace('style="display: none;"', '');
+
+    document.getElementById("latField").value = lat;
+    document.getElementById("lonField").value = lon;
+
+    var popup = L.popup()
+      .setLatLng([lat, lon])
+      .setContent(document.getElementById("jobSelectForm"))
+      .openOn(map);
+
+    document.getElementById("jobSelectForm").style.display = "block";
+  });
+</script>
+
+{% for job in template_data.jobs %}
+    <script>
+        L.marker(["{{job.lat}}", "{{job.lon}}"]).addTo(map).bindPopup(`<strong>${"{{job.title}}"}</strong><br>${"{{job.description}}"}`);
+    </script>
+{% endfor %}
+
+{% endblock %}
+
