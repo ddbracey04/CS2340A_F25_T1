@@ -101,19 +101,22 @@ def index(request):
     return render(request, 'jobs/index.html', {'template_data': template_data, 'context': context})
 
 def show(request, id):
-    job = Job.objects.get(id=id)
+    job = get_object_or_404(Job, id=id)  # fetch job or return 404 if not found
     template_data = {}
     template_data['title'] = job.title
     template_data['job'] = job
-    # Determine whether the current user has already applied to this job
+    
+    # determine whether the current user has already applied to this job
     has_applied = False
+    can_edit = False
+    
     if request.user.is_authenticated:
         has_applied = Application.objects.filter(job=job, user=request.user).exists()
         can_edit = request.user.is_admin() or request.user in job.users.all()
-    else:
-        can_edit = False
+    
     template_data['has_applied'] = has_applied
     template_data['can_edit'] = can_edit
+    
     return render(request, 'jobs/show.html', {'template_data': template_data})
 
 @login_required
