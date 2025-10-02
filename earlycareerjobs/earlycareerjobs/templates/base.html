@@ -15,7 +15,7 @@
     <nav class="p-3 navbar navbar-dark bg-dark navbar-expand-lg">
       <div class="container">
         <a class="navbar-brand" href="{% url 'home.index' %}">
-          <img src="{% static 'img/logo.jpg' %}" alt="logo" height="40" />
+          <img src="{% static 'img/logo.png' %}" alt="logo" height="40" />
         </a>
         <button class="navbar-toggler" 
                 type="button"
@@ -29,7 +29,7 @@
         <div class="collapse navbar-collapse"
              id="navbarNavAltMarkup">
           <div class="navbar-nav ms-auto navbar-ml">
-            <a class="nav-link" href="{% url 'home.about' %}">About</a>
+            <!-- <a class="nav-link" href="{% url 'home.about' %}">About</a> -->
             <a class="nav-link" href= "{% url 'jobs.index' %}">Jobs</a>
             <a class="nav-link" href="{% url 'map.index' %}">Map</a>
             {% if user.is_authenticated %}
@@ -39,14 +39,14 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                   {% if user.is_staff or user.is_superuser %}
-                    <li><a class="dropdown-item" href="{% url 'users.user_management' %}">Manage</a></li>
-                    <li><hr class="dropdown-divider"></li>
+                    <!-- <li><a class="dropdown-item" href="{% url 'users.user_management' %}">Manage</a></li>
+                    <li><hr class="dropdown-divider"></li> -->
                   {% endif %}
                   {% if user.is_recruiter %}
                     <li><a class="dropdown-item" href="{% url 'jobs.create' %}">Post a Job</a></li>
                     <li><hr class="dropdown-divider"></li>
                   {% endif %}
-                  <li><hr class="dropdown-divider"></li>
+                  <!-- <li><hr class="dropdown-divider"></li> -->
                   <li>
                     {% if user.is_job_seeker %}
                       <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a> -->
@@ -84,31 +84,43 @@
       <div class="container">
         <div class="row mt-3 text-white">
           <div class="col-md-6 col-lg-6 col-xl-6 mx-auto mb-4">
-            <b>TODO: Title</b>
+            <b>Early Career Jobs</b>
             <hr />
             <p>
-              TODO: Footer Text
+              Welcome to Early Career Jobs, the premiere matchmaking 
+              platform for early-career professionals to find and meet 
+              potential future employers and their job opportunities! 
+              Explore the job marketplace, and network with fellow Job 
+              Seekers and Recruiters alike!
             </p>
           </div>
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
-            <b>LINKS</b>
+            <b>Links</b>
             <hr />
-            <p><a class="nav-link"
+            <!-- <p><a class="nav-link"
               href="{% url 'home.about' %}">
               About
+            </a></p> -->
+            <p><a class="nav-link"
+              href="{% url 'jobs.index' %}">
+              Jobs
+            </a></p>
+            <p><a class="nav-link"
+              href="{% url 'map.index' %}">
+              Map
             </a></p>
           </div>
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
-            <b>CONTACT</b>
+            <b>Contact</b>
             <hr />
             <p><i class="fas fa-home me-2"></i>
-              TODO: Address
+              800 Atlantic Dr NW, Atlanta, GA 30318
             </p>
             <p><i class="fas fa-envelope me-2"></i>
-              TODO: Email
+              gburdell3@gatech.edu
             </p>
             <p><i class="fas fa-phone me-2"></i>
-              TODO: Phone Number
+              +1 (234) 867-5309
             </p>
           </div>
         </div>
@@ -117,15 +129,15 @@
     <section class="p-3 ms-footer-bottom bg-dark">
       <div class="container d-flex justify-content-between">
         <div class="me-5 text-white">
-          <span>TODO: Update -- DESIGNED BY
-            <a href="https://www.x.com/danielgarax"
+          <span>Designed by: Shreema Vijayakumar, Cinthya C Amaya, Dylan D Bracey, Yashaswini Pandibabu, Jennefer Bennet, and Yuhan Wei
+            <!-- <a href="https://www.x.com/danielgarax"
               target="_blank">DANIEL CORREA</a> &
             <a href="https://www.x.com/greglim81"
-              target="_blank">GREG LIM</a>
+              target="_blank">GREG LIM</a> -->
           </span>
         </div>
         <div class="text-white">
-          <span>© Copyright - 2024</span>
+          <span>© Copyright - 2025</span>
         </div>
       </div>
     </section>

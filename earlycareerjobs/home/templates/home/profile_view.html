@@ -33,7 +33,10 @@
         {% endif %}
 
         <div class="container" style="margin-top: 20px;"></div>
-        <a class="btn btn-secondary" href="{% url 'profile.edit' %}">Edit Profile</a>
+
+        {% if request.user == owner or request.user.is_admin %}
+            <a class="btn btn-secondary" href="{% url 'profile.edit' %}">Edit Profile</a>
+        {% endif %}
     </div>
 </div>
 <div class = "profile-page-bg mb-5">
