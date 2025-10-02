@@ -49,11 +49,11 @@
                   <li><hr class="dropdown-divider"></li>
                   <li>
                     {% if user.is_job_seeker %}
-                      <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a>
+                      <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a> -->
                       <a class="dropdown-item" href="{% url 'profile.view' username=request.user.username %}"> My Profile</a>
                       <a class="dropdown-item" href="{% url 'profile.edit' %}"> Edit Profile</a>
                     {% elif user.is_recruiter %}
-                      <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Job Listings</a>
+                      <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Job Listings</a> -->
                     {% endif %}
                     <form id="logout-form" method="post" action="{% url 'users.logout' %}">
                       {% csrf_token %}
