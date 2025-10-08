@@ -17,7 +17,7 @@ def lookupLatLon(cityName="", stateName="", countryName=""):
 
     if len(query) == 0:
         print("Empty lat/lon lookup query")
-        return None, None
+        return 0, 0
     
 
     #Enforce 1 seconds between runs to abide by 1 call per second maximum
@@ -51,4 +51,4 @@ def lookupLatLon(cityName="", stateName="", countryName=""):
         return location.latitude, location.longitude
     else:
         print(f"'{cityName}', '{stateName}', '{countryName}' not found.")
-        return None, None
+        return 0, 0
