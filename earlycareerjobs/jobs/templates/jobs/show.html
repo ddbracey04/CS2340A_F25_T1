@@ -139,7 +139,10 @@
     {% endif %}
       </div>
       <div class="col-md-6 mx-auto mb-3 text-center">
-        <img src="{{ template_data.job.image.url }}" class="rounded img-card-400" />
+        {% if template_data.job.image.url != '' %}
+          <img src="{{ template_data.job.image.url }}" class="rounded img-card-400" />
+        {% endif %}
+        
       </div>
     </div>
   </div>

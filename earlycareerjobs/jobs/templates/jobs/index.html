@@ -94,7 +94,9 @@
               {% if user in job.users.all %}
               <div class="col-md-4 col-lg-3 mb-2">
                 <div class="p-2 card align-items-center pt-4">
-                  <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
+                  {% if job.image.url != '' %}
+                    <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
+                  {% endif %}
                   <div class="card-body text-center">
                     <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
                       {{ job.title }}
