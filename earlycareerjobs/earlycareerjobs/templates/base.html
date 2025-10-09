@@ -141,8 +141,9 @@
                             </ul>
                           </li>
                         {% else %}
-                          <li><a href="{% url 'users.register' %}"><span class="fa fa-user"></span> Register</a></li>
-                          <li><a href="{% url 'users.login' %}"><span class="fa fa-user"></span> Login</a></li>
+                          
+                          <li class = "{% if request.resolver_match.url_name == 'users.register' %}active{% endif %}"><a href="{% url 'users.register' %}"><span class="fa fa-user"></span> Register</a></li>
+                          <li class = "{% if request.resolver_match.url_name == 'users.login' %}active{% endif %}"><a href="{% url 'users.login' %}"><span class="fa fa-user"></span> Login</a></li>
                         {% endif %}
                     </ul>
                   {% endblock nav_links %}
