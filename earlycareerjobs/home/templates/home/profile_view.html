@@ -8,8 +8,15 @@
             <p><strong>Headline:</strong> {{ profile.headline }}</p>
         {% endif %}
 
-        {% if profile.skills %}
-            <p><strong>Skills:</strong><br>{{ profile.skills|linebreaks }}</p>
+        {% if profile.skill_list %}
+            <div class="mt-3">
+                <p class="mb-1"><strong>Skills:</strong></p>
+                <div class="skill-badge-group">
+                    {% for skill in profile.skill_list %}
+                        <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
         {% endif %}
 
         {% if profile.education %}
