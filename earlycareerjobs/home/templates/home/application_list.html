@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Applications</h2>
+<a href="{% url 'application_create' %}">Add New Application</a>
+<table>
+    <tr>
+        <th>Job Title</th>
+        <th>Company</th>
+        <th>Status</th>
+        <th>Progress</th>
+        <th>Actions</th>
+    </tr>
+    {% for app in applications %}
+    <tr>
+        <td>{{ app.job_title }}</td>
+        <td>{{ app.company }}</td>
+        <td>{{ app.get_status_display }}</td>
+        <td>
+            <div style="display: flex; gap: 5px;">
+                {% for code, label in app.STATUS_CHOICES %}
+                    <span style="
+                        padding: 2px 8px;
+                        border-radius: 6px;
+                        background: {% if app.status == code %}#007bff{% else %}#e0e0e0{% endif %};
+                        color: {% if app.status == code %}#fff{% else %}#333{% endif %};
+                        font-weight: bold;
+                        ">
+                        {{ label }}
+                    </span>
+                {% endfor %}
+            </div>
+        </td>
+        <td>
+            <a href="{% url 'application_update' app.pk %}">Update Status</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
