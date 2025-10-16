@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from users.models import CustomUser
 
@@ -33,6 +35,14 @@ class Job(models.Model):
     
     def __str__(self):
         return str(self.id) + ' - ' + self.title
+
+    @property
+    def skill_list(self):
+        """Return normalized list of skills for template rendering."""
+        if not self.skills:
+            return []
+        raw_tokens = re.split(r"(?:,|\n|;|\u2022|-)+", self.skills)
+        return [skill.strip() for skill in raw_tokens if skill.strip()]
 
 
 class Application(models.Model):

@@ -38,9 +38,15 @@
           {% endif %}
         </li> -->
 
-        {% if template_data.job.skills %}
-            <!-- <p><strong>Skills:</strong><br>{{ template_data.job.skills|linebreaks }}</p> -->
-            <p><strong>Skills:</strong><br>{{ template_data.job.skills }}</p>
+        {% if template_data.job.skill_list %}
+            <div class="mt-3">
+              <p class="mb-1"><strong>Skills:</strong></p>
+              <div class="skill-badge-group">
+                {% for skill in template_data.job.skill_list %}
+                  <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
+                {% endfor %}
+              </div>
+            </div>
         {% endif %}
 
         {% if template_data.job.work_style %}

@@ -99,6 +99,13 @@
                     <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
                       {{ job.title }}
                     </a>
+                    {% if job.skill_list %}
+                      <div class="skill-badge-group justify-content-center mt-2">
+                        {% for skill in job.skill_list %}
+                          <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
                   </div>
                 </div>
               </div>
@@ -119,6 +126,13 @@
                     <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
                       {{ job.title }}
                     </a>
+                    {% if job.skill_list %}
+                      <div class="skill-badge-group justify-content-center mt-2">
+                        {% for skill in job.skill_list %}
+                          <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
                   </div>
                 </div>
               </div>

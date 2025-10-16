@@ -43,3 +43,38 @@
   width: fit-content;
   max-height: 400px;
 }
+
+.skill-badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.skill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  background-color: #5d61ea;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(32, 32, 60, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.skill-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(32, 32, 60, 0.25);
+}
+
+.skill-badge-group.justify-content-center {
+  justify-content: center;
+}
