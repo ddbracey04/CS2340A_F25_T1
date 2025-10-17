@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from users.models import CustomUser
 
@@ -34,13 +36,30 @@ class Job(models.Model):
     def __str__(self):
         return str(self.id) + ' - ' + self.title
 
+    @property
+    def skill_list(self):
+        """Return normalized list of skills for template rendering."""
+        if not self.skills:
+            return []
+        raw_tokens = re.split(r"(?:,|\n|;|\u2022|-)+", self.skills)
+        return [skill.strip() for skill in raw_tokens if skill.strip()]
+
 
 class Application(models.Model):
+    STATUS_CHOICES = [
+        ('APPLIED', 'Applied'),
+        ('REVIEW', 'Under Review'),
+        ('INTERVIEW', 'Interview'),
+        ('OFFER', 'Offer'),
+        ('CLOSED', 'Closed'),
+    ]
+
     id = models.AutoField(primary_key=True)
     user_note = models.CharField(max_length=255)
     date = models.DateTimeField(auto_now_add=True)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='APPLIED')
 
     def __str__(self):
         return str(self.id) + ' - ' + self.job.title
