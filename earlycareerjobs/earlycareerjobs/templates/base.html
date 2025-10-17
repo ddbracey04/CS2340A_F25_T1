@@ -52,6 +52,7 @@
                       <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a> -->
                       <a class="dropdown-item" href="{% url 'profile.view' username=request.user.username %}"> My Profile</a>
                       <a class="dropdown-item" href="{% url 'profile.edit' %}"> Edit Profile</a>
+                      <a class="dropdown-item" href="{% url 'jobs.track_applications' id=request.user.id %}">Track Applications</a>
                     {% elif user.is_recruiter %}
                       <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Job Listings</a> -->
                     {% endif %}

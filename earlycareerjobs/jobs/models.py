@@ -46,11 +46,20 @@ class Job(models.Model):
 
 
 class Application(models.Model):
+    STATUS_CHOICES = [
+        ('APPLIED', 'Applied'),
+        ('REVIEW', 'Under Review'),
+        ('INTERVIEW', 'Interview'),
+        ('OFFER', 'Offer'),
+        ('CLOSED', 'Closed'),
+    ]
+
     id = models.AutoField(primary_key=True)
     user_note = models.CharField(max_length=255)
     date = models.DateTimeField(auto_now_add=True)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='APPLIED')
 
     def __str__(self):
         return str(self.id) + ' - ' + self.job.title

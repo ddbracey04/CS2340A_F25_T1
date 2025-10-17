@@ -1,19 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>My Applications</h2>
-<a href="{% url 'application_create' %}">Add New Application</a>
 <table>
     <tr>
         <th>Job Title</th>
-        <th>Company</th>
         <th>Status</th>
         <th>Progress</th>
         <th>Actions</th>
     </tr>
     {% for app in applications %}
     <tr>
-        <td>{{ app.job_title }}</td>
-        <td>{{ app.company }}</td>
+        <td>{{ app.job.title }}</td>
         <td>{{ app.get_status_display }}</td>
         <td>
             <div style="display: flex; gap: 5px;">
@@ -31,7 +28,7 @@
             </div>
         </td>
         <td>
-            <a href="{% url 'application_update' app.pk %}">Update Status</a>
+            <!-- <a href="{% url 'jobs.application_update' app.pk %}">Update Status</a> -->
         </td>
     </tr>
     {% endfor %}
