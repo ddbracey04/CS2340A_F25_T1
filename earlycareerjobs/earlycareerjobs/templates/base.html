@@ -130,6 +130,7 @@
                               {% if user.is_job_seeker %}
                                 <li><a href="{% url 'profile.view' username=request.user.username %}">My Profile</a></li>
                                 <li><a href="{% url 'profile.edit' %}">Edit Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'jobs.track_applications' id=request.user.id %}">Track Applications</a></li>
                               {% elif user.is_recruiter %}
                                 <li><a href="{% url 'jobs.create' %}">Post a Job</a></li>
                               {% endif %}
