@@ -4,6 +4,8 @@ from .forms import JobSearchForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib import messages
+# from django.http import JsonResponse
+from django.db.models import Count
 
 def index(request):
     # search_term = request.GET.get('search')
@@ -123,6 +125,7 @@ def start_application(request, id):
         job = Job.objects.get(id=id)
         application = Application()
         application.user_note = request.POST['user_note']
+        application.status = 'APPLIED'
         application.job = job
         application.user = request.user
         application.save()
@@ -169,3 +172,69 @@ def edit_job(request, id):
         form = JobSearchForm(instance=job)
 
     return render(request, 'jobs/form.html', {'form': form, 'mode': 'edit', 'job': job})
+
+
+
+@login_required
+def application_list(request, id):
+    applications = Application.objects.filter(user=request.user)
+    return render(request, 'home/applications/list.html', {
+        'applications': applications,
+        'template_data': {'title': 'My Applications'}
+    })
+
+# @login_required
+# def application_edit(request, id, pk):
+#     application = get_object_or_404(Application, pk=pk, user=request.user)
+
+#     if request.method == 'POST':
+#         form = ApplicationForm(request.POST, instance=application)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, 'Application updated successfully!')
+#             return redirect('application_list')
+#     else:
+#         form = ApplicationForm(instance=application)
+
+#     return render(request, 'home/applications/form.html', {
+#         'form': form,
+#         'application': application,
+#         'template_data': {'title': 'Edit Application'}
+#     })
+
+@login_required
+def track_applications(request, id):
+    """View to display all user's applications with their current status"""
+    applications = Application.objects.filter(user=request.user)
+
+    # Get status statistics
+    status_stats = applications.values('status').annotate(count=Count('status'))
+
+    # Convert to dictionary for easier template access
+    stats_dict = {stat['status']: stat['count'] for stat in status_stats}
+
+    context = {
+        'applications': applications,
+        'stats': stats_dict,
+        'total_applications': applications.count(),
+
+    }
+    return render(request, 'jobs/track_applications.html', context)
+
+@login_required
+def update_application_status(request, id, application_id):
+    """View to update application status"""
+    application = get_object_or_404(Application, id=application_id, user=request.user)
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in dict(Application.STATUS_CHOICES):
+            old_status = application.get_status_display()
+            application.status = new_status
+            application.save()
+
+            messages.success(request, f'Status updated from {old_status} to {application.get_status_display()}')
+        else:
+            messages.error(request, 'Invalid status selected')
+
+    return redirect('jobs.track_applications')
