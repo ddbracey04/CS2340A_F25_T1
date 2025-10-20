@@ -10,6 +10,17 @@
     </div>
     <form class="form-inline" method="post" action="{% url 'map.filter' %}">
       {% csrf_token %}
+      <input class="hidden" value="{{template_data.searchCity}}" id="old_city" name="old_city" style="display: none;">
+      <input class="hidden" value="{{template_data.searchState}}" id="old_state" name="old_state" style="display: none;">
+      <input class="hidden" value="{{template_data.searchCountry}}" id="old_country" name="old_country" style="display: none;">
+      <input class="hidden" value="{{template_data.searchRadius}}" id="old_radius" name="old_radius" style="display: none;">
+      <input class="hidden" value="{{template_data.centerLat}}" id="old_lat" name="old_lat" style="display: none;">
+      <input class="hidden" value="{{template_data.centerLon}}" id="old_lon" name="old_lon" style="display: none;">
+      {% for job in template_data.jobs %}
+        <input class="hidden" value="{{job.id}}" name="old_job_id[]" style="display: none;">
+      {% endfor %}
+
+
       
       {% if template_data.searchCity %}
         <input type="text" id="city_filter" placeholder="City" value="{{template_data.searchCity}}" name="city_filter">
@@ -50,6 +61,12 @@
 
       <button class="primary-btn" type="submit">Filter</button>
     </form>
+  {% if error %}
+    <div class="alert" style="padding: 20px; background-color: #f44336; color: white; margin-bottom: 15px;">
+      <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+      ERROR: {{error}}
+    </div>
+  {% endif %}
   <div id="map" style="height: 500px; margin-top: 20px; margin-bottom: 10px;"></div>
 </div>
 

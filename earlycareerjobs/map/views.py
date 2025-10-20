@@ -13,12 +13,38 @@ def select_location(request):
     return redirect('map.index')
 
 
-def index(request):
+def index(request, errorStr='', override_template_data=None):
+
+    if (override_template_data != None):
+        override_template_data['jobs'] = Job.objects.filter(id__in=override_template_data['jobIds'])
+
+        return render(request, 'map/index.html', {'template_data': override_template_data, 'error': errorStr})
+
     jobs = Job.objects.all()
 
     template_data = {}
     template_data['jobs'] = jobs
-    return render(request, 'map/index.html', {'template_data': template_data})
+
+    if (request.user.is_authenticated):
+        DEFAULT_SEARCH_RADIUS = 5
+        template_data['searchRadius'] = DEFAULT_SEARCH_RADIUS
+
+        if (request.user.city and request.user.city != ''):
+            template_data['searchCity'] = request.user.city
+
+        if (request.user.state and request.user.state != ''):
+            template_data['searchState'] = request.user.state
+
+        if (request.user.country and request.user.country != ''):
+            template_data['searchCountry'] = request.user.country
+
+        if (request.user.lat and request.user.lat != ''):
+            template_data['centerLat'] = request.user.lat
+
+        if (request.user.lon and request.user.lon != ''):
+            template_data['centerLon'] = request.user.lon
+
+    return render(request, 'map/index.html', {'template_data': template_data, 'error': errorStr})
 
 def filter(request):
     if request.method == "POST":
@@ -27,6 +53,15 @@ def filter(request):
         searchCountry = request.POST["country_filter"]
 
         if searchCity == '' and searchState == '' and searchCountry == '':
+            old_template_data = {}
+            old_template_data['searchCity'] = request.POST['old_city']
+            old_template_data['searchState'] = request.POST['old_state']
+            old_template_data['searchCountry'] = request.POST['old_country']
+            old_template_data['searchRadius'] = request.POST['old_radius']
+            old_template_data['centerLat'] = request.POST['old_lat']
+            old_template_data['centerLon'] = request.POST['old_lon']
+            old_template_data['jobIds'] = request.POST.getlist('old_job_id[]')
+            return index(request, "No Filter Location Provided", old_template_data)
             template_data = {}
             template_data['jobs'] = Job.objects.all()
             return render(request, 'map/index.html', {'template_data': template_data})
@@ -35,6 +70,15 @@ def filter(request):
         searchLat, searchLon = lookupLatLon(searchCity, searchState, searchCountry)
 
         if searchLat == 0 and searchLon == 0:
+            old_template_data = {}
+            old_template_data['searchCity'] = request.POST['old_city']
+            old_template_data['searchState'] = request.POST['old_state']
+            old_template_data['searchCountry'] = request.POST['old_country']
+            old_template_data['searchRadius'] = request.POST['old_radius']
+            old_template_data['centerLat'] = request.POST['old_lat']
+            old_template_data['centerLon'] = request.POST['old_lon']
+            old_template_data['jobIds'] = request.POST.getlist('old_job_id[]')
+            return index(request, f"Could not find {request.POST['city_filter']}, {request.POST['state_filter']}, {request.POST['country_filter']}", old_template_data)
             template_data = {}
             template_data['jobs'] = Job.objects.all()
             return render(request, 'map/index.html', {'template_data': template_data})
@@ -60,8 +104,14 @@ def filter(request):
 
         return render(request, 'map/index.html', {'template_data': template_data})
     else:
-        template_data = {}
-        template_data['jobs'] = Job.objects.all()
-        return render(request, 'map/index.html', {'template_data': template_data})
+        old_template_data = {}
+        old_template_data['searchCity'] = request.POST['old_city']
+        old_template_data['searchState'] = request.POST['old_state']
+        old_template_data['searchCountry'] = request.POST['old_country']
+        old_template_data['searchRadius'] = request.POST['old_radius']
+        old_template_data['centerLat'] = request.POST['old_lat']
+        old_template_data['centerLon'] = request.POST['old_lon']
+        old_template_data['jobIds'] = request.POST.getlist('old_job_id[]')
+        return render(request, 'map/index.html', {'template_data': old_template_data})
 
 

@@ -5,6 +5,7 @@ from django.contrib import messages
 from .forms import CustomUserCreationForm
 from .models import CustomUser
 from jobs.models import Application, Job
+from map.utils import lookupLatLon
 
 def register(request):
     if request.method == 'POST':
@@ -17,6 +18,8 @@ def register(request):
             elif user.role == CustomUser.Role.JOB_SEEKER:
                 if 'resume' in request.FILES:
                     user.resume = request.FILES['resume']
+
+            user.lat, user.lon = lookupLatLon(form.cleaned_data.get('city'), form.cleaned_data.get('state'), form.cleaned_data.get('country'))
             
             user.save()
             

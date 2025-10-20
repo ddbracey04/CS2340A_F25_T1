@@ -19,6 +19,12 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     company_name = models.CharField(max_length=100, blank=True)  # for recruiters
     resume = models.FileField(upload_to='resumes/', blank=True, null=True)  # for job seekers
+
+    lat = models.FloatField(null=True, blank=True)
+    lon = models.FloatField(null=True, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
     
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
