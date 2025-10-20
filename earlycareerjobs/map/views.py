@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from jobs.models import Job
 from .utils import lookupLatLon, haversine
+from home.models import Profile
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 def select_location(request):
@@ -25,24 +27,35 @@ def index(request, errorStr='', override_template_data=None):
     template_data = {}
     template_data['jobs'] = jobs
 
-    if (request.user.is_authenticated):
-        DEFAULT_SEARCH_RADIUS = 5
-        template_data['searchRadius'] = DEFAULT_SEARCH_RADIUS
+    if request.user.is_authenticated: # and hasattr(request.user, "profile"):
+        try:
+            profile = Profile.objects.get(user=request.user)
+            print("HAS PROFILE")
+            DEFAULT_SEARCH_RADIUS = 5
+            template_data['searchRadius'] = DEFAULT_SEARCH_RADIUS
 
-        if (request.user.city and request.user.city != ''):
-            template_data['searchCity'] = request.user.city
+            if (profile.city and profile.city != ''):
+                template_data['searchCity'] = profile.city
 
-        if (request.user.state and request.user.state != ''):
-            template_data['searchState'] = request.user.state
+            if (profile.state and profile.state != ''):
+                template_data['searchState'] = profile.state
 
-        if (request.user.country and request.user.country != ''):
-            template_data['searchCountry'] = request.user.country
+            if (profile.country and profile.country != ''):
+                template_data['searchCountry'] = profile.country
 
-        if (request.user.lat and request.user.lat != ''):
-            template_data['centerLat'] = request.user.lat
+            if (profile.lat and profile.lat != ''):
+                template_data['centerLat'] = profile.lat
 
-        if (request.user.lon and request.user.lon != ''):
-            template_data['centerLon'] = request.user.lon
+            if (profile.lon and profile.lon != ''):
+                template_data['centerLon'] = profile.lon
+
+            if (profile.city != '' or profile.state != '' or profile.country != '') and profile.lat == 0 and profile.lon == 0:
+                errorStr = f"Could not find {profile.city}, {profile.state}, {profile.country}"
+
+        except ObjectDoesNotExist:
+            # Do nothing if profile does not exist yet
+            # TODO: Figure out what we want to do here
+            pass
 
     return render(request, 'map/index.html', {'template_data': template_data, 'error': errorStr})
 

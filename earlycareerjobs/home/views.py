@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render,get_object_or_404
 from .models import Profile
 from .forms import ProfileForm
 from django.contrib.auth import login
+from map.utils import lookupLatLon
 
 
 def index(request):
@@ -24,6 +25,8 @@ def profile_edit(request):
         form = ProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
+            profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+            profile.save()
             return redirect('profile.view', username=request.user.username)
     else:
         form = ProfileForm(instance=profile)

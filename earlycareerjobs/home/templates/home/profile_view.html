@@ -27,6 +27,22 @@
             <p><strong>Work Experience:</strong><br>{{ profile.experience|linebreaks }}</p>
         {% endif %}
 
+        
+
+        {% if profile.city %}
+            <p><strong>City:</strong><br>{{ profile.city|linebreaks }}</p>
+        {% endif %}
+
+        {% if profile.state %}
+            <p><strong>State:</strong><br>{{ profile.state|linebreaks }}</p>
+        {% endif %}
+
+        {% if profile.country %}
+            <p><strong>Country:</strong><br>{{ profile.country|linebreaks }}</p>
+        {% endif %}
+
+        
+
         {% if profile.linkedin %}
             <p><strong>LinkedIn:</strong> <a href="{{ profile.linkedin }}" target="_blank">{{ profile.linkedin }}</a></p>
         {% endif %}
