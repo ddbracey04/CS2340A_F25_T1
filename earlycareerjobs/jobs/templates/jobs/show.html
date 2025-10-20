@@ -127,7 +127,7 @@
 
                   <h4 class="mb-3">Recommended Candidates</h4>
 
-                  <!-- Horizontal, scrollable list of candidate cards -->
+                  <!-- List of candidate cards -->
                   <div class="d-flex overflow-auto gap-3 py-2" style="-webkit-overflow-scrolling: touch;">
                     {% for rec in template_data.recommended_candidates %}
                       <div class="card p-3 mb-0 rounded" style="min-width: 280px; max-width: 360px; flex: 0 0 auto;">
@@ -135,7 +135,12 @@
                           <h5 class="card-title mb-1">{{ rec.user.get_full_name|default:rec.user.username }}</h5>
                           <div class="small text-muted mb-2">Applied: {{ rec.application.date }}</div>
                           {% if rec.common_skills %}
-                            <p class="mb-2 small"><strong>Matching Skills:</strong> {{ rec.common_skills|join:", " }}</p>
+                            <p class="mb-2 small"><strong>Matching Skills:</strong> </p>
+                              <div class="skill-badge-group justify-content-center mt-2">
+                                {% for skill in rec.common_skills %}
+                                  <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
+                                {% endfor %}
+                               </div>
                           {% endif %}
                           {% if rec.application.user_note %}
                             <p class="mb-2"><strong>Personalized Note:</strong> {{ rec.application.user_note }}</p>

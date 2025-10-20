@@ -59,6 +59,43 @@
       </div>
     </form>
 
+    <div class="container mt-4">
+          {% if user.is_authenticated and user.is_job_seeker and template_data.recommended_jobs %}
+            <div class="row justify-content-center">
+              <div class="col-12">
+                <div id="recommended-panel" class="p-3 mb-4 rounded position-relative" style="background-color: #9d7cf1; border: 1px solid #3e3060;">
+                  <!-- Close button to hide this section for the current page load -->
+                  <button type="button" class="btn-close position-absolute" aria-label="Close" style="top:12px; right:12px;" onclick="document.getElementById('recommended-panel').style.display='none'"></button>
+
+                  <h4 class="mb-3">Recommended Jobs</h4>
+                  <div class="d-flex overflow-auto gap-3 py-2" style="-webkit-overflow-scrolling: touch;">
+                    {% for rec in template_data.recommended_jobs %}
+                      <div class="col-md-4 col-lg-3 mb-2">
+                        <div class="p-2 card align-items-center pt-4">
+                          <img src="{{ rec.job.image.url }}" class="card-img-top rounded img-card-200">
+                          <div class="card-body text-center">
+                            <a href="{% url 'jobs.show' id=rec.job.id %}" class="btn bg-dark text-white">
+                              {{ rec.job.title }}
+                            </a>
+                            {% if rec.common_skills %}
+                            <p class="mb-2 small"><strong>Matching Skills:</strong> </p>
+                              <div class="skill-badge-group justify-content-center mt-2">
+                                {% for skill in rec.common_skills %}
+                                  <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
     <div class="row mt-4">
       <div class="col-12">
         <ul class="list-group">
