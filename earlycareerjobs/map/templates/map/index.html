@@ -2,13 +2,39 @@
 {% block content %}
 {% load static %}
 <div class="p-3">
-  <div class="container">
+  <div class="container-fluid">
     <div class="row mt-3">
-      <div class="col-md-6 mx-auto mb-3 text-center">
-        <h2>Job Locations Map</h2>
+      <div class="col-12 text-center">
+        <h2>Job Locations Map & List</h2>
       </div>
     </div>
-  <div id="map" style="height: 500px; margin-top: 20px; margin-bottom: 10px;"></div>
+    
+    <div class="row mt-3">
+      <div class="col-md-8">
+        <div id = "map" style="height: 500px; margin-bottom: 10px;"></div>
+      </div>
+
+      <div class="col-md-4">
+        <div id="job-list-container" style="height: 500px; overflow-y: scroll; padding: 20px; border: 1px solid #ccc">
+          <h3 class = "mb-3">Available Jobs</h3>
+
+          {% for job in template_data.jobs %}
+            <div class="card mb-3 mx-3 job-card"
+                data-lat = "{{ job.lat }}"
+                data-lon = "{{ job.lon }}">
+              <div class="card-body">
+                <h5 class="card-title">{{ job.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ job.company }}</h6>
+                <p class="card-text">{{ job.description }}</p>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted">No job listings are currently available.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    </div>
 </div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -66,6 +92,21 @@
 
     document.getElementById("jobSelectForm").style.display = "block";
   });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const jobCards = document.querySelectorAll('.job-card');
+
+    jobCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const lat = parseFloat(this.getAttribute('data-lat'));
+            const lon = parseFloat(this.getAttribute('data-lon'));
+
+            if (!isNaN(lat) && !isNaN(lon)) {
+              map.setView([lat, lon], 15);
+            }
+          });
+        });
+    });
 </script>
 
 {% for job in template_data.jobs %}
