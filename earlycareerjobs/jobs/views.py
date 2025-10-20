@@ -1,9 +1,54 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Job, Application
 from .forms import JobSearchForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib import messages
+from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def delete_applicant(request, job_id, app_id):
+    job = get_object_or_404(Job, id=job_id)
+    application = get_object_or_404(Application, id=app_id, job=job)
+    if not (request.user.is_admin() or (request.user.is_recruiter() and request.user in job.users.all())):
+        return HttpResponseForbidden()
+    application.delete()
+    messages.success(request, 'Applicant deleted successfully.')
+    return redirect('jobs.show', id=job_id)
+
+@login_required
+def edit_applicant(request, job_id, app_id):
+    job = get_object_or_404(Job, id=job_id)
+    application = get_object_or_404(Application, id=app_id, job=job)
+    if not (request.user.is_admin() or (request.user.is_recruiter() and request.user in job.users.all())):
+        return HttpResponseForbidden()
+    if request.method == 'POST':
+        user_note = request.POST.get('user_note', '').strip()
+        application.user_note = user_note
+        application.save()
+        messages.success(request, 'Applicant note updated successfully.')
+        return redirect('jobs.show', id=job_id)
+    return render(request, 'jobs/edit_applicant.html', {'application': application, 'job': job})
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Job, Application
+from .forms import JobSearchForm
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def delete_job(request, id):
+    job = get_object_or_404(Job, id=id)
+    if not request.user.is_admin():
+        return HttpResponseForbidden()
+    job.delete()
+    messages.success(request, 'Job deleted successfully.')
+    return redirect('jobs.index')
 
 def index(request):
     # search_term = request.GET.get('search')

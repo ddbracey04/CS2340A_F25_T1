@@ -22,7 +22,6 @@ class CustomUserAdmin(UserAdmin):
 	exclude = ('groups', 'user_permissions')
 
 	def save_model(self, request, obj, form, change):
-		# 如果是新建超级用户，自动设为ADMIN
 		if obj.is_superuser:
 			obj.role = CustomUser.Role.ADMIN
 		super().save_model(request, obj, form, change)
