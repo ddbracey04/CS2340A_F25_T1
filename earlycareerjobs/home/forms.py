@@ -1,5 +1,6 @@
 from django import forms
 from .models import Profile
+from .models import Education
 
 class ProfileForm(forms.ModelForm):
     class Meta:
@@ -7,7 +8,7 @@ class ProfileForm(forms.ModelForm):
         fields = [
             'headline',
             'skills',
-            'education',
+            #'education',
             'experience',
             'linkedin',
             'github',
@@ -16,9 +17,21 @@ class ProfileForm(forms.ModelForm):
         widgets = {
             'headline': forms.TextInput(attrs={'class': 'form-control'}),
             'skills': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'education': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            #'education': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'experience': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'linkedin': forms.URLInput(attrs={'class': 'form-control'}),
             'github': forms.URLInput(attrs={'class': 'form-control'}),
             'website': forms.URLInput(attrs={'class': 'form-control'}),
+        }
+
+class EducationForm(forms.ModelForm):
+    class Meta:
+        model = Education
+        fields = [
+            'level',
+            'degree',
+        ]
+        widgets = {
+            'level': forms.Select(attrs={'class': 'form-control'}),
+            'degree': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Computer Science'}),
         }
