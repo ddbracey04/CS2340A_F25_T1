@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from geopy.geocoders import Nominatim
 import time
+import math
 
 def lookupLatLon(cityName="", stateName="", countryName=""):
     # Initialize the Nominatim geocoder
@@ -52,3 +53,12 @@ def lookupLatLon(cityName="", stateName="", countryName=""):
     else:
         print(f"'{cityName}', '{stateName}', '{countryName}' not found.")
         return 0, 0
+    
+def haversine(lat_1, lon_1, lat_2, lon_2) -> float:
+    r = 3959    # approximation of Earth's spherical radius, source: https://en.wikipedia.org/wiki/Earth_radius
+
+    # Haversine distance formula, source: https://en.wikipedia.org/wiki/Haversine_formula
+    d = 2 * r * math.asin(math.sqrt((1 - math.cos(lat_2 - lat_1) + (math.cos(lat_1) * math.cos(lat_2) * (1 - math.cos(lon_2 - lon_1)))) / 2))
+
+    return d
+
