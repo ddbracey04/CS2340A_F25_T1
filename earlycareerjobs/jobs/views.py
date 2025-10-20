@@ -116,7 +116,34 @@ def show(request, id):
         can_edit = False
     template_data['has_applied'] = has_applied
     template_data['can_edit'] = can_edit
-    template_data['applications'] = Application.objects.filter(job=job)
+    applications = Application.objects.filter(job=job)
+    template_data['applications'] = applications
+
+    # Compute recommended candidates
+    # Recommendation is based on overlap between the jobs skills and the applicants profile skills.
+    recommended = []
+    if request.user.is_authenticated and request.user.is_recruiter():
+        job_skills = set([s.lower() for s in job.skill_list]) if job.skill_list else set()
+        if job_skills:
+            for app in applications:
+                user = app.user
+                profile = getattr(user, 'home_profile', None)
+                if not profile:
+                    continue
+                candidate_skills = set([s.lower() for s in profile.skill_list]) if profile.skill_list else set()
+                common = job_skills & candidate_skills
+                if common:
+                    recommended.append({
+                        'user': user,
+                        'match_count': len(common),
+                        'common_skills': sorted(common),
+                        'application': app,
+                    })
+            # sort by number of matches then application date
+            recommended.sort(key=lambda x: (-x['match_count'], x['application'].date))
+    # limit to top 3
+    template_data['recommended_candidates'] = recommended[:3]
+
     return render(request, 'jobs/show.html', {'template_data': template_data})
 
 @login_required

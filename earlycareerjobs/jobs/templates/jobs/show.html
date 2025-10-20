@@ -118,6 +118,38 @@
         {% endif %}
       {% else %}
         <div class="container mt-4">
+          {% if template_data.recommended_candidates %}
+            <div class="row justify-content-center">
+              <div class="col-12">
+                <div id="recommended-panel" class="p-3 mb-4 rounded position-relative" style="background-color: #9d7cf1; border: 1px solid #3e3060;">
+                  <!-- Close button to hide this section for the current page load -->
+                  <button type="button" class="btn-close position-absolute" aria-label="Close" style="top:12px; right:12px;" onclick="document.getElementById('recommended-panel').style.display='none'"></button>
+
+                  <h4 class="mb-3">Recommended Candidates</h4>
+
+                  <!-- Horizontal, scrollable list of candidate cards -->
+                  <div class="d-flex overflow-auto gap-3 py-2" style="-webkit-overflow-scrolling: touch;">
+                    {% for rec in template_data.recommended_candidates %}
+                      <div class="card p-3 mb-0 rounded" style="min-width: 280px; max-width: 360px; flex: 0 0 auto;">
+                        <div class="card-body text-start">
+                          <h5 class="card-title mb-1">{{ rec.user.get_full_name|default:rec.user.username }}</h5>
+                          <div class="small text-muted mb-2">Applied: {{ rec.application.date }}</div>
+                          {% if rec.common_skills %}
+                            <p class="mb-2 small"><strong>Matching Skills:</strong> {{ rec.common_skills|join:", " }}</p>
+                          {% endif %}
+                          {% if rec.application.user_note %}
+                            <p class="mb-2"><strong>Personalized Note:</strong> {{ rec.application.user_note }}</p>
+                          {% endif %}
+                          <a href="{% url 'profile.view' username=rec.user.username %}" class="btn btn-secondary">View Profile</a>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          {% endif %}
         <div class="row justify-content-center">
           <div class="col-12"> 
           <h4>Job Applicants</h4>
