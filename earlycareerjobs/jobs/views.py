@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Job, Application
 from .forms import JobSearchForm
@@ -6,7 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.db.models import Count, Q
 
+# Admin/Recruiter functions for managing applicants
 @login_required
 @require_POST
 def delete_applicant(request, job_id, app_id):
@@ -31,14 +32,6 @@ def edit_applicant(request, job_id, app_id):
         messages.success(request, 'Applicant note updated successfully.')
         return redirect('jobs.show', id=job_id)
     return render(request, 'jobs/edit_applicant.html', {'application': application, 'job': job})
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Job, Application
-from .forms import JobSearchForm
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from django.contrib import messages
-from django.views.decorators.http import require_POST
 
 @login_required
 @require_POST
@@ -143,6 +136,30 @@ def index(request):
         "jobs": jobs,
     }
 
+    # Make recommended jobs list for candidates
+    # Recommendation is based on overlap between the jobs skills and the applicants profile skills.
+    recommended = []
+    if request.user.is_authenticated and request.user.is_job_seeker():
+        profile = getattr(request.user, 'home_profile', None)
+        candidate_skills_lower = set([s.lower() for s in profile.skill_list]) if profile and profile.skill_list else set()
+        if candidate_skills_lower:
+            for job in jobs:
+                job_skills_list = job.skill_list or []
+                job_skills_lower = {s.lower(): s for s in job_skills_list}
+                common_lower = set(job_skills_lower.keys()) & candidate_skills_lower
+                if common_lower and not Application.objects.filter(job=job, user=request.user).exists(): #Don't add jobs the user has already applied to
+                    # Use original casing from the job's skill list for display
+                    common_original = [job_skills_lower[lk] for lk in sorted(common_lower)]
+                    recommended.append({
+                        'job': job,
+                        'match_count': len(common_lower),
+                        'common_skills': common_original,
+                    })
+            # sort by number of matches
+            recommended.sort(key=lambda x: (-x['match_count']))
+    # limit to top 3 because that sounds reasonable?
+    template_data['recommended_jobs'] = recommended[:3]
+
     return render(request, 'jobs/index.html', {'template_data': template_data, 'context': context})
 
 def show(request, id):
@@ -159,7 +176,36 @@ def show(request, id):
         can_edit = False
     template_data['has_applied'] = has_applied
     template_data['can_edit'] = can_edit
-    template_data['applications'] = Application.objects.filter(job=job)
+    applications = Application.objects.filter(job=job)
+    template_data['applications'] = applications
+
+    # Make recommended candidates list
+    # Recommendation is based on overlap between the jobs skills and the applicants profile skills.
+    recommended = []
+    if request.user.is_authenticated and request.user.is_recruiter():
+        job_skills_list = job.skill_list or []
+        job_skills_lower = {s.lower(): s for s in job_skills_list}  # map lower->original
+        if job_skills_lower:
+            for app in applications:
+                user = app.user
+                profile = getattr(user, 'home_profile', None)
+                if not profile:
+                    continue
+                candidate_skills_lower = {s.lower(): s for s in profile.skill_list or []}
+                common_lower = set(job_skills_lower.keys()) & set(candidate_skills_lower.keys())
+                if common_lower:
+                    common_original = [candidate_skills_lower[lk] for lk in sorted(common_lower)]
+                    recommended.append({
+                        'user': user,
+                        'match_count': len(common_lower),
+                        'common_skills': common_original,
+                        'application': app,
+                    })
+            # sort by number of matches then application date
+            recommended.sort(key=lambda x: (-x['match_count'], x['application'].date))
+    # limit to top 3 because that sounds reasonable?
+    template_data['recommended_candidates'] = recommended[:3]
+
     return render(request, 'jobs/show.html', {'template_data': template_data})
 
 @login_required
@@ -168,6 +214,7 @@ def start_application(request, id):
         job = Job.objects.get(id=id)
         application = Application()
         application.user_note = request.POST['user_note']
+        application.status = 'APPLIED'
         application.job = job
         application.user = request.user
         application.save()
@@ -214,3 +261,69 @@ def edit_job(request, id):
         form = JobSearchForm(instance=job)
 
     return render(request, 'jobs/form.html', {'form': form, 'mode': 'edit', 'job': job})
+
+
+
+@login_required
+def application_list(request, id):
+    applications = Application.objects.filter(user=request.user)
+    return render(request, 'home/applications/list.html', {
+        'applications': applications,
+        'template_data': {'title': 'My Applications'}
+    })
+
+# @login_required
+# def application_edit(request, id, pk):
+#     application = get_object_or_404(Application, pk=pk, user=request.user)
+
+#     if request.method == 'POST':
+#         form = ApplicationForm(request.POST, instance=application)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, 'Application updated successfully!')
+#             return redirect('application_list')
+#     else:
+#         form = ApplicationForm(instance=application)
+
+#     return render(request, 'home/applications/form.html', {
+#         'form': form,
+#         'application': application,
+#         'template_data': {'title': 'Edit Application'}
+#     })
+
+@login_required
+def track_applications(request, id):
+    """View to display all user's applications with their current status"""
+    applications = Application.objects.filter(user=request.user)
+
+    # Get status statistics
+    status_stats = applications.values('status').annotate(count=Count('status'))
+
+    # Convert to dictionary for easier template access
+    stats_dict = {stat['status']: stat['count'] for stat in status_stats}
+
+    context = {
+        'applications': applications,
+        'stats': stats_dict,
+        'total_applications': applications.count(),
+
+    }
+    return render(request, 'jobs/track_applications.html', context)
+
+@login_required
+def update_application_status(request, id, application_id):
+    """View to update application status"""
+    application = get_object_or_404(Application, id=application_id, user=request.user)
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in dict(Application.STATUS_CHOICES):
+            old_status = application.get_status_display()
+            application.status = new_status
+            application.save()
+
+            messages.success(request, f'Status updated from {old_status} to {application.get_status_display()}')
+        else:
+            messages.error(request, 'Invalid status selected')
+
+    return redirect('jobs.track_applications')
