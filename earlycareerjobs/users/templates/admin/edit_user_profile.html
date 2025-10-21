@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Edit User Profile: {{ user_obj.username }}</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h5 class="mt-3 mb-3 text-primary border-bottom pb-2">Basic Information</h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ user_obj.first_name }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ user_obj.last_name }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ user_obj.email }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" 
+                                   value="{{ user_obj.phone_number }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <input type="text" class="form-control" value="{{ user_obj.get_role_display }}" readonly>
+                            <small class="text-muted">To change role, use the "Edit Role" button in user management</small>
+                        </div>
+
+                        {% if user_obj.is_recruiter %}
+                        <div class="mb-3">
+                            <label for="company_name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name" 
+                                   value="{{ user_obj.company_name }}">
+                        </div>
+                        {% endif %}
+
+                        <h5 class="mt-4 mb-3 text-primary border-bottom pb-2">Profile Information</h5>
+
+                        <div class="mb-3">
+                            {{ profile_form.headline.label_tag }}
+                            {{ profile_form.headline }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ profile_form.skills.label_tag }}
+                            {{ profile_form.skills }}
+                            <small class="text-muted">Enter comma-separated skills</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ profile_form.education.label_tag }}
+                            {{ profile_form.education }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ profile_form.experience.label_tag }}
+                            {{ profile_form.experience }}
+                        </div>
+
+                        <h5 class="mt-4 mb-3 text-primary border-bottom pb-2">Social Links</h5>
+
+                        <div class="mb-3">
+                            {{ profile_form.linkedin.label_tag }}
+                            {{ profile_form.linkedin }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ profile_form.github.label_tag }}
+                            {{ profile_form.github }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ profile_form.website.label_tag }}
+                            {{ profile_form.website }}
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'users.user_management' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to User Management
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
