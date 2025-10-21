@@ -30,8 +30,10 @@ class EducationForm(forms.ModelForm):
         fields = [
             'level',
             'degree',
+            'institution'
         ]
         widgets = {
             'level': forms.Select(attrs={'class': 'form-control'}),
             'degree': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Computer Science'}),
+            'institution': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Georgia Institute of Technology'}),
         }

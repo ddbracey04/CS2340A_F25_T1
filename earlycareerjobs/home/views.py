@@ -59,6 +59,7 @@ def save_education(request, education_id = None):
                 'action': 'updated' if education_id else 'created',
                 'level': education_instance.get_level_display(),
                 'degree': education_instance.degree,
+                'institution': education_instance.institution,
                 'id': education_instance.id,
                 'form_data': form.cleaned_data
             })

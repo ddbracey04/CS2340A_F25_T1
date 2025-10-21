@@ -38,6 +38,7 @@ class Education(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='educations')
     level = models.CharField(max_length=20, choices=PROFILE_EDUCATION_LEVELS)
     degree = models.CharField(max_length=100)
+    institution = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.user.username} - {self.get_level_display()}: {self.degree}"
+        return f"{self.user.username} - {self.get_level_display()}: {self.degree} from {self.institution}"
