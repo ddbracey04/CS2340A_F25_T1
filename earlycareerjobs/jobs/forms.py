@@ -29,6 +29,40 @@ class JobSearchForm(forms.ModelForm):
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        placeholders = {
+            "title": "Job title or keywords",
+            "skills": "Key skills (comma separated)",
+            "city": "City",
+            "state": "State",
+            "country": "Country",
+            "salary_min": "Min salary",
+            "salary_max": "Max salary",
+        }
+
+        for field_name, field in self.fields.items():
+            widget = field.widget
+            widget.attrs.setdefault("class", "")
+            classes = widget.attrs["class"].split()
+
+            widget_type = getattr(widget, "input_type", None)
+            widget_name = widget.__class__.__name__
+
+            if widget_type in ("text", "number") or widget_name in ("Textarea", "TextInput", "NumberInput"):
+                classes.append("form-control")
+            elif widget_name in ("Select", "SelectMultiple"):
+                classes.append("form-select")
+            elif widget_name == "CheckboxInput":
+                classes.append("form-check-input")
+
+            widget.attrs["class"] = " ".join(filter(None, classes))
+
+        for name, text in placeholders.items():
+            if name in self.fields:
+                self.fields[name].widget.attrs.setdefault("placeholder", text)
         
 
     # skills = forms.CharField(required=False, label="Skills (comma separated)")

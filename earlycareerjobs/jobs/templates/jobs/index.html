@@ -1,187 +1,188 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load static %}
-<div class="p-3">
+{% block content %}
+<section class="job-search-page py-4">
   <div class="container">
-    <div class="row mt-3">
-      <div class="col mx-auto text-center mb-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <h4>Job Listings</h4>
-            {% if user.is_authenticated and user.is_recruiter %}
-              <a href="{% url 'jobs.create' %}" class="btn btn-primary" style="background-color: #5D61EA; color: #ffffff;">Post a Job</a>
+    <div class="job-search-hero mb-4">
+      <div class="job-search-hero__text">
+        <h1 class="job-search-title">Find your next role</h1>
+        {% with result_count=context.jobs|length %}
+          <p class="job-search-subtitle">
+            {% if result_count %}
+              Showing {{ result_count }} {% if result_count == 1 %}position{% else %}positions{% endif %} based on your filters.
+            {% else %}
+              No jobs match your filters yet—adjust your search to see more roles.
             {% endif %}
-        </div>
-    <form method="get" class="row g-3">
-      <div class="col-md-4">
-        {{ context.form.title.label_tag }}
-        {{ context.form.title }}
+          </p>
+        {% endwith %}
       </div>
-      <div class="col-md-4">
-        {{ context.form.skills.label_tag }}
-        {{ context.form.skills }}
-      </div>
-      <div class="col-md-4">
-        {{ context.form.work_style.label_tag }}
-        {{ context.form.work_style }}
-      </div>
+      {% if user.is_authenticated and user.is_recruiter %}
+        <a href="{% url 'jobs.create' %}" class="btn btn-primary job-search-hero__cta">Post a job</a>
+      {% endif %}
+    </div>
 
-      <div class="col-md-4">
-        {{ context.form.city.label_tag }}
-        {{ context.form.city }}
-      </div>
-      <div class="col-md-4">
-        {{ context.form.state.label_tag }}
-        {{ context.form.state }}
-      </div>
-      <div class="col-md-4">
-        {{ context.form.country.label_tag }}
-        {{ context.form.country }}
-      </div>
+    <div class="row job-search-layout gy-4 gx-4">
+      <aside class="col-12 col-lg-4 col-xl-3">
+        <form method="get" class="job-filter-card">
+          <div class="job-filter-card__header">
+            <h2>Refine search</h2>
+            <p>Focus on what matters to you.</p>
+          </div>
+          <div class="job-filter-group">
+            {{ context.form.title.label_tag }}
+            {{ context.form.title }}
+          </div>
+          <div class="job-filter-group">
+            {{ context.form.skills.label_tag }}
+            {{ context.form.skills }}
+          </div>
+          <div class="job-filter-group">
+            {{ context.form.work_style.label_tag }}
+            {{ context.form.work_style }}
+          </div>
 
-      <div class="col-md-4">
-        {{ context.form.salary_min.label_tag }}
-        {{ context.form.salary_min }}
-      </div>
-      <div class="col-md-4">
-        {{ context.form.salary_max.label_tag }}
-        {{ context.form.salary_max }}
-      </div>
-      <div class="col-md-4 d-flex align-items-center">
-        <div class="form-check mt-3">
-          {{ context.form.visa_sponsorship }}
-          {{ context.form.visa_sponsorship.label_tag }}
-        </div>
-      </div>
-
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary me-2" style="background-color: #5D61EA; color: #ffffff;">Search</button>
-        <a href="{% url 'jobs.index' %}" class="btn btn-secondary">Reset</a>
-      </div>
-    </form>
-
-    <div class="container mt-4">
-          {% if user.is_authenticated and user.is_job_seeker and template_data.recommended_jobs %}
-            <div class="row justify-content-center">
-              <div class="col-12">
-                <div id="recommended-panel" class="p-3 mb-4 rounded position-relative" style="background-color: #9d7cf1; border: 1px solid #3e3060;">
-                  <!-- Close button to hide this section for the current page load -->
-                  <button type="button" class="btn-close position-absolute" aria-label="Close" style="top:12px; right:12px;" onclick="document.getElementById('recommended-panel').style.display='none'"></button>
-
-                  <h4 class="mb-3">Recommended Jobs</h4>
-                  <div class="d-flex overflow-auto gap-3 py-2" style="-webkit-overflow-scrolling: touch;">
-                    {% for rec in template_data.recommended_jobs %}
-                      <div class="col-md-4 col-lg-3 mb-2">
-                        <div class="p-2 card align-items-center pt-4">
-                          <img src="{{ rec.job.image.url }}" class="card-img-top rounded img-card-200">
-                          <div class="card-body text-center">
-                            <a href="{% url 'jobs.show' id=rec.job.id %}" class="btn bg-dark text-white">
-                              {{ rec.job.title }}
-                            </a>
-                            {% if rec.common_skills %}
-                            <p class="mb-2 small"><strong>Matching Skills:</strong> </p>
-                              <div class="skill-badge-group justify-content-center mt-2">
-                                {% for skill in rec.common_skills %}
-                                  <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
-                                {% endfor %}
-                              </div>
-                            {% endif %}
-                          </div>
-                        </div>
-                      </div>
-                    {% endfor %}
-                  </div>
-
-                </div>
+          <div class="job-filter-group">
+            <div class="job-filter-inline">
+              <div>
+                {{ context.form.city.label_tag }}
+                {{ context.form.city }}
+              </div>
+              <div>
+                {{ context.form.state.label_tag }}
+                {{ context.form.state }}
               </div>
             </div>
-          {% endif %}
+            <div class="mt-3">
+              {{ context.form.country.label_tag }}
+              {{ context.form.country }}
+            </div>
+          </div>
 
-    <div class="row mt-4">
-      <div class="col-12">
-        <ul class="list-group">
-          <!-- {% for job in context.jobs %}
-            <li class="list-group-item">
-              <h5 class="mb-1">{{ job.title }}</h5>
-              <div class="small text-muted mb-1">
-                {{ job.city }}{% if job.state %}, {{ job.state }}{% endif %}{% if job.country %}, {{ job.country }}{% endif %}
+          <div class="job-filter-group">
+            <label class="form-label">Salary range</label>
+            <div class="job-filter-inline">
+              <div>
+                {{ context.form.salary_min }}
               </div>
-              <div class="mb-1">
-                <strong>Work style:</strong> {{ job.get_work_style_display }}
-                | <strong>Visa sponsorship:</strong> {% if job.visa_sponsorship %}Yes{% else %}No{% endif %}
+              <span class="range-divider">to</span>
+              <div>
+                {{ context.form.salary_max }}
               </div>
-              <div class="mb-1">
-                <strong>Salary:</strong>
-                {% if job.salary_min %}${{ job.salary_min|floatformat:"0" }}{% endif %}
-                {% if job.salary_min and job.salary_max %} - {% endif %}
-                {% if job.salary_max %}${{ job.salary_max|floatformat:"0" }}{% endif %}
-              </div>
-              {% if job.skills %}
-                <div class="mb-0">
-                  <strong>Skills:</strong> {{ job.skills }}
-                </div>
-              {% endif %}
-            </li>
-          {% empty %}
-            <li class="list-group-item">No jobs match your filters yet.</li>
-          {% endfor %} -->
-          <hr>
-          <div class="row">
-            <h4>Your Jobs</h4>
-            {% for job in context.jobs %}
-              {% if user in job.users.all %}
-              <div class="col-md-4 col-lg-3 mb-2">
-                <div class="p-2 card align-items-center pt-4">
-                  <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
-                  <div class="card-body text-center">
-                    <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
-                      {{ job.title }}
-                    </a>
-                    {% if job.skill_list %}
-                      <div class="skill-badge-group justify-content-center mt-2">
-                        {% for skill in job.skill_list %}
-                          <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
+            </div>
+          </div>
+
+          <div class="job-filter-group job-filter-checkbox">
+            {{ context.form.visa_sponsorship }}
+            {{ context.form.visa_sponsorship.label_tag }}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1 job-filter-submit">Search</button>
+            <a href="{% url 'jobs.index' %}" class="btn btn-outline-secondary flex-grow-1">Reset</a>
+          </div>
+        </form>
+      </aside>
+
+      <div class="col-12 col-lg-8 col-xl-9">
+        {% if template_data.recommendations_hidden %}
+          <div class="alert alert-secondary d-flex justify-content-between align-items-center recommendation-alert" role="alert">
+            <span>You dismissed your job recommendations. You can bring them back anytime.</span>
+            <form method="post" action="{% url 'jobs.recommendations.show' %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn btn-primary btn-sm recommendation-alert__button">Show recommendations</button>
+            </form>
+          </div>
+        {% endif %}
+
+        {% if user.is_authenticated and user.is_job_seeker and template_data.recommended_jobs %}
+          <section id="recommended-panel" class="recommendations-panel position-relative mb-4">
+            <form method="post" action="{% url 'jobs.recommendations.hide' %}" class="recommendations-panel__dismiss">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn-close" aria-label="Dismiss recommendations"></button>
+            </form>
+
+            <div class="recommendations-panel__header">
+              <p class="recommendations-eyebrow mb-1">Tailored for you</p>
+              <h4 class="mb-0">Recommended Jobs</h4>
+            </div>
+            <div class="recommendations-list">
+              {% for rec in template_data.recommended_jobs %}
+                <article class="recommendation-card">
+                  <div class="recommendation-card__media">
+                    <img src="{{ rec.job.image.url }}" alt="{{ rec.job.title }}">
+                  </div>
+                  <div class="recommendation-card__body">
+                    <h5 class="recommendation-card__title">{{ rec.job.title }}</h5>
+                    {% if rec.common_skills %}
+                      <p class="recommendation-card__subtitle">Matching skills</p>
+                      <div class="skill-badge-group">
+                        {% for skill in rec.common_skills %}
+                          <span class="skill-badge">{{ skill }}</span>
                         {% endfor %}
                       </div>
                     {% endif %}
                   </div>
-                </div>
-              </div>
-              {% endif %}
-            {% empty %}
-              <li class="list-group-item">No jobs match your filters yet.</li>
-            {% endfor %}
-          </div>
-          <hr>
-          <div class="row">
-            <h4>Other Jobs</h4>
-            {% for job in context.jobs %}
-              {% if user not in job.users.all %}
-              <div class="col-md-4 col-lg-3 mb-2">
-                <div class="p-2 card align-items-center pt-4">
-                  <img src="{{ job.image.url }}" class="card-img-top rounded img-card-200">
-                  <div class="card-body text-center">
-                    <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">
-                      {{ job.title }}
-                    </a>
-                    {% if job.skill_list %}
-                      <div class="skill-badge-group justify-content-center mt-2">
-                        {% for skill in job.skill_list %}
-                          <span class="badge rounded-pill text-bg-primary skill-badge">{{ skill }}</span>
-                        {% endfor %}
-                      </div>
-                    {% endif %}
+                  <div class="recommendation-card__actions">
+                    <a href="{% url 'jobs.show' id=rec.job.id %}" class="btn btn-outline-dark btn-sm">View job</a>
+                    <form method="post" action="{% url 'jobs.start_application' id=rec.job.id %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="user_note" value="">
+                      <button type="submit" class="btn btn-primary btn-sm recommendation-card__apply">Apply now</button>
+                    </form>
                   </div>
-                </div>
-              </div>
-              {% endif %}
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        {% elif user.is_authenticated and user.is_job_seeker and template_data.recommendations_available and not template_data.recommendations_hidden %}
+          <div class="alert alert-info" role="alert">
+            We have job recommendations waiting. Update your filters or click “Show recommendations” to view them again.
+          </div>
+        {% endif %}
+
+        <section class="job-results">
+          <div class="job-results-header">
+            {% if user.is_authenticated and user.is_job_seeker %}
+              <p class="job-results-eyebrow">Your activity</p>
+              <h2>Jobs you've saved or applied to</h2>
+              <p class="job-results-description">Keep tabs on the opportunities you’re already tracking.</p>
+            {% elif user.is_authenticated and user.is_recruiter %}
+              <p class="job-results-eyebrow">Your listings</p>
+              <h2>Roles you've posted</h2>
+              <p class="job-results-description">Review the positions you’re hiring for and make updates as needed.</p>
+            {% else %}
+              <p class="job-results-eyebrow">Your matches</p>
+              <h2>Highlighted roles</h2>
+              <p class="job-results-description">Jobs that align closely with your filters show up here first.</p>
+            {% endif %}
+          </div>
+          <div class="job-card-grid">
+            {% for job in context.user_jobs %}
+              {% include 'jobs/partials/job_card.html' with job=job %}
             {% empty %}
-              <li class="list-group-item">No jobs match your filters yet.</li>
+              <p class="text-muted mb-0">You have not saved or applied to any roles that match these filters yet.</p>
             {% endfor %}
           </div>
-        </ul>
+        </section>
+
+        <section class="job-results mt-5">
+          <div class="job-results-header">
+            <p class="job-results-eyebrow">More to explore</p>
+            <h2>Discover additional opportunities</h2>
+            <p class="job-results-description">Browse a broader set of roles that fit your current filters.</p>
+          </div>
+          <div class="job-card-grid">
+            {% for job in context.other_jobs %}
+              {% include 'jobs/partials/job_card.html' with job=job %}
+            {% empty %}
+              <p class="text-muted mb-0">No additional roles match your filters right now. Try widening your search.</p>
+            {% endfor %}
+          </div>
+        </section>
       </div>
     </div>
   </div>
-</div>
-
+</section>
 {% endblock content %}
