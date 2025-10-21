@@ -8,6 +8,7 @@ urlpatterns = [
     path('view_jobs/', views.view_jobs, name='users.view_jobs'),
     path('admin/users/', views.user_management, name='users.user_management'),
     path('admin/users/<int:user_id>/edit/', views.edit_user, name='users.edit_user'),
+    path('admin/users/<int:user_id>/profile/', views.edit_user_profile, name='users.edit_user_profile'),
     path('admin/users/<int:user_id>/toggle-status/', views.toggle_user_status, name='users.toggle_user_status'),
     path('candidates/search/', views.candidate_search, name='users.candidate_search'),
 ]

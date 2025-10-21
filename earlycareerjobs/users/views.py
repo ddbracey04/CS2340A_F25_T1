@@ -63,7 +63,7 @@ def edit_user(request, user_id):
             user.role = role
             user.save()
             messages.success(request, f'The role of user {user.username} has been updated to {user.get_role_display()}')
-            return redirect('user_management')
+            return redirect('users.user_management')
     
     return render(request, 'admin/edit_user.html', {'user': user})
 
@@ -74,9 +74,43 @@ def toggle_user_status(request, user_id):
     user.is_active = not user.is_active
     user.save()
     
-    status = "activate" if user.is_active else "inactivate"
-    messages.success(request, f'User {user.username} is {status}')
-    return redirect('user_management')
+    status = "activated" if user.is_active else "deactivated"
+    messages.success(request, f'User {user.username} has been {status}')
+    return redirect('users.user_management')
+
+@login_required
+@admin_required
+def edit_user_profile(request, user_id):
+    from home.forms import ProfileForm
+    
+    user_obj = get_object_or_404(CustomUser, id=user_id)
+    profile, _ = Profile.objects.get_or_create(user=user_obj)
+    
+    if request.method == 'POST':
+        # Update user fields
+        user_obj.first_name = request.POST.get('first_name', '')
+        user_obj.last_name = request.POST.get('last_name', '')
+        user_obj.email = request.POST.get('email', user_obj.email)
+        user_obj.phone_number = request.POST.get('phone_number', '')
+        
+        if user_obj.is_recruiter():
+            user_obj.company_name = request.POST.get('company_name', '')
+        
+        user_obj.save()
+        
+        # Update profile
+        profile_form = ProfileForm(request.POST, instance=profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, f'Profile for {user_obj.username} has been updated successfully')
+            return redirect('users.user_management')
+    else:
+        profile_form = ProfileForm(instance=profile)
+    
+    return render(request, 'admin/edit_user_profile.html', {
+        'user_obj': user_obj,
+        'profile_form': profile_form
+    })
 
 @login_required
 def view_jobs(request):
