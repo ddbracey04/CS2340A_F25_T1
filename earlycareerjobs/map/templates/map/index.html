@@ -50,7 +50,66 @@
         </div>
       </div>
     </div>
+    <form class="form-inline" method="post" action="{% url 'map.filter' %}">
+      {% csrf_token %}
+      <input class="hidden" value="{{template_data.searchCity}}" id="old_city" name="old_city" style="display: none;">
+      <input class="hidden" value="{{template_data.searchState}}" id="old_state" name="old_state" style="display: none;">
+      <input class="hidden" value="{{template_data.searchCountry}}" id="old_country" name="old_country" style="display: none;">
+      <input class="hidden" value="{{template_data.searchRadius}}" id="old_radius" name="old_radius" style="display: none;">
+      <input class="hidden" value="{{template_data.centerLat}}" id="old_lat" name="old_lat" style="display: none;">
+      <input class="hidden" value="{{template_data.centerLon}}" id="old_lon" name="old_lon" style="display: none;">
+      {% for job in template_data.jobs %}
+        <input class="hidden" value="{{job.id}}" name="old_job_id[]" style="display: none;">
+      {% endfor %}
+
+
+      
+      {% if template_data.searchCity %}
+        <input type="text" id="city_filter" placeholder="City" value="{{template_data.searchCity}}" name="city_filter">
+      {% else %}
+        <input type="text" id="city_filter" placeholder="City" name="city_filter">
+      {% endif %}
+      
+      {% if template_data.searchState %}
+        <input type="text" id="state_filter" placeholder="State" value="{{template_data.searchState}}" name="state_filter">
+      {% else %}
+        <input type="text" id="state_filter" placeholder="State" name="state_filter">
+      {% endif %}
+        
+      {% if template_data.searchCountry %}
+        <input type="text" id="country_filter" placeholder="Country" value="{{template_data.searchCountry}}" name="country_filter">
+      {% else %}
+        <input type="text" id="country_filter" placeholder="Country" name="country_filter">
+      {% endif %}
+
+      
+      <span style="display:inline-block">
+        <label for="radius_filter", id="radius_filter_label">Radius:</label>
+        {% if template_data.searchRadius %}
+          <input type="range" min="1" max="50" value="{{template_data.searchRadius}}" class="slider" id="radius_filter" name="radius_filter" style="padding: 0;">
+        {% else %}
+          <input type="range" min="1" max="50" value="5" class="slider" id="radius_filter" name="radius_filter" style="padding: 0;">
+        {% endif %}
+        <script>
+          var slider = document.getElementById("radius_filter");
+          var output = document.getElementById("radius_filter_label");
+          output.innerHTML = "Radius: ".concat(slider.value).concat(" mi");
+
+          slider.oninput = function() {
+            output.innerHTML = "Radius: ".concat(this.value).concat(" mi");
+          }
+        </script>
+      </span>
+
+      <button class="primary-btn" type="submit">Filter</button>
+    </form>
+  {% if error %}
+    <div class="alert" style="padding: 20px; background-color: #f44336; color: white; margin-bottom: 15px;">
+      <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+      ERROR: {{error}}
     </div>
+  {% endif %}
+  <div id="map" style="height: 500px; margin-top: 20px; margin-bottom: 10px;"></div>
 </div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -86,7 +145,11 @@
 </form>
 
 <script>
-  const map = L.map('map').setView([33.7722, -84.3902], 13); // Centered on GT at zoom level 13
+  {% if template_data.centerLat and template_data.centerLon %}
+    const map = L.map('map').setView([{{template_data.centerLat}}, {{template_data.centerLon}}], 13); // Centered on GT at zoom level 13
+  {% else %}
+    const map = L.map('map').setView([33.7722, -84.3902], 13); // Centered on GT at zoom level 13
+  {% endif %}
   
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap contributors'}).addTo(map);
 
@@ -125,13 +188,18 @@
           });
         });
     });
+
+  {% if template_data.centerLat and template_data.centerLon and template_data.searchRadius %}
+    var circle = L.circle(["{{ template_data.centerLat }}", "{{ template_data.centerLon }}"], radius={{template_data.searchRadius}}*1609.344).addTo(map);
+    map.fitBounds(circle.getBounds());
+  {% endif %}
 </script>
 
-{% for job in template_data.jobs %}
+  {% for job in template_data.jobs %}
     <script>
-        L.marker(["{{job.lat}}", "{{job.lon}}"]).addTo(map).bindPopup(`<strong>${"{{job.title}}"}</strong><br>${"{{job.description}}"}`);
+      L.marker(["{{job.lat}}", "{{job.lon}}"]).addTo(map).bindPopup(`<strong>${"{{job.title}}"}</strong><br>${"{{job.description}}"}`);
     </script>
-{% endfor %}
+  {% endfor %}
 
 {% endblock %}
 
