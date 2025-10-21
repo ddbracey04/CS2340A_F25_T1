@@ -30,9 +30,11 @@
           <h3 class = "mb-3">Available Jobs</h3>
 
           {% for job in template_data.jobs %}
-            <div class="card mb-3 mx-3 job-card"
+          <div class="card mb-3 mx-3">
+            <div class="job-card"
                 data-lat = "{{ job.lat }}"
-                data-lon = "{{ job.lon }}">
+                data-lon = "{{ job.lon }}"
+                style="width: 100%; padding-left: 0%;">
               <div class="card-body">
                 <h5 class="card-title">{{ job.title }}</h5>
                 <h6 class="card-subtitle mb-2 text-muted">{{ job.company }}</h6>
@@ -40,6 +42,8 @@
                 <small class="text-secondary">Location: Lat {{ job.lat }}, Lon {{ job.lon }}</small>
               </div>
             </div>
+            <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">View Job</a>
+          </div>
           {% empty %}
             <p class="text-muted">No job listings are currently available.</p>
           {% endfor %}
