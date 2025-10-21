@@ -95,10 +95,18 @@ def index(request):
 
     template_data = {"title": "Early Career Jobs"}
 
+    user_jobs = Job.objects.none()
+    other_jobs = jobs
+    if request.user.is_authenticated:
+        user_jobs = jobs.filter(users=request.user)
+        other_jobs = jobs.exclude(users=request.user)
+
     context = {
         "template_data": template_data,
         "form": form,
         "jobs": jobs,
+        "user_jobs": user_jobs,
+        "other_jobs": other_jobs,
     }
 
     # Make recommended jobs list for candidates
