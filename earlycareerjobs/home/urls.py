@@ -5,4 +5,5 @@ urlpatterns = [
     path('about', views.about, name='home.about'),
     path('profile/edit/', views.profile_edit, name='profile.edit'),
     path('profile/<str:username>/', views.profile_view, name='profile.view'),
+    path('candidates/', views.search_candidates, name='candidates.search'),
 ]

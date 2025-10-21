@@ -47,6 +47,11 @@
             <li><a href="{% url 'home.index' %}">Home</a></li>
             <li><a href="{% url 'home.about' %}">About</a></li>
             <li><a href="{% url 'jobs.index' %}">Jobs</a></li>
+            {% if user.is_authenticated %}
+              {% if user.is_recruiter or user.is_admin %}
+                <li><a href="{% url 'candidates.search' %}">Candidates</a></li>
+              {% endif %}
+            {% endif %}
             <li><a href="{% url 'map.index' %}">Map</a></li>
             {% if user.is_authenticated %}
             <li class="dropdown">
@@ -119,6 +124,11 @@
                         <li class = "{% if request.resolver_match.url_name == 'home.index' %}active{% endif %}"><a href="{% url 'home.index' %}">Home</a></li>
                         <li class = "{% if request.resolver_match.url_name == 'home.about' %}active{% endif %}"><a href="{% url 'home.about' %}">About</a></li>
                         <li class = "{% if request.resolver_match.url_name == 'jobs.index' %}active{% endif %}"><a href= "{% url 'jobs.index' %}">Jobs</a></li>
+                        {% if user.is_authenticated %}
+                          {% if user.is_recruiter or user.is_admin %}
+                            <li class = "{% if request.resolver_match.url_name == 'candidates.search' %}active{% endif %}"><a href="{% url 'candidates.search' %}">Candidates</a></li>
+                          {% endif %}
+                        {% endif %}
                         <li class = "{% if request.resolver_match.url_name == 'map.index' %}active{% endif %}"><a href="{% url 'map.index' %}">Map</a></li>
                         
                         {% if user.is_authenticated %}

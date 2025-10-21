@@ -1,11 +1,22 @@
 import re
 
-from django.db import models
 from django.conf import settings
+from django.db import models
 
-# Create your models here.
+
 class Profile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='home_profile', related_query_name='home_profile',)
+    class WorkStyle(models.TextChoices):
+        ANY = "", "No preference"
+        REMOTE = "remote", "Remote"
+        ONSITE = "onsite", "On-site"
+        HYBRID = "hybrid", "Hybrid"
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='home_profile',
+        related_query_name='home_profile',
+    )
     headline = models.CharField(max_length=255, blank=True)
     skills = models.TextField(blank=True, help_text='Comma-separated skills')
     education = models.TextField(blank=True)
@@ -13,6 +24,13 @@ class Profile(models.Model):
     linkedin = models.URLField(blank=True)
     github = models.URLField(blank=True)
     website = models.URLField(blank=True)
+    work_style_preference = models.CharField(
+        max_length=10,
+        choices=WorkStyle.choices,
+        default=WorkStyle.ANY,
+        blank=True,
+        help_text='Preferred work environment for new roles',
+    )
 
     def __str__(self):
         return f"{self.user.username}'s profile"
