@@ -13,6 +13,13 @@ class Profile(models.Model):
     linkedin = models.URLField(blank=True)
     github = models.URLField(blank=True)
     website = models.URLField(blank=True)
+    
+    # Location fields (optional)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    lat = models.FloatField(blank=True, null=True)
+    lon = models.FloatField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username}'s profile"
