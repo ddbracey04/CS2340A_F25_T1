@@ -20,17 +20,28 @@
     </div>
     <div class="card-body">
       <form method="get" id="searchForm">
-        <!-- Row 1: Job Title and Skills with Mode -->
+        <!-- Row 1: Job Title (Full Width) -->
         <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="id_title" class="form-label fw-bold">Job Title</label>
+          <div class="col-12">
+            <label for="id_title" class="form-label fw-bold">
+              <i class="bi bi-briefcase"></i> Job Title
+            </label>
             {{ context.form.title }}
           </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Skills (comma-separated or click suggestions)</label>
+        </div>
+
+        <!-- Row 2: Skills and Skills Match Mode -->
+        <div class="row mb-3">
+          <div class="col-md-8">
+            <label class="form-label fw-bold">
+              <i class="bi bi-star"></i> Skills (type and press Enter, or select from suggestions)
+            </label>
             <div class="position-relative">
-              {{ context.form.skills }}
-              <input list="skillSuggestions" class="form-control" placeholder="Type or select skills..." id="skillInput" autocomplete="off">
+              <!-- Hidden field for form submission -->
+              <input type="hidden" name="skills" value="">
+              
+              <!-- Visible input for typing skills -->
+              <input list="skillSuggestions" class="form-control" placeholder="Type or select skills and press Enter..." id="skillInput" autocomplete="off">
               <datalist id="skillSuggestions">
                 {% for skill in template_data.all_skills %}
                   <option value="{{ skill }}">
@@ -40,7 +51,7 @@
               <!-- Skills Chips Display -->
               <div id="skillsChips" class="mt-2 d-flex flex-wrap gap-2">
                 {% for skill in template_data.active_skills %}
-                  <span class="badge bg-primary d-flex align-items-center gap-1 skill-chip" style="font-size: 0.9rem; padding: 0.5rem 0.75rem;">
+                  <span class="badge bg-primary d-flex align-items-center gap-1 skill-chip" style="font-size: 0.9rem; padding: 0.5rem 0.75rem; cursor: pointer;">
                     {{ skill }}
                     <input type="hidden" name="skill" value="{{ skill }}">
                     <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" onclick="removeSkill(this)" aria-label="Remove"></button>
@@ -49,64 +60,86 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Skills Match Mode -->
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Skills Match Mode</label>
+          <div class="col-md-4">
+            <label class="form-label fw-bold">
+              <i class="bi bi-filter"></i> Skills Match Mode
+            </label>
             <select name="skills_mode" class="form-select" onchange="this.form.submit()">
-              <option value="AND" {% if template_data.skills_mode == 'AND' %}selected{% endif %}>Match ALL skills (AND)</option>
-              <option value="OR" {% if template_data.skills_mode == 'OR' %}selected{% endif %}>Match ANY skill (OR)</option>
+              <option value="AND" {% if template_data.skills_mode == 'AND' %}selected{% endif %}>Match ALL (AND)</option>
+              <option value="OR" {% if template_data.skills_mode == 'OR' %}selected{% endif %}>Match ANY (OR)</option>
             </select>
           </div>
         </div>
 
-        <!-- Row 2: Location Fields -->
+        <!-- Row 3: Location (Grouped in Card) -->
         <div class="row mb-3">
-          <div class="col-md-4">
-            <label for="id_city" class="form-label fw-bold">City</label>
-            {{ context.form.city }}
-          </div>
-          <div class="col-md-4">
-            <label for="id_state" class="form-label fw-bold">State</label>
-            {{ context.form.state }}
-          </div>
-          <div class="col-md-4">
-            <label for="id_country" class="form-label fw-bold">Country</label>
-            {{ context.form.country }}
+          <div class="col-12">
+            <div class="card bg-light">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="bi bi-geo-alt"></i> Location
+                </h6>
+                <div class="row">
+                  <div class="col-md-4">
+                    <label for="id_city" class="form-label">City</label>
+                    {{ context.form.city }}
+                  </div>
+                  <div class="col-md-4">
+                    <label for="id_state" class="form-label">State</label>
+                    {{ context.form.state }}
+                  </div>
+                  <div class="col-md-4">
+                    <label for="id_country" class="form-label">Country</label>
+                    {{ context.form.country }}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Row 3: Salary Range -->
+        <!-- Row 4: Salary Range (Grouped in Card) -->
         <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="id_salary_min" class="form-label fw-bold">Minimum Salary ($)</label>
-            {{ context.form.salary_min }}
-          </div>
-          <div class="col-md-6">
-            <label for="id_salary_max" class="form-label fw-bold">Maximum Salary ($)</label>
-            {{ context.form.salary_max }}
+          <div class="col-12">
+            <div class="card bg-light">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="bi bi-currency-dollar"></i> Salary Range
+                </h6>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label for="id_salary_min" class="form-label">Minimum ($)</label>
+                    {{ context.form.salary_min }}
+                  </div>
+                  <div class="col-md-6">
+                    <label for="id_salary_max" class="form-label">Maximum ($)</label>
+                    {{ context.form.salary_max }}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Row 4: Work Style and Visa -->
+        <!-- Row 5: Work Style and Visa Sponsorship -->
         <div class="row mb-3">
           <div class="col-md-6">
-            <label for="id_work_style" class="form-label fw-bold">Work Style</label>
+            <label for="id_work_style" class="form-label fw-bold">
+              <i class="bi bi-laptop"></i> Work Style
+            </label>
             {{ context.form.work_style }}
           </div>
           <div class="col-md-6 d-flex align-items-end">
             <div class="form-check">
               {{ context.form.visa_sponsorship }}
               <label class="form-check-label fw-bold" for="{{ context.form.visa_sponsorship.id_for_label }}">
-                Visa Sponsorship Required
+                <i class="bi bi-globe"></i> Visa Sponsorship Required
               </label>
             </div>
           </div>
         </div>
 
-        <!-- Row 5: Action Buttons -->
+        <!-- Row 6: Action Buttons -->
         <div class="row">
           <div class="col-12 d-flex gap-2 justify-content-end">
             <button type="submit" class="btn btn-primary px-4">
@@ -115,11 +148,6 @@
             <a href="{% url 'jobs.index' %}" class="btn btn-outline-secondary px-4">
               <i class="bi bi-arrow-clockwise"></i> Reset
             </a>
-            {% if user.is_authenticated and user.is_recruiter %}
-              <a href="{% url 'jobs.create' %}" class="btn btn-success px-4">
-                <i class="bi bi-plus-circle"></i> Post a Job
-              </a>
-            {% endif %}
           </div>
         </div>
       </form>
