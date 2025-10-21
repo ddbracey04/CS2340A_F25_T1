@@ -19,9 +19,15 @@
             </div>
         {% endif %}
 
-        {% if profile.education %}
-            <p><strong>Education:</strong><br>{{ profile.education|linebreaks }}</p>
-        {% endif %}
+        
+        <div class="mt-3">
+            <p class = "mb-1"><strong>Education:</strong></p>
+            {% for edu in user_education %}
+                <p><b>{{ edu.get_level_display }} - {{ edu.institution }}:</b> {{ edu.degree }}</p>
+            {% empty %}
+                <p>No education details available.</p>
+            {% endfor %}
+        </div>
 
         {% if profile.experience %}
             <p><strong>Work Experience:</strong><br>{{ profile.experience|linebreaks }}</p>
