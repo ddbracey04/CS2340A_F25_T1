@@ -1,6 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
+<style>
+  .highlight-job {
+    border: 2px solid #5D61EA !important;
+    background-color: #f0f3ff;
+    box-shadow: 0 0 8px rgba(93, 97, 234, 0.5);
+    cursor: pointer;
+  }
+  .job-card {
+    cursor: pointer;
+  }
+</style>
 <div class="p-3">
   <div class="container-fluid">
     <div class="row mt-3">
@@ -26,6 +37,7 @@
                 <h5 class="card-title">{{ job.title }}</h5>
                 <h6 class="card-subtitle mb-2 text-muted">{{ job.company }}</h6>
                 <p class="card-text">{{ job.description }}</p>
+                <small class="text-secondary">Location: Lat {{ job.lat }}, Lon {{ job.lon }}</small>
               </div>
             </div>
           {% empty %}
@@ -98,6 +110,8 @@
 
     jobCards.forEach(card => {
         card.addEventListener('click', function() {
+            jobCards.forEach(c => c.classList.remove('highlight-job'));
+            this.classList.add('highlight-job');
             const lat = parseFloat(this.getAttribute('data-lat'));
             const lon = parseFloat(this.getAttribute('data-lon'));
 
