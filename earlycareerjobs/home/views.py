@@ -1,13 +1,13 @@
-from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
-from django.shortcuts import redirect, render, get_object_or_404
-from users.models import CustomUser
-from .models import Profile, Education
-from .forms import CandidateSearchForm, ProfileForm, EducationForm
-from django.contrib.auth import login
+from django.shortcuts import get_object_or_404, redirect, render
+
 from map.utils import lookupLatLon
+from users.models import CustomUser
+
+from .forms import CandidateSearchForm, EducationForm, ProfileForm
+from .models import Education, Profile
 
 
 def index(request):
@@ -15,12 +15,10 @@ def index(request):
 
 
 def about(request):
-    template_data = {}
-    template_data['title'] = 'About'
+    template_data = {'title': 'About'}
     return render(request, 'home/about.html', {'template_data': template_data})
 
 
-#adding for profile
 @login_required
 def profile_edit(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
@@ -33,7 +31,6 @@ def profile_edit(request):
             return redirect('profile.view', username=request.user.username)
     else:
         form = ProfileForm(instance=profile)
-    #return render(request, 'home/profile_form.html', {'form': form})
 
     education_form = EducationForm()
     user_education = Education.objects.filter(user=request.user).order_by('pk')
@@ -43,42 +40,66 @@ def profile_edit(request):
         'education_form': education_form,
         'user_education': user_education,
     })
-@login_required
-def save_education(request, education_id = None):
-    if request.method == 'POST':
-        instance = None
-        if education_id:
-            try:
-                instance = Education.objects.get(pk=education_id, user=request.user)
-            except Education.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Education entry not found.'}, status=404)
-        form = EducationForm(request.POST, instance = instance)
 
-        if form.is_valid():
-            education_instance = form.save(commit=False)
-            education_instance.user = request.user
-            education_instance.save()
-            return JsonResponse({
-                'status': 'success',
-                'action': 'updated' if education_id else 'created',
-                'level': education_instance.get_level_display(),
-                'degree': education_instance.degree,
-                'institution': education_instance.institution,
-                'id': education_instance.id,
-                'form_data': form.cleaned_data
-            })
-        else:
-            return JsonResponse({'status': 'error', 'errors': form.errors}, status = 400)
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
+
+@login_required
+def save_education(request, education_id=None):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
+
+    instance = None
+    if education_id:
+        try:
+            instance = Education.objects.get(pk=education_id, user=request.user)
+        except Education.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Education entry not found.'}, status=404)
+
+    form = EducationForm(request.POST, instance=instance)
+    if not form.is_valid():
+        return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+
+    education_instance = form.save(commit=False)
+    education_instance.user = request.user
+    education_instance.save()
+
+    return JsonResponse({
+        'status': 'success',
+        'action': 'updated' if education_id else 'created',
+        'level': education_instance.get_level_display(),
+        'degree': education_instance.degree,
+        'institution': education_instance.institution,
+        'id': education_instance.id,
+        'form_data': form.cleaned_data,
+    })
+
 
 def profile_view(request, username):
     from django.contrib.auth import get_user_model
+
     User = get_user_model()
     user = get_object_or_404(User, username=username)
     profile, _ = Profile.objects.get_or_create(user=user)
-    #return render(request, 'home/profile_view.html', {'profile': profile, 'owner': user})
     user_education = Education.objects.filter(user=user).order_by('pk')
-    return render(request, 'home/profile_view.html', {'profile': profile, 'owner': user, 'user_education': user_education})
+    return render(request, 'home/profile_view.html', {
+        'profile': profile,
+        'owner': user,
+        'user_education': user_education,
+    })
+
+
+@login_required
+def delete_education(request, education_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
+
+    try:
+        edu_instance = Education.objects.get(pk=education_id, user=request.user)
+        edu_instance.delete()
+        return JsonResponse({'status': 'success', 'id': education_id})
+    except Education.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Education entry not found.'}, status=404)
+    except Exception as exc:
+        return JsonResponse({'status': 'error', 'message': str(exc)}, status=500)
 
 @login_required
 def delete_education(request, education_id):
@@ -102,7 +123,11 @@ def search_candidates(request):
     if form.is_valid():
         data = form.cleaned_data
     else:
-        data = {'keywords': '', 'work_style': '', 'sort_by': CandidateSearchForm.SORT_CHOICES[0][0]}
+        data = {
+            'keywords': '',
+            'work_style': '',
+            'sort_by': CandidateSearchForm.SORT_CHOICES[0][0],
+        }
         form = CandidateSearchForm(initial=data)
 
     profiles = Profile.objects.select_related('user').filter(user__role=CustomUser.Role.JOB_SEEKER)
@@ -116,8 +141,9 @@ def search_candidates(request):
             Q(headline__icontains=keywords) |
             Q(skills__icontains=keywords) |
             Q(experience__icontains=keywords) |
-            Q(education__icontains=keywords)
-        )
+            Q(user__educations__degree__icontains=keywords) |
+            Q(user__educations__institution__icontains=keywords)
+        ).distinct()
 
     work_style = data.get('work_style')
     if work_style:

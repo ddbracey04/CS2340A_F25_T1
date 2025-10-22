@@ -48,13 +48,13 @@ class Education(models.Model):
     PROFILE_EDUCATION_LEVELS = [
         ('HS', 'High School'),
         ('AS', 'Associate Degree'),
-        ('BS', 'Bachelor\'s Degree'),
-        ('MS', 'Master\'s Degree'),
+        ('BS', "Bachelor's Degree"),
+        ('MS', "Master's Degree"),
         ('PhD', 'Doctorate'),
         ('OT', 'Other'),
     ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='educations')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='educations')
     level = models.CharField(max_length=20, choices=PROFILE_EDUCATION_LEVELS)
     degree = models.CharField(max_length=100)
     institution = models.CharField(max_length=100)
