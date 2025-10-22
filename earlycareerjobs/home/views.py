@@ -1,11 +1,12 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render,get_object_or_404
-from .models import Profile, Education
-from .forms import ProfileForm, EducationForm
 from django.contrib.auth import login
-from django.http import JsonResponse
-
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import HttpResponseForbidden, JsonResponse
+from django.shortcuts import redirect, render, get_object_or_404
+from users.models import CustomUser
+from .models import Profile, Education
+from .forms import CandidateSearchForm, ProfileForm, EducationForm
+from django.contrib.auth import login
 from map.utils import lookupLatLon
 
 
@@ -91,3 +92,48 @@ def delete_education(request, education_id):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
+
+@login_required
+def search_candidates(request):
+    if not (request.user.is_recruiter() or request.user.is_admin()):
+        return HttpResponseForbidden()
+
+    form = CandidateSearchForm(request.GET or None)
+    if form.is_valid():
+        data = form.cleaned_data
+    else:
+        data = {'keywords': '', 'work_style': '', 'sort_by': CandidateSearchForm.SORT_CHOICES[0][0]}
+        form = CandidateSearchForm(initial=data)
+
+    profiles = Profile.objects.select_related('user').filter(user__role=CustomUser.Role.JOB_SEEKER)
+
+    keywords = data.get('keywords')
+    if keywords:
+        profiles = profiles.filter(
+            Q(user__first_name__icontains=keywords) |
+            Q(user__last_name__icontains=keywords) |
+            Q(user__username__icontains=keywords) |
+            Q(headline__icontains=keywords) |
+            Q(skills__icontains=keywords) |
+            Q(experience__icontains=keywords) |
+            Q(education__icontains=keywords)
+        )
+
+    work_style = data.get('work_style')
+    if work_style:
+        profiles = profiles.filter(work_style_preference=work_style)
+
+    sort_by = data.get('sort_by') or 'recent'
+    if sort_by == 'name':
+        profiles = profiles.order_by('user__first_name', 'user__last_name', 'user__username')
+    elif sort_by == 'headline':
+        profiles = profiles.order_by('headline', 'user__username')
+    else:
+        profiles = profiles.order_by('-user__date_joined')
+
+    context = {
+        'form': form,
+        'profiles': profiles,
+        'result_count': profiles.count(),
+    }
+    return render(request, 'home/candidate_search.html', context)

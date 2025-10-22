@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<section class="py-4">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-12 col-lg-4 col-xl-3">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body">
+            <h4 class="h5 mb-3">Search candidates</h4>
+            <form method="get" novalidate>
+              <div class="mb-3">
+                {{ form.keywords.label_tag }}
+                {{ form.keywords }}
+              </div>
+              <div class="mb-3">
+                {{ form.work_style.label_tag }}
+                {{ form.work_style }}
+              </div>
+              <div class="mb-3">
+                {{ form.sort_by.label_tag }}
+                {{ form.sort_by }}
+              </div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary" style="background-color: #5D61EA; border-color: #5D61EA;">Search</button>
+                <a href="{% url 'candidates.search' %}" class="btn btn-outline-secondary">Reset</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-8 col-xl-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <p class="text-uppercase small fw-semibold text-muted mb-1">Results</p>
+            <h2 class="h4 mb-0">{{ result_count }} {% if result_count == 1 %}candidate{% else %}candidates{% endif %} found</h2>
+          </div>
+        </div>
+        {% if profiles %}
+          <div class="row g-4">
+            {% for profile in profiles %}
+              <div class="col-12">
+                <div class="card border-0 shadow-sm h-100">
+                  <div class="card-body">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                      <div>
+                        <h3 class="h5 mb-1">
+                          <a href="{% url 'profile.view' username=profile.user.username %}" class="text-decoration-none text-dark">
+                            {{ profile.user.get_full_name|default:profile.user.username }}
+                          </a>
+                        </h3>
+                        {% if profile.headline %}
+                          <p class="mb-2 text-muted">{{ profile.headline }}</p>
+                        {% endif %}
+                        {% if profile.work_style_preference %}
+                          <span class="badge text-bg-light border">{{ profile.get_work_style_preference_display }}</span>
+                        {% endif %}
+                      </div>
+                      <div class="text-md-end">
+                        <a href="{% url 'profile.view' username=profile.user.username %}" class="btn btn-outline-primary">
+                          View profile
+                        </a>
+                      </div>
+                    </div>
+                    {% if profile.skill_list %}
+                      <div class="mt-3">
+                        <p class="small text-uppercase text-muted fw-semibold mb-2">Skills</p>
+                        <div class="skill-badge-group">
+                          {% for skill in profile.skill_list %}
+                            <span class="skill-badge">{{ skill }}</span>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endif %}
+                    {% if profile.experience %}
+                      <div class="mt-3">
+                        <p class="small text-uppercase text-muted fw-semibold mb-1">Experience snapshot</p>
+                        <p class="mb-0 text-muted">{{ profile.experience|truncatechars:220 }}</p>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+              <h3 class="h5 mb-2">No candidates match your filters yet</h3>
+              <p class="text-muted mb-0">Try expanding your keywords or clearing the work style preference to see more profiles.</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}

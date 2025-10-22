@@ -3176,3 +3176,74 @@ ol {
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
+
+.profile-edit-page .form-control,
+.profile-edit-page textarea {
+  border-radius: 12px;
+}
+
+.profile-link-list li {
+  margin-bottom: 0.35rem;
+}
+
+.profile-link-list li span {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.candidate-search-hero {
+  background: linear-gradient(135deg, rgba(93,97,234,0.12), rgba(157,124,241,0.18));
+  border-radius: 20px;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 12px 30px rgba(31,31,57,0.1);
+}
+
+.candidate-filter-card {
+  top: 90px;
+}
+
+.candidate-filter-form .form-control,
+.candidate-filter-form .form-select {
+  border-radius: 12px;
+  border: 1px solid #d6d6e6;
+}
+
+.candidate-card-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.candidate-card {
+  background-color: #fff;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(41,41,72,0.12);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.candidate-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .candidate-card__header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+}
+
+.candidate-card__badge {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.candidate-card__section {
+  border-top: 1px solid rgba(0,0,0,0.05);
+  padding-top: 1rem;
+}
