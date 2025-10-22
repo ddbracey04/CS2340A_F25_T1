@@ -16,8 +16,6 @@ class JobSearchForm(forms.ModelForm):
         fields = ("title", 
                   "description", 
                   "image", 
-                  "lat", 
-                  "lon",
                   "skills",
                   "city",
                   "state",

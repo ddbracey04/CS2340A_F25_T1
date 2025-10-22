@@ -6,6 +6,7 @@ from .forms import ProfileForm, EducationForm
 from django.contrib.auth import login
 from django.http import JsonResponse
 
+from map.utils import lookupLatLon
 
 
 def index(request):
@@ -26,6 +27,8 @@ def profile_edit(request):
         form = ProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
+            profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+            profile.save()
             return redirect('profile.view', username=request.user.username)
     else:
         form = ProfileForm(instance=profile)
