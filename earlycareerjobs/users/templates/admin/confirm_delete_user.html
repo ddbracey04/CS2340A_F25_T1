@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">Confirm Delete User</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Warning!</strong> This action cannot be undone.
+                    </div>
+
+                    <p>Are you sure you want to delete the following user?</p>
+                    
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <p><strong>Username:</strong> {{ user_obj.username }}</p>
+                            <p><strong>Email:</strong> {{ user_obj.email|default:"—" }}</p>
+                            <p><strong>Name:</strong> {{ user_obj.get_full_name|default:"—" }}</p>
+                            <p><strong>Role:</strong> {{ user_obj.get_role_display }}</p>
+                            <p class="mb-0"><strong>Date Joined:</strong> {{ user_obj.date_joined|date:"Y-m-d H:i" }}</p>
+                        </div>
+                    </div>
+
+                    <p class="text-muted">
+                        <small>
+                            Deleting this user will also delete:
+                            <ul>
+                                <li>User's profile information</li>
+                                <li>User's job applications</li>
+                                <li>Jobs posted by this user (if recruiter)</li>
+                                <li>All related data</li>
+                            </ul>
+                        </small>
+                    </p>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'users.user_management' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Delete User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
