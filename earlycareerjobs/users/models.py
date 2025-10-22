@@ -39,7 +39,7 @@ class CustomUser(AbstractUser):
         return self.role == self.Role.ADMIN
     
 class ProfilePrivacy(models.Model):
-    profile = models.OneToOneField(JobSeekerProfile, on_delete=models.CASCADE, related_name='privacy')
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='privacy')
     
     # overall visibility
     is_profile_visible = models.BooleanField(default=True)
@@ -58,7 +58,7 @@ class ProfilePrivacy(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"Privacy settings for {self.profile.full_name}"
+        return f"Privacy settings for {self.user.username}"
     
     class Meta:
         verbose_name_plural = "Profile privacy settings"
