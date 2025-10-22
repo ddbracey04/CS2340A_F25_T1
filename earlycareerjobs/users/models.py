@@ -37,3 +37,28 @@ class CustomUser(AbstractUser):
 
     def is_admin(self):
         return self.role == self.Role.ADMIN
+    
+class ProfilePrivacy(models.Model):
+    profile = models.OneToOneField(JobSeekerProfile, on_delete=models.CASCADE, related_name='privacy')
+    
+    # overall visibility
+    is_profile_visible = models.BooleanField(default=True)
+    
+    # individual field visibility
+    show_full_name = models.BooleanField(default=True)
+    show_email = models.BooleanField(default=True)
+    show_phone = models.BooleanField(default=False)
+    show_location = models.BooleanField(default=True)
+    show_resume = models.BooleanField(default=True)
+    show_skills = models.BooleanField(default=True)
+    show_experience = models.BooleanField(default=True)
+    show_education = models.BooleanField(default=True)
+    show_bio = models.BooleanField(default=True)
+    
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Privacy settings for {self.profile.full_name}"
+    
+    class Meta:
+        verbose_name_plural = "Profile privacy settings"

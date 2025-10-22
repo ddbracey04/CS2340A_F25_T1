@@ -8,8 +8,8 @@ class Job(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='job_images/')
     date = models.DateTimeField(auto_now_add=True)
-    lat = models.FloatField()
-    lon = models.FloatField()
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
     users = models.ManyToManyField(CustomUser)
     
     def __str__(self):

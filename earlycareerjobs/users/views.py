@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .forms import CustomUserCreationForm
 from .models import CustomUser
+from .models import JobSeekerProfile, ProfilePrivacy
+from .forms import PrivacySettingsForm
 
 def register(request):
     if request.method == 'POST':
@@ -72,3 +74,29 @@ def toggle_user_status(request, user_id):
     status = "activate" if user.is_active else "inactivate"
     messages.success(request, f'User {user.username} is {status}')
     return redirect('user_management')
+
+@login_required
+def privacy_settings(request):
+    try:
+        profile = JobSeekerProfile.objects.get(user=request.user)
+    except JobSeekerProfile.DoesNotExist:
+        messages.error(request, "Please create your profile first.")
+        return redirect('profile_create')
+    
+    # get or create privacy settings
+    privacy, created = ProfilePrivacy.objects.get_or_create(profile=profile)
+    
+    if request.method == 'POST':
+        form = PrivacySettingsForm(request.POST, instance=privacy)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Privacy settings updated successfully!")
+            return redirect('privacy_settings')
+    else:
+        form = PrivacySettingsForm(instance=privacy)
+    
+    context = {
+        'form': form,
+        'profile': profile
+    }
+    return render(request, 'users/privacy_settings.html', context)
