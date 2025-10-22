@@ -7,6 +7,8 @@ from django.contrib import messages
 # from django.http import JsonResponse
 from django.db.models import Count
 from django.urls import reverse
+from map.models import Location
+from map.utils import lookupLatLon
 
 def index(request):
     # search_term = request.GET.get('search')
@@ -228,10 +230,28 @@ def create_job(request):
         return HttpResponseForbidden()
 
     if request.method == 'POST':
-        form = JobSearchForm(request.POST, request.FILES)
+        job = Job()
+        job.lat = 0
+        job.lon = 0
+        job.save()
+        form = JobSearchForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
-            job = form.save()
+            form.save()
             job.users.add(request.user)
+
+            try:
+                location = Location.objects.get(city=job.city, state=job.state, country=job.country)
+            except Location.DoesNotExist:
+                location = Location()
+                location.city = job.city
+                location.state = job.state
+                location.country = job.country
+                location.lat, location.lon = lookupLatLon(cityName=job.city, stateName=job.state, countryName=job.country)
+                location.save()
+            job.lat = location.lat
+            job.lon = location.lon
+            job.save()
+
             messages.success(request, 'Job posted successfully.')
             return redirect('jobs.show', id=job.id)
     else:
@@ -250,6 +270,21 @@ def edit_job(request, id):
     if request.method == 'POST':
         form = JobSearchForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
+
+            if form.has_changed() and ("city" in form.changed_data or "state" in form.changed_data or "country" in form.changed_data):
+                try:
+                    location = Location.objects.get(city=job.city, state=job.state, country=job.country)
+                except Location.DoesNotExist:
+                    location = Location()
+                    location.city = job.city
+                    location.state = job.state
+                    location.country = job.country
+                    location.lat, location.lon = lookupLatLon(cityName=job.city, stateName=job.state, countryName=job.country)
+                    location.save()
+                job.lat = location.lat
+                job.lon = location.lon
+                job.save()
+
             form.save()
             messages.success(request, 'Job updated successfully.')
             return redirect('jobs.show', id=job.id)
