@@ -22,6 +22,23 @@
 
             <hr class="my-4">
 
+            {% if profile.city or profile.state or profile.country %}
+              <section class="mb-4">
+                <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Location</h2>
+                <p class="mb-0">
+                  {% if profile.city %}{{ profile.city }}{% endif %}
+                  {% if profile.state %}
+                    {% if profile.city %}, {% endif %}
+                    {{ profile.state }}
+                  {% endif %}
+                  {% if profile.country %}
+                    {% if profile.city or profile.state %}, {% endif %}
+                    {{ profile.country }}
+                  {% endif %}
+                </p>
+              </section>
+            {% endif %}
+
             {% if profile.skill_list %}
               <section class="mb-4">
                 <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Skills</h2>
@@ -40,12 +57,16 @@
               </section>
             {% endif %}
 
-            {% if profile.education %}
-              <section class="mb-4">
-                <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Education</h2>
-                <p class="mb-0">{{ profile.education|linebreaks }}</p>
-              </section>
-            {% endif %}
+            <section class="mb-4">
+              <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Education</h2>
+              {% for edu in user_education %}
+                <p class="mb-1">
+                  <strong>{{ edu.get_level_display }} - {{ edu.institution }}:</strong> {{ edu.degree }}
+                </p>
+              {% empty %}
+                <p class="mb-0 text-muted">No education details available.</p>
+              {% endfor %}
+            </section>
 
             {% if profile.experience %}
               <section class="mb-4">

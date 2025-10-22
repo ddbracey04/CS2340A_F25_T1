@@ -6,6 +6,8 @@ from django.http import HttpResponseForbidden
 from django.contrib import messages
 # from django.http import JsonResponse
 from django.db.models import Count
+from map.models import Location
+from map.utils import lookupLatLon
 
 def index(request):
     # search_term = request.GET.get('search')
@@ -100,6 +102,30 @@ def index(request):
         "jobs": jobs,
     }
 
+    # Make recommended jobs list for candidates
+    # Recommendation is based on overlap between the jobs skills and the applicants profile skills.
+    recommended = []
+    if request.user.is_authenticated and request.user.is_job_seeker():
+        profile = getattr(request.user, 'home_profile', None)
+        candidate_skills_lower = set([s.lower() for s in profile.skill_list]) if profile and profile.skill_list else set()
+        if candidate_skills_lower:
+            for job in jobs:
+                job_skills_list = job.skill_list or []
+                job_skills_lower = {s.lower(): s for s in job_skills_list}
+                common_lower = set(job_skills_lower.keys()) & candidate_skills_lower
+                if common_lower and not Application.objects.filter(job=job, user=request.user).exists(): #Don't add jobs the user has already applied to
+                    # Use original casing from the job's skill list for display
+                    common_original = [job_skills_lower[lk] for lk in sorted(common_lower)]
+                    recommended.append({
+                        'job': job,
+                        'match_count': len(common_lower),
+                        'common_skills': common_original,
+                    })
+            # sort by number of matches
+            recommended.sort(key=lambda x: (-x['match_count']))
+    # limit to top 3 because that sounds reasonable?
+    template_data['recommended_jobs'] = recommended[:3]
+
     return render(request, 'jobs/index.html', {'template_data': template_data, 'context': context})
 
 def show(request, id):
@@ -116,7 +142,36 @@ def show(request, id):
         can_edit = False
     template_data['has_applied'] = has_applied
     template_data['can_edit'] = can_edit
-    template_data['applications'] = Application.objects.filter(job=job)
+    applications = Application.objects.filter(job=job)
+    template_data['applications'] = applications
+
+    # Make recommended candidates list
+    # Recommendation is based on overlap between the jobs skills and the applicants profile skills.
+    recommended = []
+    if request.user.is_authenticated and request.user.is_recruiter():
+        job_skills_list = job.skill_list or []
+        job_skills_lower = {s.lower(): s for s in job_skills_list}  # map lower->original
+        if job_skills_lower:
+            for app in applications:
+                user = app.user
+                profile = getattr(user, 'home_profile', None)
+                if not profile:
+                    continue
+                candidate_skills_lower = {s.lower(): s for s in profile.skill_list or []}
+                common_lower = set(job_skills_lower.keys()) & set(candidate_skills_lower.keys())
+                if common_lower:
+                    common_original = [candidate_skills_lower[lk] for lk in sorted(common_lower)]
+                    recommended.append({
+                        'user': user,
+                        'match_count': len(common_lower),
+                        'common_skills': common_original,
+                        'application': app,
+                    })
+            # sort by number of matches then application date
+            recommended.sort(key=lambda x: (-x['match_count'], x['application'].date))
+    # limit to top 3 because that sounds reasonable?
+    template_data['recommended_candidates'] = recommended[:3]
+
     return render(request, 'jobs/show.html', {'template_data': template_data})
 
 @login_required
@@ -143,10 +198,29 @@ def create_job(request):
         return HttpResponseForbidden()
 
     if request.method == 'POST':
-        form = JobSearchForm(request.POST, request.FILES)
+        job = Job()
+        job.lat = 0
+        job.lon = 0
+        job.save()
+        form = JobSearchForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
-            job = form.save()
+            form.save()
             job.users.add(request.user)
+
+            try:
+                location = Location.objects.get(city=job.city, state=job.state, country=job.country)
+            except Location.DoesNotExist:
+                location = Location()
+                location.city = job.city
+                location.state = job.state
+                location.country = job.country
+                location.lat, location.lon = lookupLatLon(cityName=job.city, stateName=job.state, countryName=job.country)
+                location.save()
+            job.lat = location.lat
+            job.lon = location.lon
+            job.save()
+
+
             messages.success(request, 'Job posted successfully.')
             return redirect('jobs.show', id=job.id)
     else:
@@ -165,7 +239,23 @@ def edit_job(request, id):
     if request.method == 'POST':
         form = JobSearchForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
+
+            if form.has_changed() and ("city" in form.changed_data or "state" in form.changed_data or "country" in form.changed_data):
+                try:
+                    location = Location.objects.get(city=job.city, state=job.state, country=job.country)
+                except Location.DoesNotExist:
+                    location = Location()
+                    location.city = job.city
+                    location.state = job.state
+                    location.country = job.country
+                    location.lat, location.lon = lookupLatLon(cityName=job.city, stateName=job.state, countryName=job.country)
+                    location.save()
+                job.lat = location.lat
+                job.lon = location.lon
+                job.save()
+
             form.save()
+
             messages.success(request, 'Job updated successfully.')
             return redirect('jobs.show', id=job.id)
     else:
