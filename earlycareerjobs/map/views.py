@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from jobs.models import Job
-from .utils import lookupLatLon, haversine
+from .utils import lookupLatLon, reverseLocationLookup, haversine
 from home.models import Profile
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -10,12 +10,15 @@ def select_location(request):
         job = Job.objects.get(id=request.POST["jobId"])
         job.lat = request.POST["lat"]
         job.lon = request.POST["lon"]
+        job.city, job.state, job.country = reverseLocationLookup(request.POST["lat"], request.POST["lon"])
         job.save()
+
+        return redirect('map.indexLatLon', lat=request.POST["lat"], lon=request.POST["lon"])
     
     return redirect('map.index')
 
 
-def index(request, errorStr='', override_template_data=None):
+def index(request, errorStr='', override_template_data=None, focusLat="", focusLon=""):
 
     if (override_template_data != None):
         override_template_data['jobs'] = Job.objects.filter(id__in=override_template_data['jobIds'])
@@ -56,8 +59,16 @@ def index(request, errorStr='', override_template_data=None):
             # Do nothing if profile does not exist yet
             # TODO: Figure out what we want to do here
             pass
+    
+    if focusLat != "":
+        template_data['centerLat'] = float(focusLat)
+    if focusLon != "":
+        template_data['centerLon'] = float(focusLon)
 
     return render(request, 'map/index.html', {'template_data': template_data, 'error': errorStr})
+
+def indexLatLon(request, lat, lon):
+    return index(request=request, focusLat=lat, focusLon=lon)
 
 def filter(request):
     if request.method == "POST":
@@ -75,9 +86,6 @@ def filter(request):
             old_template_data['centerLon'] = request.POST['old_lon']
             old_template_data['jobIds'] = request.POST.getlist('old_job_id[]')
             return index(request, "No Filter Location Provided", old_template_data)
-            template_data = {}
-            template_data['jobs'] = Job.objects.all()
-            return render(request, 'map/index.html', {'template_data': template_data})
 
 
         searchLat, searchLon = lookupLatLon(searchCity, searchState, searchCountry)
@@ -92,10 +100,6 @@ def filter(request):
             old_template_data['centerLon'] = request.POST['old_lon']
             old_template_data['jobIds'] = request.POST.getlist('old_job_id[]')
             return index(request, f"Could not find {request.POST['city_filter']}, {request.POST['state_filter']}, {request.POST['country_filter']}", old_template_data)
-            template_data = {}
-            template_data['jobs'] = Job.objects.all()
-            return render(request, 'map/index.html', {'template_data': template_data})
-
         
         searchRadius = request.POST["radius_filter"]
         
