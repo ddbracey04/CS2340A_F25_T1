@@ -17,13 +17,8 @@ class Job(models.Model):
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='job_images/', blank=True)
     date = models.DateTimeField(auto_now_add=True)
-<<<<<<< HEAD
-    lat = models.FloatField(default=0.0)
-    lon = models.FloatField(default=0.0)
-=======
-    lat = models.FloatField(null=True, blank=True)
-    lon = models.FloatField(null=True, blank=True)
->>>>>>> origin/main
+    lat = models.FloatField(null=True, blank=True, default=0.0)
+    lon = models.FloatField(null=True, blank=True, default=0.0)
     users = models.ManyToManyField(CustomUser)
     city = models.CharField(max_length=100, blank=True)
     state = models.CharField(max_length=100, blank=True)

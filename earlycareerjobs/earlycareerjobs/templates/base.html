@@ -58,7 +58,7 @@
                     <li><a class="dropdown-item" href="{% url 'users.user_management' %}">Manage</a></li>
                     <li><hr class="dropdown-divider"></li>
                   {% endif %}
-                  {% if user.is_authenticated and user.role == 'job_seeker' %}
+                  {% if user.is_job_seeker %}
                     <li><a class="dropdown-item" href="{% url 'privacy_settings' %}"><i class="fas fa-lock me-1"></i> Privacy Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                   {% endif %}
@@ -77,11 +77,9 @@
               <a class="nav-link" href="{% url 'users.register' %}">
                 <i class="fas fa-user-plus me-1"></i> Register
               </a>
-=======
               {% if user.is_recruiter or user.is_admin %}
                 <li><a href="{% url 'candidates.search' %}">Candidates</a></li>
               {% endif %}
->>>>>>> origin/main
             {% endif %}
             <li><a href="{% url 'map.index' %}">Map</a></li>
             {% if user.is_authenticated %}
@@ -98,6 +96,7 @@
                       <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a> -->
                       <li><a class="dropdown-item" href="{% url 'profile.view' username=request.user.username %}"> My Profile</a></li>
                       <li><a class="dropdown-item" href="{% url 'profile.edit' %}"> Edit Profile</a></li>
+                      <li><a class="dropdown-item" href="{% url 'privacy_settings' %}">Privacy Settings</a></li>
                       <li><a class="dropdown-item" href="{% url 'jobs.track_applications' id=request.user.id %}">Track Applications</a></li>
                     {% elif user.is_recruiter %}
                       <li><a href="{% url 'jobs.create' %}">Post a Job</a></li>
@@ -171,17 +170,18 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                               <span class="fa fa-user"></span> {{ user.username }}
                             </a>
-                            <ul class="dropdown">
+                            <ul class="dropdown" style="width: 200px;">
                               {% if user.is_admin %}
                                 <li><a href="{% url 'users.user_management' %}"><i class="fa fa-users"></i> Manage Users</a></li>
                               {% endif %}
                               
                               {% if user.is_job_seeker %}
-                                <li><a href="{% url 'profile.view' username=request.user.username %}">My Profile</a></li>
-                                <li><a href="{% url 'profile.edit' %}">Edit Profile</a></li>
-                                <li><a class="dropdown-item" href="{% url 'jobs.track_applications' id=request.user.id %}">Track Applications</a></li>
+                                <li><a href="{% url 'profile.view' username=request.user.username %}" style="text-align: left; padding-left: 15px;">My Profile</a></li>
+                                <li><a href="{% url 'profile.edit' %}" style="text-align: left; padding-left: 15px;">Edit Profile</a></li>
+                                <li><a href="{% url 'privacy_settings' %}" style="text-align: left; padding-left: 15px;">Privacy Settings</a></li>
+                                <li><a href="{% url 'jobs.track_applications' id=request.user.id %}" style="text-align: left; padding-left: 15px;">Track Applications</a></li>
                               {% elif user.is_recruiter %}
-                                <li><a href="{% url 'jobs.create' %}">Post a Job</a></li>
+                                <li><a href="{% url 'jobs.create' %}" style="text-align: left; padding-left: 15px;">Post a Job</a></li>
                               {% endif %}
 
                               <li>
