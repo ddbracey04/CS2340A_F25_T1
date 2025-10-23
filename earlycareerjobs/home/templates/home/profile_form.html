@@ -1,119 +1,122 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class = "profile-page-bg">
-    <div class="container" style="margin-top: 50px; margin-bottom: 50px;">
+<div class="profile-page-bg">
+  <div class="container" style="margin-top: 50px; margin-bottom: 50px;">
     <h2>Edit Your Profile</h2>
     <form method="post" novalidate>
-        {% csrf_token %}
+      {% csrf_token %}
 
-        <div class="row">
-            <div class="col-lg-12">
-                <div class = "card shadow-sm mb-4">
-                    <div class = "card-header bg-light">
-                        <h5 class = "mb-0">Basic Information</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group mb-3">{{ form.headline.label_tag }} {{ form.headline }}</div>
-                        <div class="form-group mb-3">{{ form.city.label_tag }} {{ form.city }}</div>
-                        <div class="form-group mb-3">{{ form.state.label_tag }} {{ form.state }}</div>
-                        <div class="form-group mb-3">{{ form.country.label_tag }} {{ form.country }}</div>
-                        <div class="form-group mb-3">{{ form.skills.label_tag }} {{ form.skills }}</div>
-                    </div>
-                </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Basic Information</h5>
             </div>
-
-            <div class="col-lg-12">
-                <div class = "card shadow-sm mb-4">
-                    <div class = "card-header bg-light">
-                        <h5 class = "mb-0">Professional & Contact</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group mb-3">{{ form.experience.label_tag }} {{ form.experience }}</div>
-                        <div class="form-group mb-3">{{ form.linkedin.label_tag }} {{ form.linkedin }}</div>
-                        <div class="form-group mb-3">{{ form.github.label_tag }} {{ form.github }}</div>
-                        <div class="form-group mb-3">{{ form.website.label_tag }} {{ form.website }}</div>
-                    </div>
-                </div>
+            <div class="card-body">
+              <div class="form-group mb-3">{{ form.headline.label_tag }} {{ form.headline }}</div>
+              <div class="form-group mb-3">{{ form.city.label_tag }} {{ form.city }}</div>
+              <div class="form-group mb-3">{{ form.state.label_tag }} {{ form.state }}</div>
+              <div class="form-group mb-3">{{ form.country.label_tag }} {{ form.country }}</div>
+              <div class="form-group mb-3">{{ form.skills.label_tag }} {{ form.skills }}</div>
+              <div class="form-group mb-3">{{ form.work_style_preference.label_tag }} {{ form.work_style_preference }}</div>
             </div>
-
-            <!-- education stuff-->
-            <div class = "col-lg-12">
-                <div class="card shadow-sm mb-4">
-                    <div class = "card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 class = "mb-0">Education</h5>
-                        <button type = "button" class = "btn btn-primary btn-sm" id = "add-education-btn" data-bs-toggle="modal" data-bs-target="#educationModal">
-                            Add Education
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div id = "education-list">
-                            {% for edu in user_education %}
-                            <div id="edu-{{ edu.id}}" class="mb-2 p-2 border-bottom">
-                                <p class="mb-0">
-                                    <p><b>{{ edu.institution }}</b></p>
-                                    <b>{{ edu.get_level_display }}:</b> {{ edu.degree }}
-                                    <button type = "button" class = "btn btn-sm btn-link edit-education-btn p-0 ms-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#educationModal"
-                                        data-id = "{{ edu.id }}"
-                                        data-level = "{{ edu.level }}"
-                                        data-degree = "{{ edu.degree }}"
-                                        data-institution = "{{ edu.institution }}">
-                                        Edit
-                                    </button>
-                                    <button type = "button" class = "btn btn-sm btn-link delete-education-btn text-danger p-0 ms-1" 
-                                        data-id = "{{ edu.id }}">
-                                        Delete
-                                    </button>
-                                </p>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if not user_education %}
-                            <p class = "text-muted">No education details added yet.</p>
-                        {% endif %}
-                        
-                        
-                    
-            
-
-            </div>
+          </div>
         </div>
-        <div class="container" style="margin-top: 20px;"></div>
-        <button type="submit" class="btn btn-primary btn-lg" style = "background-color: #5D61EA; color:#ffffff;">Save Profile</button>
+
+        <div class="col-lg-12">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Professional &amp; Contact</h5>
+            </div>
+            <div class="card-body">
+              <div class="form-group mb-3">{{ form.experience.label_tag }} {{ form.experience }}</div>
+              <div class="form-group mb-3">{{ form.linkedin.label_tag }} {{ form.linkedin }}</div>
+              <div class="form-group mb-3">{{ form.github.label_tag }} {{ form.github }}</div>
+              <div class="form-group mb-3">{{ form.website.label_tag }} {{ form.website }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Education</h5>
+              <button type="button" class="btn btn-primary btn-sm" id="add-education-btn" data-bs-toggle="modal" data-bs-target="#educationModal">
+                Add Education
+              </button>
+            </div>
+            <div class="card-body">
+              <div id="education-list">
+                {% for edu in user_education %}
+                  <div id="edu-{{ edu.id }}" class="mb-2 p-2 border-bottom">
+                    <p class="mb-0">
+                      <p><b>{{ edu.institution }}</b></p>
+                      <b>{{ edu.get_level_display }}:</b> {{ edu.degree }}
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-link edit-education-btn p-0 ms-2"
+                        data-bs-toggle="modal"
+                        data-bs-target="#educationModal"
+                        data-id="{{ edu.id }}"
+                        data-level="{{ edu.level }}"
+                        data-degree="{{ edu.degree }}"
+                        data-institution="{{ edu.institution }}"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-link delete-education-btn text-danger p-0 ms-1"
+                        data-id="{{ edu.id }}"
+                      >
+                        Delete
+                      </button>
+                    </p>
+                  </div>
+                {% endfor %}
+              </div>
+              {% if not user_education %}
+                <p class="text-muted">No education details added yet.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container" style="margin-top: 20px;"></div>
+      <button type="submit" class="btn btn-primary btn-lg" style="background-color: #5D61EA; color:#ffffff;">Save Profile</button>
     </form>
 
-    <hr class = "my-5">
+    <hr class="my-5">
+  </div>
 
-    
+  <div class="container" style="margin-top: 100px;"></div>
 </div>
 
-<div class = "profile-page-bg mb-5">
-    <div class="container" style="margin-top: 100px;"></div>
+<div class="profile-page-bg mb-5">
+  <div class="container" style="margin-top: 100px;"></div>
 </div>
 
-<!-- Education Modal -->
-<div class="modal fade" id="educationModal" tabindex="-1" role = "dialog" aria-labelledby="educationModalLabel" aria-hidden="true">
-    <div class = "modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="educationModalLabel">Add Education</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="education-form" method ="post" action = "{% url 'save_education_add' %}">
-
-                    {% csrf_token %}
-                    <input type="hidden" id="education-id-field" name="education_id">
-                    {{ education_form.as_p }}
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="save-education-btn">Save</button>
-            </div>
-        </div>
+<div class="modal fade" id="educationModal" tabindex="-1" role="dialog" aria-labelledby="educationModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="educationModalLabel">Add Education</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="education-form" method="post" action="{% url 'save_education_add' %}">
+          {% csrf_token %}
+          <input type="hidden" id="education-id-field" name="education_id">
+          {{ education_form.as_p }}
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="save-education-btn">Save</button>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock content %}
 
@@ -121,23 +124,21 @@
 <script>
 $(document).ready(function(){
     var base_add_url = "{% url 'save_education_add' %}";
-    var base_edit_url = "{% url 'save_education_edit' education_id=0 %}".replace('/0/', '/')
-    var base_delete_url = "{% url 'delete_education' education_id=0 %}".replace('/0/', '/')
+    var base_edit_url = "{% url 'save_education_edit' education_id=0 %}".replace('/0/', '/');
+    var base_delete_url = "{% url 'delete_education' education_id=0 %}".replace('/0/', '/');
 
-    //reset form and set to add
     $('#add-education-btn').on('click', function(){
         $('#education-form')[0].reset();
         $('#educationModalLabel').text('Add Education');
         $('#education-id-field').val('');
     });
 
-    //populate form and set to edit
     $('#education-list').on('click', '.edit-education-btn', function(){
         var button = $(this);
-        var id = $(this).data('id');
-        var level = $(this).data('level');
-        var degree = $(this).data('degree');
-        var institution = $(this).data('institution');
+        var id = button.data('id');
+        var level = button.data('level');
+        var degree = button.data('degree');
+        var institution = button.data('institution');
 
         $('#educationModalLabel').text('Edit Education');
         $('#education-id-field').val(id);
@@ -146,10 +147,8 @@ $(document).ready(function(){
         $('#id_institution').val(institution);
     });
 
-    //delete logic
     $('#education-list').on('click', '.delete-education-btn', function(){
         var educationId = $(this).data('id');
-        
 
         if (confirm('Are you sure you want to delete this education entry?')){
             var url = base_delete_url + educationId + '/';
@@ -180,7 +179,6 @@ $(document).ready(function(){
         var educationId = $('#education-id-field').val();
         var url;
 
-        
         if (educationId){
             url = base_edit_url + educationId + '/';
         } else {
@@ -193,7 +191,7 @@ $(document).ready(function(){
             data: form.serialize(),
             success: function(response){
                 if (response.status === 'success'){
-                    var new_html = '<p class = "mb-0"><b>' + response.level + ':</b> ' + response.degree +
+                    var new_html = '<p class="mb-0"><b>' + response.level + ':</b> ' + response.degree +
                         ' <button type="button" class="btn btn-sm btn-link edit-education-btn p-0 ms-2" ' +
                         'data-bs-toggle="modal" data-bs-target="#educationModal" ' +
                         'data-id="' + response.id + '" ' +
@@ -206,24 +204,19 @@ $(document).ready(function(){
                         '</p>';
                     var wrapper_html = '<div id="edu-' + response.id + '" class="mb-2 p-2 border-bottom">' + new_html + '</div>';
                     if (response.action === 'created') {
-                        //appending new entry
                         $('#education-list').append(wrapper_html);
                     }
                     else if (response.action === 'updated') {
-                        //updating existing entry
                         $('#edu-' + response.id).replaceWith(wrapper_html);
                     }
 
-                    
                     $('#educationModal').modal('hide');
-                    // reset the form
                     form[0].reset();
                     $('#education-id-field').val('');
                 }
                 else {
                     alert('Error saving edu: ' + JSON.stringify(response.errors));
                 }
-                
             },
             error: function(xhr, errmsg, err){
                 alert('There was an error saving your education. Please try again: ' + errmsg);

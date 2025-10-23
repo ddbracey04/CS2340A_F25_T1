@@ -1,444 +1,226 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load static %}
-
-<div class="container mt-5">
-  <!-- Page Header -->
-  <div class="row mb-4">
-    <div class="col-12 text-center">
-      <h1 class="display-4 fw-bold" style="color: #5D61EA;">Find Your Dream Job</h1>
-      <p class="lead text-muted">Discover exciting career opportunities tailored for you</p>
+{% block content %}
+<section class="job-search-page py-4">
+  <div class="container">
+    <div class="job-search-hero mb-4">
+      <div class="job-search-hero__text">
+        <h1 class="job-search-title">Find your next role</h1>
+        {% with result_count=context.jobs|length %}
+          <p class="job-search-subtitle">
+            {% if result_count %}
+              Showing {{ result_count }} {% if result_count == 1 %}position{% else %}positions{% endif %} based on your filters.
+            {% else %}
+              No jobs match your filters yet—adjust your search to see more roles.
+            {% endif %}
+          </p>
+        {% endwith %}
+      </div>
+      {% if user.is_authenticated and user.is_recruiter %}
+        <a href="{% url 'jobs.create' %}" class="btn btn-primary job-search-hero__cta">Post a job</a>
+      {% endif %}
     </div>
-  </div>
 
-  <!-- Filter Card -->
-  <div class="card shadow-sm mb-5">
-    <div class="card-header bg-light">
-      <h5 class="mb-0">
-        <i class="bi bi-funnel"></i> Filter Jobs
-      </h5>
-    </div>
-    <div class="card-body">
-      <form method="get" id="searchForm">
-        <!-- Row 1: Job Title (Full Width) -->
-        <div class="row mb-3">
-          <div class="col-12">
-            <label for="id_title" class="form-label fw-bold">
-              <i class="bi bi-briefcase"></i> Job Title
-            </label>
+    <div class="row job-search-layout gy-4 gx-4">
+      <aside class="col-12 col-lg-4 col-xl-3">
+        <form method="get" class="job-filter-card">
+          <div class="job-filter-card__header">
+            <h2>Refine search</h2>
+            <p>Focus on what matters to you.</p>
+          </div>
+          <div class="job-filter-group">
+            {{ context.form.title.label_tag }}
             {{ context.form.title }}
           </div>
-        </div>
-
-        <!-- Row 2: Skills and Skills Match Mode -->
-        <div class="row mb-3">
-          <div class="col-md-8">
-            <label class="form-label fw-bold">
-              <i class="bi bi-star"></i> Skills (type and press Enter, or select from suggestions)
-            </label>
-            <div class="position-relative">
-              <!-- Hidden field for form submission -->
-              <input type="hidden" name="skills" value="">
-              
-              <!-- Visible input for typing skills -->
-              <input list="skillSuggestions" class="form-control" placeholder="Type or select skills and press Enter..." id="skillInput" autocomplete="off">
-              <datalist id="skillSuggestions">
-                {% for skill in template_data.all_skills %}
-                  <option value="{{ skill }}">
-                {% endfor %}
-              </datalist>
-              
-              <!-- Skills Chips Display -->
-              <div id="skillsChips" class="mt-2 d-flex flex-wrap gap-2">
-                {% for skill in template_data.active_skills %}
-                  <span class="badge bg-primary d-flex align-items-center gap-1 skill-chip" style="font-size: 0.9rem; padding: 0.5rem 0.75rem; cursor: pointer;">
-                    {{ skill }}
-                    <input type="hidden" name="skill" value="{{ skill }}">
-                    <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" onclick="removeSkill(this)" aria-label="Remove"></button>
-                  </span>
-                {% endfor %}
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label fw-bold">
-              <i class="bi bi-filter"></i> Skills Match Mode
-            </label>
-            <select name="skills_mode" class="form-select" onchange="this.form.submit()">
-              <option value="AND" {% if template_data.skills_mode == 'AND' %}selected{% endif %}>Match ALL (AND)</option>
-              <option value="OR" {% if template_data.skills_mode == 'OR' %}selected{% endif %}>Match ANY (OR)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Row 3: Location (Grouped in Card) -->
-        <div class="row mb-3">
-          <div class="col-12">
-            <div class="card bg-light">
-              <div class="card-body">
-                <h6 class="card-title mb-3">
-                  <i class="bi bi-geo-alt"></i> Location
-                </h6>
-                <div class="row">
-                  <div class="col-md-4">
-                    <label for="id_city" class="form-label">City</label>
-                    {{ context.form.city }}
-                  </div>
-                  <div class="col-md-4">
-                    <label for="id_state" class="form-label">State</label>
-                    {{ context.form.state }}
-                  </div>
-                  <div class="col-md-4">
-                    <label for="id_country" class="form-label">Country</label>
-                    {{ context.form.country }}
+          <div class="job-filter-group">
+            <!-- Row 2: Skills and Skills Match Mode -->
+            <div class="row mb-3">
+              <div class="col-md-8">
+                <label class="form-label fw-bold">
+                  <i class="bi bi-star"></i> Skills (type and press Enter, or select from suggestions)
+                </label>
+                <div class="position-relative">
+                  <!-- Hidden field for form submission -->
+                  <input type="hidden" name="skills" value="">
+                  
+                  <!-- Visible input for typing skills -->
+                  <input list="skillSuggestions" class="form-control" placeholder="Type or select skills and press Enter..." id="skillInput" autocomplete="off">
+                  <datalist id="skillSuggestions">
+                    {% for skill in template_data.all_skills %}
+                      <option value="{{ skill }}">
+                    {% endfor %}
+                  </datalist>
+                  
+                  <!-- Skills Chips Display -->
+                  <div id="skillsChips" class="mt-2 d-flex flex-wrap gap-2">
+                    {% for skill in template_data.active_skills %}
+                      <span class="badge bg-primary d-flex align-items-center gap-1 skill-chip" style="font-size: 0.9rem; padding: 0.5rem 0.75rem; cursor: pointer;">
+                        {{ skill }}
+                        <input type="hidden" name="skill" value="{{ skill }}">
+                        <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" onclick="removeSkill(this)" aria-label="Remove"></button>
+                      </span>
+                    {% endfor %}
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Row 4: Salary Range (Grouped in Card) -->
-        <div class="row mb-3">
-          <div class="col-12">
-            <div class="card bg-light">
-              <div class="card-body">
-                <h6 class="card-title mb-3">
-                  <i class="bi bi-currency-dollar"></i> Salary Range
-                </h6>
-                <div class="row">
-                  <div class="col-md-6">
-                    <label for="id_salary_min" class="form-label">Minimum ($)</label>
-                    {{ context.form.salary_min }}
-                  </div>
-                  <div class="col-md-6">
-                    <label for="id_salary_max" class="form-label">Maximum ($)</label>
-                    {{ context.form.salary_max }}
-                  </div>
-                </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold">
+                  <i class="bi bi-filter"></i> Skills Match Mode
+                </label>
+                <select name="skills_mode" class="form-select" onchange="this.form.submit()">
+                  <option value="AND" {% if template_data.skills_mode == 'AND' %}selected{% endif %}>Match ALL (AND)</option>
+                  <option value="OR" {% if template_data.skills_mode == 'OR' %}selected{% endif %}>Match ANY (OR)</option>
+                </select>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Row 5: Work Style and Visa Sponsorship -->
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="id_work_style" class="form-label fw-bold">
-              <i class="bi bi-laptop"></i> Work Style
-            </label>
+          <div class="job-filter-group">
+            {{ context.form.work_style.label_tag }}
             {{ context.form.work_style }}
           </div>
-          <div class="col-md-6 d-flex align-items-end">
-            <div class="form-check">
-              {{ context.form.visa_sponsorship }}
-              <label class="form-check-label fw-bold" for="{{ context.form.visa_sponsorship.id_for_label }}">
-                <i class="bi bi-globe"></i> Visa Sponsorship Required
-              </label>
-            </div>
-          </div>
-        </div>
 
-        <!-- Row 6: Action Buttons -->
-        <div class="row">
-          <div class="col-12 d-flex gap-2 justify-content-end">
-            <button type="submit" class="btn btn-primary px-4">
-              <i class="bi bi-search"></i> Search
-            </button>
-            <a href="{% url 'jobs.index' %}" class="btn btn-outline-secondary px-4">
-              <i class="bi bi-arrow-clockwise"></i> Reset
-            </a>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Recommended Jobs Section (for job seekers) -->
-  {% if template_data.recommended_jobs %}
-  <div class="alert alert-info shadow-sm mb-4" role="alert">
-    <h5 class="alert-heading">
-      <i class="bi bi-stars"></i> Recommended for You
-    </h5>
-    <p class="mb-3">These jobs match your skills profile:</p>
-    <div class="row g-3">
-      {% for rec in template_data.recommended_jobs %}
-        <div class="col-md-6 col-lg-4">
-          <div class="card h-100 hover-shadow">
-            {% if rec.job.image %}
-              <img src="{{ rec.job.image.url }}" class="card-img-top" alt="{{ rec.job.title }}" style="height: 200px; object-fit: cover;">
-            {% endif %}
-            <div class="card-body">
-              <h6 class="card-title">{{ rec.job.title }}</h6>
-              {% if rec.job.company %}
-                <p class="text-muted small mb-2">
-                  <i class="bi bi-building"></i> {{ rec.job.company }}
-                </p>
-              {% endif %}
-              {% if rec.common_skills %}
-                <div class="mb-2">
-                  <small class="text-muted">Matching Skills:</small>
-                  <div class="skill-badge-group mt-1">
-                    {% for skill in rec.common_skills %}
-                      <span class="skill-badge-sm">{{ skill }}</span>
-                    {% endfor %}
-                  </div>
-                </div>
-              {% endif %}
-              {% if rec.job.salary_min or rec.job.salary_max %}
-                <p class="small text-success mb-2">
-                  <i class="bi bi-currency-dollar"></i>
-                  {% if rec.job.salary_min and rec.job.salary_max %}
-                    ${{ rec.job.salary_min|floatformat:2 }} - ${{ rec.job.salary_max|floatformat:2 }}
-                  {% elif rec.job.salary_min %}
-                    From ${{ rec.job.salary_min|floatformat:2 }}
-                  {% elif rec.job.salary_max %}
-                    Up to ${{ rec.job.salary_max|floatformat:2 }}
-                  {% endif %}
-                </p>
-              {% endif %}
-              <a href="{% url 'jobs.show' id=rec.job.id %}" class="btn btn-sm btn-primary w-100">
-                <i class="bi bi-eye"></i> View Details
-              </a>
-            </div>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- My Posted Jobs (for recruiters) -->
-  {% if user.is_authenticated and user.is_recruiter %}
-    <div class="mb-5">
-      <h4 class="mb-3">
-        <i class="bi bi-briefcase"></i> My Posted Jobs
-      </h4>
-      <div class="row g-3">
-        {% for job in context.jobs %}
-          {% if user in job.users.all %}
-            <div class="col-md-6 col-lg-4">
-              <div class="card h-100 hover-shadow">
-                {% if job.image.url != ''%}
-                  <img src="{{ job.image.url }}" class="card-img-top" alt="{{ job.title }}" style="height: 200px; object-fit: cover;">
-                {% endif %}
-                <div class="card-body">
-                  <h6 class="card-title">{{ job.title }}</h6>
-                  {% if job.company %}
-                    <p class="text-muted small mb-2">
-                      <i class="bi bi-building"></i> {{ job.company }}
-                    </p>
-                  {% endif %}
-                  {% if job.skill_list %}
-                    <div class="skill-badge-group mb-2">
-                      {% for skill in job.skill_list %}
-                        <span class="skill-badge-sm">{{ skill }}</span>
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  {% if job.salary_min or job.salary_max %}
-                    <p class="small text-success mb-2">
-                      <i class="bi bi-currency-dollar"></i>
-                      {% if job.salary_min and job.salary_max %}
-                        ${{ job.salary_min|floatformat:2 }} - ${{ job.salary_max|floatformat:2 }}
-                      {% elif job.salary_min %}
-                        From ${{ job.salary_min|floatformat:2 }}
-                      {% elif job.salary_max %}
-                        Up to ${{ job.salary_max|floatformat:2 }}
-                      {% endif %}
-                    </p>
-                  {% endif %}
-                  <div class="d-flex gap-2">
-                    <a href="{% url 'jobs.show' id=job.id %}" class="btn btn-sm btn-primary flex-grow-1">
-                      <i class="bi bi-eye"></i> View
-                    </a>
-                    {% if user.is_admin %}
-                      <a href="{% url 'jobs.edit' id=job.id %}" class="btn btn-sm btn-warning">
-                        <i class="bi bi-pencil"></i>
-                      </a>
-                      <form method="post" action="{% url 'jobs.delete' id=job.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </form>
-                    {% endif %}
-                  </div>
-                </div>
+          <div class="job-filter-group">
+            <div class="job-filter-inline">
+              <div>
+                {{ context.form.city.label_tag }}
+                {{ context.form.city }}
+              </div>
+              <div>
+                {{ context.form.state.label_tag }}
+                {{ context.form.state }}
               </div>
             </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
+            <div class="mt-3">
+              {{ context.form.country.label_tag }}
+              {{ context.form.country }}
+            </div>
+          </div>
 
-  <!-- All Available Jobs -->
-  <div class="mb-5">
-    <h4 class="mb-3">
-      <i class="bi bi-list-ul"></i> Available Jobs
-      <span class="badge bg-secondary">{{ context.jobs|length }}</span>
-    </h4>
-    <div class="row g-3">
-      {% for job in context.jobs %}
-        {% if not user.is_authenticated or not user.is_recruiter or user not in job.users.all %}
-          <div class="col-md-6 col-lg-4">
-            <div class="card h-100 hover-shadow">
-              {% if job.image %}
-                <img src="{{ job.image.url }}" class="card-img-top" alt="{{ job.title }}" style="height: 200px; object-fit: cover;">
-              {% endif %}
-              <div class="card-body">
-                <h6 class="card-title">{{ job.title }}</h6>
-                {% if job.company %}
-                  <p class="text-muted small mb-2">
-                    <i class="bi bi-building"></i> {{ job.company }}
-                  </p>
-                {% endif %}
-                {% if job.city or job.state or job.country %}
-                  <p class="small text-secondary mb-2">
-                    <i class="bi bi-geo-alt"></i>
-                    {{ job.city }}{% if job.state %}, {{ job.state }}{% endif %}{% if job.country %}, {{ job.country }}{% endif %}
-                  </p>
-                {% endif %}
-                {% if job.skill_list %}
-                  <div class="skill-badge-group mb-2">
-                    {% for skill in job.skill_list %}
-                      <span class="skill-badge-sm">{{ skill }}</span>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-                {% if job.salary_min or job.salary_max %}
-                  <p class="small text-success mb-2">
-                    <i class="bi bi-currency-dollar"></i>
-                    {% if job.salary_min and job.salary_max %}
-                      ${{ job.salary_min|floatformat:2 }} - ${{ job.salary_max|floatformat:2 }}
-                    {% elif job.salary_min %}
-                      From ${{ job.salary_min|floatformat:2 }}
-                    {% elif job.salary_max %}
-                      Up to ${{ job.salary_max|floatformat:2 }}
-                    {% endif %}
-                  </p>
-                {% endif %}
-                <a href="{% url 'jobs.show' id=job.id %}" class="btn btn-sm btn-primary w-100">
-                  <i class="bi bi-eye"></i> View Details
-                </a>
+          <div class="job-filter-group">
+            <label class="form-label">Salary range</label>
+            <div class="job-filter-inline">
+              <div>
+                {{ context.form.salary_min }}
+              </div>
+              <span class="range-divider">to</span>
+              <div>
+                {{ context.form.salary_max }}
               </div>
             </div>
+          </div>
+
+          <div class="job-filter-group job-filter-checkbox">
+            {{ context.form.visa_sponsorship }}
+            {{ context.form.visa_sponsorship.label_tag }}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1 job-filter-submit">Search</button>
+            <a href="{% url 'jobs.index' %}" class="btn btn-outline-secondary flex-grow-1">Reset</a>
+          </div>
+        </form>
+      </aside>
+
+      <div class="col-12 col-lg-8 col-xl-9">
+        {% if template_data.recommendations_hidden %}
+          <div class="alert alert-secondary d-flex justify-content-between align-items-center recommendation-alert" role="alert">
+            <span>You dismissed your job recommendations. You can bring them back anytime.</span>
+            <form method="post" action="{% url 'jobs.recommendations.show' %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn btn-primary btn-sm recommendation-alert__button">Show recommendations</button>
+            </form>
           </div>
         {% endif %}
-      {% empty %}
-        <div class="col-12">
-          <div class="alert alert-warning text-center" role="alert">
-            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-            <p class="mt-3 mb-0">No jobs match your search criteria. Try adjusting your filters.</p>
+
+        {% if user.is_authenticated and user.is_job_seeker and template_data.recommended_jobs %}
+          <section id="recommended-panel" class="recommendations-panel position-relative mb-4">
+            <form method="post" action="{% url 'jobs.recommendations.hide' %}" class="recommendations-panel__dismiss">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn-close" aria-label="Dismiss recommendations"></button>
+            </form>
+
+            <div class="recommendations-panel__header">
+              <p class="recommendations-eyebrow mb-1">Tailored for you</p>
+              <h4 class="mb-0">Recommended Jobs</h4>
+            </div>
+            <div class="recommendations-list">
+              {% for rec in template_data.recommended_jobs %}
+                <article class="recommendation-card">
+                  <div class="recommendation-card__media">
+                    <img src="{{ rec.job.image.url }}" alt="{{ rec.job.title }}">
+                  </div>
+                  <div class="recommendation-card__body">
+                    <h5 class="recommendation-card__title">{{ rec.job.title }}</h5>
+                    {% if rec.common_skills %}
+                      <p class="recommendation-card__subtitle">Matching skills</p>
+                      <div class="skill-badge-group">
+                        {% for skill in rec.common_skills %}
+                          <span class="skill-badge">{{ skill }}</span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="recommendation-card__actions">
+                    <a href="{% url 'jobs.show' id=rec.job.id %}" class="btn btn-outline-dark btn-sm">View job</a>
+                    <form method="post" action="{% url 'jobs.start_application' id=rec.job.id %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="user_note" value="">
+                      <button type="submit" class="btn btn-primary btn-sm recommendation-card__apply">Apply now</button>
+                    </form>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        {% elif user.is_authenticated and user.is_job_seeker and template_data.recommendations_available and not template_data.recommendations_hidden %}
+          <div class="alert alert-info" role="alert">
+            We have job recommendations waiting. Update your filters or click “Show recommendations” to view them again.
           </div>
-        </div>
-      {% endfor %}
+        {% endif %}
+
+        <section class="job-results">
+          <div class="job-results-header">
+            {% if user.is_authenticated and user.is_job_seeker %}
+              <p class="job-results-eyebrow">Your activity</p>
+              <h2>Jobs you've saved or applied to</h2>
+              <p class="job-results-description">Keep tabs on the opportunities you’re already tracking.</p>
+            {% elif user.is_authenticated and user.is_recruiter %}
+              <p class="job-results-eyebrow">Your listings</p>
+              <h2>Roles you've posted</h2>
+              <p class="job-results-description">Review the positions you’re hiring for and make updates as needed.</p>
+            {% else %}
+              <p class="job-results-eyebrow">Your matches</p>
+              <h2>Highlighted roles</h2>
+              <p class="job-results-description">Jobs that align closely with your filters show up here first.</p>
+            {% endif %}
+          </div>
+          <div class="job-card-grid">
+            {% for job in context.user_jobs %}
+              {% include 'jobs/partials/job_card.html' with job=job %}
+            {% empty %}
+              <p class="text-muted mb-0">You have not saved or applied to any roles that match these filters yet.</p>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="job-results mt-5">
+          <div class="job-results-header">
+            <p class="job-results-eyebrow">More to explore</p>
+            <h2>Discover additional opportunities</h2>
+            <p class="job-results-description">Browse a broader set of roles that fit your current filters.</p>
+          </div>
+          <div class="job-card-grid">
+            {% for job in context.other_jobs %}
+              {% include 'jobs/partials/job_card.html' with job=job %}
+            {% empty %}
+              <p class="text-muted mb-0">No additional roles match your filters right now. Try widening your search.</p>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
     </div>
   </div>
-</div>
-
-<!-- Skills Chips JavaScript -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const skillInput = document.getElementById('skillInput');
-  const skillsChips = document.getElementById('skillsChips');
-  const searchForm = document.getElementById('searchForm');
-  const hiddenSkillsInput = document.querySelector('input[name="skills"]');
-
-  // Handle skill input
-  skillInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      addSkill(this.value.trim());
-      this.value = '';
-    }
-  });
-
-  skillInput.addEventListener('input', function() {
-    const value = this.value.trim();
-    if (value.endsWith(',')) {
-      addSkill(value.slice(0, -1).trim());
-      this.value = '';
-    }
-  });
-
-  // Handle datalist selection
-  skillInput.addEventListener('change', function() {
-    if (this.value) {
-      addSkill(this.value.trim());
-      this.value = '';
-    }
-  });
-
-  function addSkill(skill) {
-    if (!skill) return;
-    
-    // Check if skill already exists
-    const existingSkills = Array.from(skillsChips.querySelectorAll('input[name="skill"]')).map(input => input.value);
-    if (existingSkills.includes(skill)) return;
-
-    // Create chip
-    const chip = document.createElement('span');
-    chip.className = 'badge bg-primary d-flex align-items-center gap-1 skill-chip';
-    chip.style.fontSize = '0.9rem';
-    chip.style.padding = '0.5rem 0.75rem';
-    chip.innerHTML = `
-      ${skill}
-      <input type="hidden" name="skill" value="${skill}">
-      <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" onclick="removeSkill(this)" aria-label="Remove"></button>
-    `;
-    skillsChips.appendChild(chip);
-    
-    // Auto-submit
-    searchForm.submit();
-  }
-});
-
-function removeSkill(button) {
-  button.closest('.skill-chip').remove();
-  document.getElementById('searchForm').submit();
-}
-</script>
-
-<style>
-.hover-shadow {
-  transition: box-shadow 0.3s ease;
-}
-
-.hover-shadow:hover {
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-
-.skill-badge-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.skill-badge {
-  display: inline-block;
-  padding: 0.4rem 0.8rem;
-  background-color: #5D61EA;
-  color: white;
-  border-radius: 1rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.skill-badge-sm {
-  display: inline-block;
-  padding: 0.25rem 0.6rem;
-  background-color: #e7e7ff;
-  color: #5D61EA;
-  border-radius: 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.skill-chip {
-  cursor: default;
-}
-</style>
-
+</section>
 {% endblock content %}

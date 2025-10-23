@@ -6,6 +6,7 @@ from django.http import HttpResponseForbidden
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.db.models import Count, Q
+from django.urls import reverse
 from map.models import Location
 from map.utils import lookupLatLon
 
@@ -97,6 +98,7 @@ def index(request):
 
     if data.get("visa_sponsorship") and data.get("visa_sponsorship") != '':
         jobs = jobs.filter(visa_sponsorship=True)
+        
 
     # Aggregate top skills for suggestions
     all_jobs = Job.objects.all()
@@ -113,15 +115,24 @@ def index(request):
         "all_skills": all_skills,
     }
 
+    user_jobs = Job.objects.none()
+    other_jobs = jobs
+    if request.user.is_authenticated:
+        user_jobs = jobs.filter(users=request.user)
+        other_jobs = jobs.exclude(users=request.user)
+
     context = {
         "template_data": template_data,
         "form": form,
         "jobs": jobs,
+        "user_jobs": user_jobs,
+        "other_jobs": other_jobs,
     }
 
     # Make recommended jobs list for candidates
     # Recommendation is based on overlap between the jobs skills and the applicants profile skills.
     recommended = []
+    hide_recommendations = request.session.get('hide_job_recommendations', False)
     if request.user.is_authenticated and request.user.is_job_seeker():
         profile = getattr(request.user, 'home_profile', None)
         candidate_skills_lower = set([s.lower() for s in profile.skill_list]) if profile and profile.skill_list else set()
@@ -141,9 +152,32 @@ def index(request):
             # sort by number of matches
             recommended.sort(key=lambda x: (-x['match_count']))
     # limit to top 3 because that sounds reasonable?
-    template_data['recommended_jobs'] = recommended[:3]
+    hide_recommendations = request.session.get('hide_job_recommendations', False)
+    template_data['recommendations_available'] = bool(recommended)
+
+    if hide_recommendations:
+        template_data['recommended_jobs'] = []
+    else:
+        template_data['recommended_jobs'] = recommended[:3]
+    template_data['recommendations_hidden'] = hide_recommendations and bool(recommended)
 
     return render(request, 'jobs/index.html', {'template_data': template_data, 'context': context})
+
+
+@login_required
+def hide_recommendations(request):
+    if request.user.is_job_seeker() or request.user.is_admin():
+        request.session['hide_job_recommendations'] = True
+        request.session.modified = True
+    return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('jobs.index'))
+
+
+@login_required
+def show_recommendations(request):
+    if 'hide_job_recommendations' in request.session:
+        del request.session['hide_job_recommendations']
+        request.session.modified = True
+    return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('jobs.index'))
 
 def show(request, id):
     job = Job.objects.get(id=id)
@@ -237,7 +271,6 @@ def create_job(request):
             job.lon = location.lon
             job.save()
 
-
             messages.success(request, 'Job posted successfully.')
             return redirect('jobs.show', id=job.id)
     else:
@@ -256,7 +289,6 @@ def edit_job(request, id):
     if request.method == 'POST':
         form = JobSearchForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
-
             if form.has_changed() and ("city" in form.changed_data or "state" in form.changed_data or "country" in form.changed_data):
                 try:
                     location = Location.objects.get(city=job.city, state=job.state, country=job.country)
@@ -272,7 +304,6 @@ def edit_job(request, id):
                 job.save()
 
             form.save()
-
             messages.success(request, 'Job updated successfully.')
             return redirect('jobs.show', id=job.id)
     else:

@@ -1,10 +1,16 @@
 import re
 
 from django.db import models
+from django.conf import settings
 from users.models import CustomUser
 
-# Create your models here.
 class Profile(models.Model):
+    class WorkStyle(models.TextChoices):
+        ANY = "", "No preference"
+        REMOTE = "remote", "Remote"
+        ONSITE = "onsite", "On-site"
+        HYBRID = "hybrid", "Hybrid"
+
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='home_profile', related_query_name='home_profile',)
     headline = models.CharField(max_length=255, blank=True)
     skills = models.TextField(blank=True, help_text='Comma-separated skills')
@@ -19,13 +25,13 @@ class Profile(models.Model):
     linkedin = models.URLField(blank=True)
     github = models.URLField(blank=True)
     website = models.URLField(blank=True)
-    
-    # Location fields (optional)
-    city = models.CharField(max_length=100, blank=True, null=True)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    country = models.CharField(max_length=100, blank=True, null=True)
-    lat = models.FloatField(blank=True, null=True)
-    lon = models.FloatField(blank=True, null=True)
+    work_style_preference = models.CharField(
+        max_length=10,
+        choices=WorkStyle.choices,
+        default=WorkStyle.ANY,
+        blank=True,
+        help_text='Preferred work environment for new roles',
+    )
 
     def __str__(self):
         return f"{self.user.username}'s profile"
@@ -42,13 +48,13 @@ class Education(models.Model):
     PROFILE_EDUCATION_LEVELS = [
         ('HS', 'High School'),
         ('AS', 'Associate Degree'),
-        ('BS', 'Bachelor\'s Degree'),
-        ('MS', 'Master\'s Degree'),
+        ('BS', "Bachelor's Degree"),
+        ('MS', "Master's Degree"),
         ('PhD', 'Doctorate'),
         ('OT', 'Other'),
     ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='educations')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='educations')
     level = models.CharField(max_length=20, choices=PROFILE_EDUCATION_LEVELS)
     degree = models.CharField(max_length=100)
     institution = models.CharField(max_length=100)
