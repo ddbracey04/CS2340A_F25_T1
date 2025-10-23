@@ -1,32 +1,32 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<section class="job-page py-5">
+<section class="job-search-page py-4">
   <div class="container">
-    <div class="job-page-hero mb-4">
-      <div class="job-page-hero__text">
-        <h1 class="job-page-title">Find your next role</h1>
+    <div class="job-search-hero mb-4">
+      <div class="job-search-hero__text">
+        <h1 class="job-search-title">Find your next role</h1>
         {% with result_count=context.jobs|length %}
-          <p class="job-page-subtitle">
+          <p class="job-search-subtitle">
             {% if result_count %}
               Showing {{ result_count }} {% if result_count == 1 %}position{% else %}positions{% endif %} based on your filters.
             {% else %}
-              No jobs match your filters yet—adjust your search to uncover more opportunities.
+              No jobs match your filters yet—adjust your search to see more roles.
             {% endif %}
           </p>
         {% endwith %}
       </div>
       {% if user.is_authenticated and user.is_recruiter %}
-        <a href="{% url 'jobs.create' %}" class="btn btn-primary job-page-cta">Post a job</a>
+        <a href="{% url 'jobs.create' %}" class="btn btn-primary job-search-hero__cta">Post a job</a>
       {% endif %}
     </div>
 
-    <div class="row job-page-layout gy-4 gx-4">
+    <div class="row job-search-layout gy-4 gx-4">
       <aside class="col-12 col-lg-4 col-xl-3">
         <form method="get" class="job-filter-card">
           <div class="job-filter-card__header">
             <h2>Refine search</h2>
-            <p>Use filters to focus on the work style, location, and salary range you prefer.</p>
+            <p>Focus on what matters to you.</p>
           </div>
           <div class="job-filter-group">
             {{ context.form.title.label_tag }}
@@ -90,7 +90,7 @@
             <form method="post" action="{% url 'jobs.recommendations.show' %}">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button type="submit" class="btn btn-primary btn-sm">Show recommendations</button>
+              <button type="submit" class="btn btn-primary btn-sm recommendation-alert__button">Show recommendations</button>
             </form>
           </div>
         {% endif %}
@@ -102,9 +102,10 @@
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
               <button type="submit" class="btn-close" aria-label="Dismiss recommendations"></button>
             </form>
+
             <div class="recommendations-panel__header">
-              <p class="recommendations-eyebrow mb-1">For you</p>
-              <h4 class="mb-0">Recommended roles</h4>
+              <p class="recommendations-eyebrow mb-1">Tailored for you</p>
+              <h4 class="mb-0">Recommended Jobs</h4>
             </div>
             <div class="recommendations-list">
               {% for rec in template_data.recommended_jobs %}
@@ -143,30 +144,40 @@
 
         <section class="job-results">
           <div class="job-results-header">
-            <p class="job-results-eyebrow">Your matches</p>
-            <h2 class="h5">Jobs you've saved or applied to</h2>
-            <p class="job-results-description">Keep track of the opportunities you’re already interested in.</p>
+            {% if user.is_authenticated and user.is_job_seeker %}
+              <p class="job-results-eyebrow">Your activity</p>
+              <h2>Jobs you've saved or applied to</h2>
+              <p class="job-results-description">Keep tabs on the opportunities you’re already tracking.</p>
+            {% elif user.is_authenticated and user.is_recruiter %}
+              <p class="job-results-eyebrow">Your listings</p>
+              <h2>Roles you've posted</h2>
+              <p class="job-results-description">Review the positions you’re hiring for and make updates as needed.</p>
+            {% else %}
+              <p class="job-results-eyebrow">Your matches</p>
+              <h2>Highlighted roles</h2>
+              <p class="job-results-description">Jobs that align closely with your filters show up here first.</p>
+            {% endif %}
           </div>
           <div class="job-card-grid">
             {% for job in context.user_jobs %}
               {% include 'jobs/partials/job_card.html' with job=job %}
             {% empty %}
-              <p class="text-muted mb-0">You haven’t saved or applied to any roles that match these filters yet.</p>
+              <p class="text-muted mb-0">You have not saved or applied to any roles that match these filters yet.</p>
             {% endfor %}
           </div>
         </section>
 
-        <section class="job-results mt-4">
+        <section class="job-results mt-5">
           <div class="job-results-header">
             <p class="job-results-eyebrow">More to explore</p>
-            <h2 class="h5">Discover additional opportunities</h2>
-            <p class="job-results-description">Browse other openings that align with your current filters.</p>
+            <h2>Discover additional opportunities</h2>
+            <p class="job-results-description">Browse a broader set of roles that fit your current filters.</p>
           </div>
           <div class="job-card-grid">
             {% for job in context.other_jobs %}
               {% include 'jobs/partials/job_card.html' with job=job %}
             {% empty %}
-              <p class="text-muted mb-0">No additional roles match right now. Try broadening your search.</p>
+              <p class="text-muted mb-0">No additional roles match your filters right now. Try widening your search.</p>
             {% endfor %}
           </div>
         </section>
