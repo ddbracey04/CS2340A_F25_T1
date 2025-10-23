@@ -60,6 +60,10 @@
                     <span class="fa fa-user"></span> {{ user.username }}
                 </a>
                 <ul class="dropdown">
+                    {% if user.is_admin %}
+                      <li><a href="{% url 'users.user_management' %}"><i class="fa fa-users"></i> Manage Users</a></li>
+                    {% endif %}
+                    
                     {% if user.is_job_seeker %}
                       <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a> -->
                       <li><a class="dropdown-item" href="{% url 'profile.view' username=request.user.username %}"> My Profile</a></li>
@@ -138,6 +142,10 @@
                               <span class="fa fa-user"></span> {{ user.username }}
                             </a>
                             <ul class="dropdown">
+                              {% if user.is_admin %}
+                                <li><a href="{% url 'users.user_management' %}"><i class="fa fa-users"></i> Manage Users</a></li>
+                              {% endif %}
+                              
                               {% if user.is_job_seeker %}
                                 <li><a href="{% url 'profile.view' username=request.user.username %}">My Profile</a></li>
                                 <li><a href="{% url 'profile.edit' %}">Edit Profile</a></li>
