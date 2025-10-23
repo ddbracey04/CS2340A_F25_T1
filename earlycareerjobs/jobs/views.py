@@ -114,6 +114,7 @@ def index(request):
     # Make recommended jobs list for candidates
     # Recommendation is based on overlap between the jobs skills and the applicants profile skills.
     recommended = []
+    hide_recommendations = request.session.get('hide_job_recommendations', False)
     if request.user.is_authenticated and request.user.is_job_seeker():
         profile = getattr(request.user, 'home_profile', None)
         candidate_skills_lower = set([s.lower() for s in profile.skill_list]) if profile and profile.skill_list else set()

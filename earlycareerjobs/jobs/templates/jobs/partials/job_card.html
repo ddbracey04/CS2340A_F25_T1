@@ -1,7 +1,7 @@
 <article class="job-card">
   <div class="job-card__media">
     {% if job.image %}
-      <img src="{{ job.image.url }}" alt="{{ job.title }}" />
+      <img src="{{ job.image.url }}" alt="{{ job.title }}">
     {% else %}
       <div class="job-card__placeholder">ECJ</div>
     {% endif %}
@@ -13,7 +13,9 @@
     </div>
     {% if job.city or job.state or job.country %}
       <p class="job-card__location">
-        {{ job.city }}{% if job.state %}{% if job.city %}, {% endif %}{{ job.state }}{% endif %}{% if job.country %}{% if job.city or job.state %}, {% endif %}{{ job.country }}{% endif %}
+        {{ job.city }}
+        {% if job.state %}{% if job.city %}, {% endif %}{{ job.state }}{% endif %}
+        {% if job.country %}{% if job.city or job.state %}, {% endif %}{{ job.country }}{% endif %}
       </p>
     {% endif %}
     <ul class="job-card__meta">
