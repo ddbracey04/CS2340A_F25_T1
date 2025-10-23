@@ -37,7 +37,7 @@
             <div class="row mb-3">
               <div class="job-filter-group" style="padding-left: 5%; padding-right: 5%;">
                 <label class="form-label fw-bold">
-                  <i class="bi bi-star"></i> Skills
+                  <i class="bi bi-star"></i> Skills:
                 </label>
                 <div class="position-relative">
                   <!-- Hidden field for form submission -->
@@ -67,7 +67,7 @@
             <div class="row mb-3">
               <div class="job-filter-group" style="padding-left: 5%;">
                 <label class="form-label fw-bold">
-                  <i class="bi bi-filter"></i> Skills Match Mode
+                  <i class="bi bi-filter"></i> Skills Match Mode:
                 </label>
                 <select name="skills_mode" class="form-select">
                   <option value="AND" {% if template_data.skills_mode == 'AND' %}selected{% endif %}>Match ALL (AND)</option>
@@ -99,7 +99,7 @@
           </div>
 
           <div class="job-filter-group">
-            <label class="form-label">Salary range</label>
+            <label class="form-label">Salary range:</label>
             <div class="job-filter-inline">
               <div>
                 {{ context.form.salary_min }}

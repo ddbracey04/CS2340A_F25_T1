@@ -226,7 +226,7 @@
                 <span class="badge bg-secondary">{{ template_data.applications|length }}</span>
               </h5>
               {% if user.is_authenticated and user.is_recruiter %}
-              <a href="{% url 'users.candidate_search' %}" class="btn btn-sm btn-outline-primary">
+              <a href="{% url 'candidates.search' %}" class="btn btn-sm btn-outline-primary">
                 <i class="bi bi-search"></i> Search All Candidates
               </a>
               {% endif %}

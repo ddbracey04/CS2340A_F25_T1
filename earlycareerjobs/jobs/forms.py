@@ -37,8 +37,8 @@ class JobSearchForm(forms.ModelForm):
             "city": "City",
             "state": "State",
             "country": "Country",
-            "salary_min": "Min salary",
-            "salary_max": "Max salary",
+            "salary_min": "Min",
+            "salary_max": "Max",
         }
 
         for field_name, field in self.fields.items():
