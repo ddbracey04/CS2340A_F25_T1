@@ -35,16 +35,16 @@
           <div class="job-filter-group">
             <!-- Row 2: Skills and Skills Match Mode -->
             <div class="row mb-3">
-              <div class="col-md-8">
+              <div class="job-filter-group" style="padding-left: 5%; padding-right: 5%;">
                 <label class="form-label fw-bold">
-                  <i class="bi bi-star"></i> Skills (type and press Enter, or select from suggestions)
+                  <i class="bi bi-star"></i> Skills
                 </label>
                 <div class="position-relative">
                   <!-- Hidden field for form submission -->
                   <input type="hidden" name="skills" value="">
                   
                   <!-- Visible input for typing skills -->
-                  <input list="skillSuggestions" class="form-control" placeholder="Type or select skills and press Enter..." id="skillInput" autocomplete="off">
+                  <input list="skillSuggestions" class="form-control job-filter-group" placeholder="Enter or Select Skills" id="skillInput" autocomplete="off" style="width: 100%;">
                   <datalist id="skillSuggestions">
                     {% for skill in template_data.all_skills %}
                       <option value="{{ skill }}">
@@ -52,10 +52,10 @@
                   </datalist>
                   
                   <!-- Skills Chips Display -->
-                  <div id="skillsChips" class="mt-2 d-flex flex-wrap gap-2">
+                  <div id="skillsChips" class="mt-2 d-flex flex-wrap gap-2 skill-badge-group">
                     {% for skill in template_data.active_skills %}
-                      <span class="badge bg-primary d-flex align-items-center gap-1 skill-chip" style="font-size: 0.9rem; padding: 0.5rem 0.75rem; cursor: pointer;">
-                        {{ skill }}
+                      <span class="skill-badge d-flex align-items-center gap-1 skill-chip" style="font-size: 0.9rem; padding: 0.5rem 0.75rem; cursor: pointer;">
+                        {{ skill }}&nbsp;
                         <input type="hidden" name="skill" value="{{ skill }}">
                         <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" onclick="removeSkill(this)" aria-label="Remove"></button>
                       </span>
@@ -63,15 +63,17 @@
                   </div>
                 </div>
               </div>
-              <div class="col-md-4">
+            </div>
+            <div class="row mb-3">
+              <div class="job-filter-group" style="padding-left: 5%;">
                 <label class="form-label fw-bold">
                   <i class="bi bi-filter"></i> Skills Match Mode
                 </label>
-                <select name="skills_mode" class="form-select" onchange="this.form.submit()">
+                <select name="skills_mode" class="form-select">
                   <option value="AND" {% if template_data.skills_mode == 'AND' %}selected{% endif %}>Match ALL (AND)</option>
                   <option value="OR" {% if template_data.skills_mode == 'OR' %}selected{% endif %}>Match ANY (OR)</option>
                 </select>
-              </div>
+                </div>
             </div>
           </div>
           <div class="job-filter-group">
@@ -223,4 +225,108 @@
     </div>
   </div>
 </section>
+
+<!-- Skills Chips JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const skillInput = document.getElementById('skillInput');
+  const skillsChips = document.getElementById('skillsChips');
+  const searchForm = document.getElementById('searchForm');
+  const hiddenSkillsInput = document.querySelector('input[name="skills"]');
+
+  // Handle skill input
+  skillInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addSkill(this.value.trim());
+      this.value = '';
+    }
+  });
+
+  skillInput.addEventListener('input', function() {
+    const value = this.value.trim();
+    if (value.endsWith(',')) {
+      addSkill(value.slice(0, -1).trim());
+      this.value = '';
+    }
+  });
+
+  // Handle datalist selection
+  skillInput.addEventListener('change', function() {
+    if (this.value) {
+      addSkill(this.value.trim());
+      this.value = '';
+    }
+  });
+
+  function addSkill(skill) {
+    if (!skill) return;
+    
+    // Check if skill already exists
+    const existingSkills = Array.from(skillsChips.querySelectorAll('input[name="skill"]')).map(input => input.value);
+    if (existingSkills.includes(skill)) return;
+
+    // Create chip
+    const chip = document.createElement('span');
+    chip.className = 'skill-badge d-flex align-items-center gap-1 skill-chip';
+    chip.style.fontSize = '0.9rem';
+    chip.style.padding = '0.5rem 0.75rem';
+    chip.innerHTML = `
+      ${skill}
+      <input type="hidden" name="skill" value="${skill}">
+      <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" onclick="removeSkill(this)" aria-label="Remove"></button>
+    `;
+    skillsChips.appendChild(chip);
+    
+    // Auto-submit
+    // searchForm.submit();
+  }
+});
+
+function removeSkill(button) {
+  button.closest('.skill-chip').remove();
+  // document.getElementById('searchForm').submit();
+}
+</script>
+
+<style>
+.hover-shadow {
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.skill-badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background-color: #5D61EA;
+  color: white;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.skill-badge-sm {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background-color: #e7e7ff;
+  color: #5D61EA;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.skill-chip {
+  cursor: default;
+}
+</style>
+
 {% endblock content %}
