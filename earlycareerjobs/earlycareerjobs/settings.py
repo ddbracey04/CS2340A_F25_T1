@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-vqb$pnm--o*dptbu(h8=n%qj=2(bpf_k2jjvij-uw53_t^&w2@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -121,6 +121,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_collected')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -128,7 +130,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'earlycareerjobs/static/',
+    #BASE_DIR / 'earlycareerjobs/static/',
+    os.path.join(BASE_DIR, 'earlycareerjobs/static'),
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser' 
@@ -138,3 +141,4 @@ LOGOUT_REDIRECT_URL = '/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+

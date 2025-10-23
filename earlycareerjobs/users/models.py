@@ -19,7 +19,6 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     company_name = models.CharField(max_length=100, blank=True)  # for recruiters
     resume = models.FileField(upload_to='resumes/', blank=True, null=True)  # for job seekers
-    
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
 

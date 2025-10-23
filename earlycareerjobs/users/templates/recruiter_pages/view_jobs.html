@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Your Jobs Listings</h2>
+
+{% if jobs %}
+    <ul>
+        {% for job in jobs %}
+        {% if user in job.users.all %}
+            <li>
+                <strong>{{ job.title }}</strong><br>
+            </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You haven’t listed any jobs yet.</p>
+{% endif %}
+
+{% endblock %}

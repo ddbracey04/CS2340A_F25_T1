@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track Applications{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" style="max-width: 1200px;">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Track Your Applications</h1>
+        <p class="text-gray-600">Monitor the status of all your job applications</p>
+    </div>
+
+    <!-- Simple Stats Bar -->
+    <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div class="flex justify-center space-x-8 text-sm">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-800">{{ total_applications }}</div>
+                <div class="text-gray-600">Total</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ stats.APPLIED|default:0 }}</div>
+                <div class="text-gray-600">Applied</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-orange-600">{{ stats.REVIEW|default:0 }}</div>
+                <div class="text-gray-600">Review</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600">{{ stats.INTERVIEW|default:0 }}</div>
+                <div class="text-gray-600">Interview</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{{ stats.OFFER|default:0 }}</div>
+                <div class="text-gray-600">Offers</div>
+            </div>
+        </div>
+    </div>
+
+    <br>
+    <br>
+
+    <!-- Applications List -->
+    <div class="p-6 border-b">
+        <h3 class="text-lg font-semibold text-gray-800">Your Applications</h3>
+    </div>
+        
+
+    <div class="divide-y">
+        {% for application in applications %}
+        <div class="p-6">
+            <div class="flex items-center justify-between">
+                <div class="card">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <h4 class="text-lg font-medium text-gray-900">
+                            {% for user in application.job.users.all %}
+                                {% if user.is_recruiter %}
+                                    {{user.company_name}}
+                                {% endif %}
+                            {% endfor %}
+                        </h4>
+                        <h5>{{ application.job.title }}</h5>
+                        
+
+                        {% if application.status == 'APPLIED' %}
+                            <span class="badge rounded-pill active_application_status">
+                                Applied
+                            </span>
+                        {% elif application.status == 'REVIEW' %}
+                            <span class="badge rounded-pill review_application_status">
+                                Review
+                            </span>
+                        {% elif application.status == 'INTERVIEW' %}
+                            <span class="badge rounded-pill interview_application_status">
+                                Interview
+                            </span>
+                        {% elif application.status == 'OFFER' %}
+                            <span class="badge rounded-pill offer_application_status">
+                                Offer
+                            </span>
+                        {% else %}
+                            <span class="badge rounded-pill error_application_status">
+                                NO STATE
+                            </span>
+                        {% endif %}
+                    </div>
+                    {% if application.user_note != "" %}
+                        <p class="text-gray-600 text-sm mt-2 italic">
+                            Personalized Note: <br>
+                            &nbsp;&nbsp;&nbsp;&nbsp; {{ application.user_note|truncatewords:15 }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <br>
+        {% empty %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 mb-4">
+                    <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
+                <p class="text-gray-500 mb-4">Start applying to jobs to track your progress here.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusForms = document.querySelectorAll('.status-update-form');
+
+    statusForms.forEach(form => {
+        const select = form.querySelector('select');
+        const originalValue = select.value;
+
+        select.addEventListener('change', function() {
+            if (confirm('Are you sure you want to update the status?')) {
+                form.submit();
+            } else {
+                select.value = originalValue;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

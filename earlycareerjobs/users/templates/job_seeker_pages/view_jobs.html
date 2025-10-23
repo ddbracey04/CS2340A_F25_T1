@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Jobs you have applied to</h2>
+
+{% if applications %}
+    <ul>
+        {% for application in applications %}
+            <li>
+                <strong>{{ application.job.title }}</strong><br>
+                Personalized Note: {{ application.user_note }}<br>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You haven’t applied to any jobs yet.</p>
+{% endif %}
+
+{% endblock %}

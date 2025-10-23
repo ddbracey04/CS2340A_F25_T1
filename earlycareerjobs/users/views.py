@@ -6,6 +6,7 @@ from .forms import CustomUserCreationForm
 from .models import CustomUser
 from .models import CustomUser, ProfilePrivacy
 from .forms import PrivacySettingsForm
+from jobs.models import Application, Job
 
 def register(request):
     if request.method == 'POST':
@@ -18,7 +19,6 @@ def register(request):
             elif user.role == CustomUser.Role.JOB_SEEKER:
                 if 'resume' in request.FILES:
                     user.resume = request.FILES['resume']
-            
             user.save()
             
             username = form.cleaned_data.get('username')
@@ -98,3 +98,15 @@ def privacy_settings(request):
         'user': request.user
     }
     return render(request, 'users/privacy_settings.html', context)
+def view_jobs(request):
+
+    applications = Application.objects.filter(user=request.user).select_related('job')
+    context = {
+        'applications': applications,
+        'jobs': Job.objects.all(),
+    }
+    
+    if request.user.is_job_seeker():
+        return render(request, 'job_seeker_pages/view_jobs.html', context)
+    else:
+        return render(request, 'recruiter_pages/view_jobs.html', context)

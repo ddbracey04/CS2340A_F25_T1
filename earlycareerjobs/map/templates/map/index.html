@@ -1,14 +1,120 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
+<style>
+  .highlight-job {
+    border: 2px solid #5D61EA !important;
+    background-color: #f0f3ff;
+    box-shadow: 0 0 8px rgba(93, 97, 234, 0.5);
+    cursor: pointer;
+  }
+  .job-card {
+    cursor: pointer;
+  }
+</style>
 <div class="p-3">
-  <div class="container">
+  <div class="container-fluid">
     <div class="row mt-3">
-      <div class="col-md-6 mx-auto mb-3 text-center">
-        <h2>Job Locations Map</h2>
+      <div class="col-12 text-center">
+        <h2>Job Locations Map & List</h2>
       </div>
     </div>
-  <div id="map" style="height: 500px; margin-top: 20px; margin-bottom: 10px;"></div>
+
+    <form class="form-inline" method="post" action="{% url 'map.filter' %}">
+      {% csrf_token %}
+      <input class="hidden" value="{{template_data.searchCity}}" id="old_city" name="old_city" style="display: none;">
+      <input class="hidden" value="{{template_data.searchState}}" id="old_state" name="old_state" style="display: none;">
+      <input class="hidden" value="{{template_data.searchCountry}}" id="old_country" name="old_country" style="display: none;">
+      <input class="hidden" value="{{template_data.searchRadius}}" id="old_radius" name="old_radius" style="display: none;">
+      <input class="hidden" value="{{template_data.centerLat}}" id="old_lat" name="old_lat" style="display: none;">
+      <input class="hidden" value="{{template_data.centerLon}}" id="old_lon" name="old_lon" style="display: none;">
+      {% for job in template_data.jobs %}
+        <input class="hidden" value="{{job.id}}" name="old_job_id[]" style="display: none;">
+      {% endfor %}
+
+
+      
+      {% if template_data.searchCity %}
+        <input type="text" id="city_filter" placeholder="City" value="{{template_data.searchCity}}" name="city_filter">
+      {% else %}
+        <input type="text" id="city_filter" placeholder="City" name="city_filter">
+      {% endif %}
+      
+      {% if template_data.searchState %}
+        <input type="text" id="state_filter" placeholder="State" value="{{template_data.searchState}}" name="state_filter">
+      {% else %}
+        <input type="text" id="state_filter" placeholder="State" name="state_filter">
+      {% endif %}
+        
+      {% if template_data.searchCountry %}
+        <input type="text" id="country_filter" placeholder="Country" value="{{template_data.searchCountry}}" name="country_filter">
+      {% else %}
+        <input type="text" id="country_filter" placeholder="Country" name="country_filter">
+      {% endif %}
+
+      
+      <span style="display:inline-block">
+        <label for="radius_filter", id="radius_filter_label">Radius:</label>
+        {% if template_data.searchRadius %}
+          <input type="range" min="1" max="50" value="{{template_data.searchRadius}}" class="slider" id="radius_filter" name="radius_filter" style="padding: 0;">
+        {% else %}
+          <input type="range" min="1" max="50" value="5" class="slider" id="radius_filter" name="radius_filter" style="padding: 0;">
+        {% endif %}
+        <script>
+          var slider = document.getElementById("radius_filter");
+          var output = document.getElementById("radius_filter_label");
+          output.innerHTML = "Radius: ".concat(slider.value).concat(" mi");
+
+          slider.oninput = function() {
+            output.innerHTML = "Radius: ".concat(this.value).concat(" mi");
+          }
+        </script>
+      </span>
+
+      <button class="primary-btn" type="submit">Filter</button>
+    </form>
+    {% if error %}
+      <div class="alert" style="padding: 20px; background-color: #f44336; color: white; margin-bottom: 15px;">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        ERROR: {{error}}
+      </div>
+    {% endif %}
+    
+    <div class="row mt-3">
+      <div class="col-md-8">
+        <div id = "map" style="height: 500px; margin-bottom: 10px;"></div>
+      </div>
+
+      <div class="col-md-4">
+        <div id="job-list-container" style="height: 500px; overflow-y: scroll; padding: 20px; border: 1px solid #ccc">
+          <h3 class = "mb-3">Available Jobs</h3>
+
+          {% for job in template_data.jobs %}
+          <div class="card mb-3 mx-3">
+            <div class="job-card"
+                data-lat = "{{ job.lat }}"
+                data-lon = "{{ job.lon }}"
+                data-id = "{{ job.id }}"
+                style="width: 100%; padding-left: 0%;">
+              <div class="card-body">
+                <h5 class="card-title">{{ job.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ job.company }}</h6>
+                <p class="card-text">{{ job.description }}</p>
+                {% if job.city or job.state or job.country %}
+                  <small class="text-secondary">Location: {{ job.city }}{% if job.city %}{% if job.state or job.country %}, {% endif %}{% endif %}{{ job.state }}{% if job.state and job.country %}, {% endif %}{{ job.country }} </small>
+                {% endif %}
+              </div>
+            </div>
+            <a href="{% url 'jobs.show' id=job.id %}" class="btn bg-dark text-white">View Job</a>
+          </div>
+          {% empty %}
+            <p class="text-muted">No job listings are currently available.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    
+  <!-- <div id="map" style="height: 500px; margin-top: 20px; margin-bottom: 10px;"></div> -->
 </div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -44,9 +150,18 @@
 </form>
 
 <script>
-  const map = L.map('map').setView([33.7722, -84.3902], 13); // Centered on GT at zoom level 13
+  {% if template_data.centerLat and template_data.centerLon %}
+    const map = L.map('map').setView([{{template_data.centerLat}}, {{template_data.centerLon}}], 13); // Centered on GT at zoom level 13
+  {% else %}
+    const map = L.map('map').setView([33.7722, -84.3902], 13); // Centered on GT at zoom level 13
+  {% endif %}
   
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap contributors'}).addTo(map);
+
+  let markerDict = {};
+  {% for job in template_data.jobs %}
+    markerDict[{{ job.id }}] = L.marker(["{{job.lat}}", "{{job.lon}}"]).addTo(map).bindPopup(`<strong>${"{{job.title}}"}</strong><br>${"{{job.description}}"}`);
+  {% endfor %}
 
   map.on('click', function(e)
   {
@@ -66,13 +181,34 @@
 
     document.getElementById("jobSelectForm").style.display = "block";
   });
-</script>
 
-{% for job in template_data.jobs %}
-    <script>
-        L.marker(["{{job.lat}}", "{{job.lon}}"]).addTo(map).bindPopup(`<strong>${"{{job.title}}"}</strong><br>${"{{job.description}}"}`);
-    </script>
-{% endfor %}
+  document.addEventListener('DOMContentLoaded', function() {
+    const jobCards = document.querySelectorAll('.job-card');
+
+    jobCards.forEach(card => {
+        card.addEventListener('click', function() {
+            jobCards.forEach(c => c.classList.remove('highlight-job'));
+            this.classList.add('highlight-job');
+            const lat = parseFloat(this.getAttribute('data-lat'));
+            const lon = this.getAttribute('data-lon');
+            if (!isNaN(lat) && !isNaN(lon)) {
+              map.setView([lat, lon], 15);
+            }
+            const jobId = parseInt(this.getAttribute('data-id'));
+            if (jobId in markerDict) {
+              markerDict[jobId].openPopup();
+            }
+          });
+        });
+    });
+
+  {% if template_data.centerLat and template_data.centerLon and template_data.searchRadius %}
+    var circle = L.circle(["{{ template_data.centerLat }}", "{{ template_data.centerLon }}"], radius={{template_data.searchRadius}}*1609.344).addTo(map);
+    map.fitBounds(circle.getBounds());
+  {% elif template_data.centerLat and template_data.centerLon %}
+    map.setView([{{ template_data.centerLat }}, {{ template_data.centerLon }}], 15);
+  {% endif %}
+</script>
 
 {% endblock %}
 
