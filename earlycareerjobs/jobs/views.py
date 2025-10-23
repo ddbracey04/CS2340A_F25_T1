@@ -4,75 +4,79 @@ from .forms import JobSearchForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib import messages
-# from django.http import JsonResponse
-from django.db.models import Count
+from django.views.decorators.http import require_POST
+from django.db.models import Count, Q
 from django.urls import reverse
 from map.models import Location
 from map.utils import lookupLatLon
 
+# Admin/Recruiter functions for managing applicants
+@login_required
+@require_POST
+def delete_applicant(request, job_id, app_id):
+    job = get_object_or_404(Job, id=job_id)
+    application = get_object_or_404(Application, id=app_id, job=job)
+    if not (request.user.is_admin() or (request.user.is_recruiter() and request.user in job.users.all())):
+        return HttpResponseForbidden()
+    application.delete()
+    messages.success(request, 'Applicant deleted successfully.')
+    return redirect('jobs.show', id=job_id)
+
+@login_required
+def edit_applicant(request, job_id, app_id):
+    job = get_object_or_404(Job, id=job_id)
+    application = get_object_or_404(Application, id=app_id, job=job)
+    if not (request.user.is_admin() or (request.user.is_recruiter() and request.user in job.users.all())):
+        return HttpResponseForbidden()
+    if request.method == 'POST':
+        user_note = request.POST.get('user_note', '').strip()
+        application.user_note = user_note
+        application.save()
+        messages.success(request, 'Applicant note updated successfully.')
+        return redirect('jobs.show', id=job_id)
+    return render(request, 'jobs/edit_applicant.html', {'application': application, 'job': job})
+
+@login_required
+@require_POST
+def delete_job(request, id):
+    job = get_object_or_404(Job, id=id)
+    if not request.user.is_admin():
+        return HttpResponseForbidden()
+    job.delete()
+    messages.success(request, 'Job deleted successfully.')
+    return redirect('jobs.index')
+
 def index(request):
-    # search_term = request.GET.get('search')
-    # if search_term:
-    #     jobs = Job.objects.filter(title__icontains=search_term)
-    # else:
-    #     jobs = Job.objects.all()
-    # template_data = {}
-    # template_data['title'] = 'Jobs'
-    # template_data['jobs'] = jobs
-
-
     form = JobSearchForm(request.GET or None)
     jobs = Job.objects.all()
-
-    # if form.is_valid():
-    #     data = form.cleaned_data
-
-    #     if data.get("title"):
-    #         jobs = jobs.filter(title__icontains=data["title"])
-
-    #     if data.get("skills"):
-    #         skill_terms = [term.strip() for term in data["skills"].split(",") if term.strip()]
-    #         for term in skill_terms:
-    #             jobs = jobs.filter(skills__icontains=term)
-
-    #     if data.get("city"):
-    #         jobs = jobs.filter(city__iexact=data["city"])
-
-    #     if data.get("state"):
-    #         jobs = jobs.filter(state__iexact=data["state"])
-
-    #     if data.get("country"):
-    #         jobs = jobs.filter(country__iexact=data["country"])
-
-    #     if data.get("salary_min") is not None:
-    #         jobs = jobs.filter(salary_min__gte=data["salary_min"])
-
-    #     if data.get("salary_max") is not None:
-    #         jobs = jobs.filter(salary_max__lte=data["salary_max"])
-
-    #     if data.get("work_style"):
-    #         jobs = jobs.filter(work_style=data["work_style"])
-
-    #     if data.get("visa_sponsorship"):
-    #         jobs = jobs.filter(visa_sponsorship=True)
-
-    #     template_data = {"title": "TODO: Title"}
-
-    #     context = {
-    #         "template_data": template_data,
-    #         "form": form,
-    #         "jobs": jobs,
-    #     }
-    # else:
     data = form.data
 
+    # Basic filters
     if data.get("title") and data.get("title") != '':
         jobs = jobs.filter(title__icontains=data["title"])
 
-    if data.get("skills") and data.get("skills") != '':
-        skill_terms = [term.strip() for term in data["skills"].split(",") if term.strip()]
-        for term in skill_terms:
-            jobs = jobs.filter(skills__icontains=term)
+    # Skills filtering with bubble support
+    text_skills = data.get("skills", "").strip()
+    bubble_skills = request.GET.getlist('skill')  # Get list of bubble skills
+    skills_mode = data.get("skills_mode", "AND")
+    
+    all_skill_terms = []
+    if text_skills:
+        all_skill_terms.extend([s.strip() for s in text_skills.split(",") if s.strip()])
+    if bubble_skills:
+        all_skill_terms.extend([s.strip() for s in bubble_skills if s.strip()])
+    
+    if all_skill_terms:
+        if skills_mode == "OR":
+            # OR mode: match any skill
+            q_objects = Q()
+            for term in all_skill_terms:
+                q_objects |= Q(skills__icontains=term)
+            jobs = jobs.filter(q_objects)
+        else:
+            # AND mode: match all skills (default)
+            for term in all_skill_terms:
+                jobs = jobs.filter(skills__icontains=term)
 
     if data.get("city") and data.get("city") != '':
         jobs = jobs.filter(city__iexact=data["city"])
@@ -94,8 +98,22 @@ def index(request):
 
     if data.get("visa_sponsorship") and data.get("visa_sponsorship") != '':
         jobs = jobs.filter(visa_sponsorship=True)
+        
 
-    template_data = {"title": "Early Career Jobs"}
+    # Aggregate top skills for suggestions
+    all_jobs = Job.objects.all()
+    skills_set = set()
+    for job in all_jobs:
+        if job.skill_list:
+            skills_set.update(job.skill_list)
+    all_skills = sorted(skills_set)[:100]  # Top 100 skills
+
+    template_data = {
+        "title": "Early Career Jobs",
+        "active_skills": all_skill_terms,
+        "skills_mode": skills_mode,
+        "all_skills": all_skills,
+    }
 
     user_jobs = Job.objects.none()
     other_jobs = jobs

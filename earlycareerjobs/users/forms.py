@@ -2,6 +2,24 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser, ProfilePrivacy
 
+# Form for recruiter to search candidates
+class CandidateSearchForm(forms.Form):
+    skills = forms.CharField(
+        required=False,
+        label='Skills',
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. Python, Excel', 'class': 'form-control'})
+    )
+    location = forms.CharField(
+        required=False,
+        label='Location',
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. Atlanta', 'class': 'form-control'})
+    )
+    projects = forms.CharField(
+        required=False,
+        label='Projects',
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. Web App', 'class': 'form-control'})
+    )
+
 class CustomUserCreationForm(UserCreationForm):
     role = forms.ChoiceField(
         choices=[(role, label) for role, label in CustomUser.Role.choices if role != CustomUser.Role.ADMIN],
@@ -15,7 +33,6 @@ class CustomUserCreationForm(UserCreationForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Force email field error messages to English
         self.fields['email'].error_messages = {
             'invalid': 'Enter a valid email address.',
             'required': 'This field is required.',

@@ -8,6 +8,10 @@ from .models import CustomUser, ProfilePrivacy
 from .forms import PrivacySettingsForm
 from jobs.models import Application, Job
 
+from home.models import Profile
+from .forms import CandidateSearchForm
+from django.db.models import Q
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST, request.FILES)
@@ -60,7 +64,7 @@ def edit_user(request, user_id):
             user.role = role
             user.save()
             messages.success(request, f'The role of user {user.username} has been updated to {user.get_role_display()}')
-            return redirect('user_management')
+            return redirect('users.user_management')
     
     return render(request, 'admin/edit_user.html', {'user': user})
 
@@ -71,9 +75,43 @@ def toggle_user_status(request, user_id):
     user.is_active = not user.is_active
     user.save()
     
-    status = "activate" if user.is_active else "inactivate"
-    messages.success(request, f'User {user.username} is {status}')
-    return redirect('user_management')
+    status = "activated" if user.is_active else "deactivated"
+    messages.success(request, f'User {user.username} has been {status}')
+    return redirect('users.user_management')
+
+@login_required
+@admin_required
+def edit_user_profile(request, user_id):
+    from home.forms import ProfileForm
+    
+    user_obj = get_object_or_404(CustomUser, id=user_id)
+    profile, _ = Profile.objects.get_or_create(user=user_obj)
+    
+    if request.method == 'POST':
+        # Update user fields
+        user_obj.first_name = request.POST.get('first_name', '')
+        user_obj.last_name = request.POST.get('last_name', '')
+        user_obj.email = request.POST.get('email', user_obj.email)
+        user_obj.phone_number = request.POST.get('phone_number', '')
+        
+        if user_obj.is_recruiter():
+            user_obj.company_name = request.POST.get('company_name', '')
+        
+        user_obj.save()
+        
+        # Update profile
+        profile_form = ProfileForm(request.POST, instance=profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, f'Profile for {user_obj.username} has been updated successfully')
+            return redirect('users.user_management')
+    else:
+        profile_form = ProfileForm(instance=profile)
+    
+    return render(request, 'admin/edit_user_profile.html', {
+        'user_obj': user_obj,
+        'profile_form': profile_form
+    })
 
 @login_required
 def privacy_settings(request):
@@ -110,3 +148,34 @@ def view_jobs(request):
         return render(request, 'job_seeker_pages/view_jobs.html', context)
     else:
         return render(request, 'recruiter_pages/view_jobs.html', context)
+
+# Recruiter: Search for candidates by skills, location, and projects
+@login_required
+def candidate_search(request):
+    if not request.user.is_recruiter():
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home.index')
+
+    form = CandidateSearchForm(request.GET or None)
+    results = []
+    query = Q()
+    if form.is_valid() and (form.cleaned_data.get('skills') or form.cleaned_data.get('location') or form.cleaned_data.get('projects')):
+        skills = form.cleaned_data.get('skills', '').strip()
+        location = form.cleaned_data.get('location', '').strip()
+        projects = form.cleaned_data.get('projects', '').strip()
+
+        if skills:
+            for skill in [s.strip() for s in skills.split(',') if s.strip()]:
+                query &= Q(skills__icontains=skill)
+        if location:
+            query &= Q(user__profile__headline__icontains=location) | Q(user__profile__experience__icontains=location)
+        if projects:
+            for project in [p.strip() for p in projects.split(',') if p.strip()]:
+                query &= Q(experience__icontains=project)
+
+        results = Profile.objects.filter(query, user__role=CustomUser.Role.JOB_SEEKER)
+
+    return render(request, 'recruiter_pages/candidate_search.html', {
+        'form': form,
+        'results': results,
+    })

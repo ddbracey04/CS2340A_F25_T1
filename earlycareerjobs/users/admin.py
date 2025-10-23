@@ -17,3 +17,10 @@ class ProfilePrivacyAdmin(admin.ModelAdmin):
     list_display = ['user', 'is_profile_visible', 'updated_at']
     list_filter = ['is_profile_visible', 'updated_at']
     search_fields = ['user__username', 'user__email']
+
+	def save_model(self, request, obj, form, change):
+		if obj.is_superuser:
+			obj.role = CustomUser.Role.ADMIN
+		super().save_model(request, obj, form, change)
+
+admin.site.register(CustomUser, CustomUserAdmin)
