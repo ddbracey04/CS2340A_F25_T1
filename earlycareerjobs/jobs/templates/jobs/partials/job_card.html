@@ -1,0 +1,42 @@
+<article class="job-card">
+  <div class="job-card__media">
+    {% if job.image %}
+      <img src="{{ job.image.url }}" alt="{{ job.title }}" />
+    {% else %}
+      <div class="job-card__placeholder">ECJ</div>
+    {% endif %}
+  </div>
+  <div class="job-card__body">
+    <div class="job-card__headline">
+      <a href="{% url 'jobs.show' id=job.id %}" class="job-card__title">{{ job.title }}</a>
+      <a href="{% url 'jobs.show' id=job.id %}" class="job-card__cta">View role</a>
+    </div>
+    {% if job.city or job.state or job.country %}
+      <p class="job-card__location">
+        {{ job.city }}{% if job.state %}{% if job.city %}, {% endif %}{{ job.state }}{% endif %}{% if job.country %}{% if job.city or job.state %}, {% endif %}{{ job.country }}{% endif %}
+      </p>
+    {% endif %}
+    <ul class="job-card__meta">
+      {% if job.salary_min or job.salary_max %}
+        <li>
+          <span class="label">Salary</span>
+          {% if job.salary_min %}${{ job.salary_min|floatformat:"0" }}{% endif %}
+          {% if job.salary_min and job.salary_max %} – {% endif %}
+          {% if job.salary_max %}${{ job.salary_max|floatformat:"0" }}{% endif %}
+        </li>
+      {% endif %}
+      {% if job.work_style %}
+        <li><span class="label">Work style</span>{{ job.get_work_style_display }}</li>
+      {% endif %}
+      <li><span class="label">Visa sponsorship</span>{% if job.visa_sponsorship %}Available{% else %}Not offered{% endif %}</li>
+      <li><span class="label">Posted</span>{{ job.date|date:"M j, Y" }}</li>
+    </ul>
+    {% if job.skill_list %}
+      <div class="skill-badge-group">
+        {% for skill in job.skill_list %}
+          <span class="skill-badge">{{ skill }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</article>
