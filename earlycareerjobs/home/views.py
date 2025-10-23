@@ -146,8 +146,8 @@ def search_candidates(request):
         ).distinct()
 
     work_style = data.get('work_style')
-    if work_style:
-        profiles = profiles.filter(work_style_preference=work_style)
+    if work_style and work_style != "":
+        profiles = profiles.filter(Q(work_style_preference=work_style) | Q(work_style_preference=""))
 
     sort_by = data.get('sort_by') or 'recent'
     if sort_by == 'name':
