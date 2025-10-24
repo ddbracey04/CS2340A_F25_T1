@@ -30,18 +30,52 @@ class ProfileForm(forms.ModelForm):
 class CandidateSearchForm(forms.Form):
     SORT_CHOICES = (
         ("recent", "Most recent"),
-        ("name", "Name (A–Z)"),
-        ("headline", "Headline (A–Z)"),
+        ("name", "Name (A-Z)"),
+        ("headline", "Headline (A-Z)"),
     )
-
-    keywords = forms.CharField(
+    
+    SKILLS_MODE_CHOICES = (
+        ("AND", "Match ALL skills (AND)"),
+        ("OR", "Match ANY skill (OR)"),
+    )
+    
+    experience = forms.CharField(
         required=False,
-        label="Keywords",
+        label="Experience",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Skills, names, or experience'
+            'placeholder': 'Experience'
         })
     )
+    
+    skills_mode = forms.ChoiceField(
+        required=False,
+        label="Skills Match Mode",
+        choices=SKILLS_MODE_CHOICES,
+        initial="OR",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    location = forms.CharField(
+        required=False,
+        label="Location",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'City, state, or country'
+        })
+    )
+    
+    distance = forms.IntegerField(
+        required=False,
+        label="Distance (miles)",
+        initial=50,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Distance in miles',
+            'min': '1'
+        })
+    )
+    
     work_style = forms.ChoiceField(
         required=False,
         label="Work style preference",

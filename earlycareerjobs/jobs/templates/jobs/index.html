@@ -33,49 +33,42 @@
             {{ context.form.title }}
           </div>
           <div class="job-filter-group">
-            <!-- Row 2: Skills and Skills Match Mode -->
-            <div class="row mb-3">
-              <div class="job-filter-group" style="padding-left: 5%; padding-right: 5%;">
-                <label class="form-label fw-bold">
-                  <i class="bi bi-star"></i> Skills:
-                </label>
-                <div class="position-relative">
-                  <!-- Hidden field for form submission -->
-                  <input type="hidden" name="skills" value="">
-                  
-                  <!-- Visible input for typing skills -->
-                  <input list="skillSuggestions" class="form-control job-filter-group" placeholder="Enter or Select Skills" id="skillInput" autocomplete="off" style="width: 100%;">
-                  <datalist id="skillSuggestions">
-                    {% for skill in template_data.all_skills %}
-                      <option value="{{ skill }}">
-                    {% endfor %}
-                  </datalist>
-                  
-                  <!-- Skills Chips Display -->
-                  <div id="skillsChips" class="mt-2 d-flex flex-wrap gap-2 skill-badge-group">
-                    {% for skill in template_data.active_skills %}
-                      <span class="skill-badge d-flex align-items-center gap-1 skill-chip" style="font-size: 0.9rem; padding: 0.5rem 0.75rem; cursor: pointer;">
-                        {{ skill }}&nbsp;
-                        <input type="hidden" name="skill" value="{{ skill }}">
-                        <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" onclick="removeSkill(this)" aria-label="Remove"></button>
-                      </span>
-                    {% endfor %}
-                  </div>
-                </div>
+            <label class="form-label fw-bold">
+              <i class="bi bi-star"></i> Skills:
+            </label>
+            <div class="position-relative">
+              <!-- Hidden field for form submission -->
+              <input type="hidden" name="skills" value="">
+              
+              <!-- Visible input for typing skills -->
+              <input list="skillSuggestions" class="form-control" placeholder="Enter or Select Skills" id="skillInput" autocomplete="off">
+              <datalist id="skillSuggestions">
+                {% for skill in template_data.all_skills %}
+                  <option value="{{ skill }}">
+                {% endfor %}
+              </datalist>
+              
+              <!-- Skills Chips Display -->
+              <div id="skillsChips" class="mt-2 d-flex flex-wrap gap-2 skill-badge-group">
+                {% for skill in template_data.active_skills %}
+                  <span class="skill-badge d-flex align-items-center gap-1 skill-chip" style="font-size: 0.9rem; padding: 0.5rem 0.75rem; cursor: pointer;">
+                    {{ skill }}&nbsp;
+                    <input type="hidden" name="skill" value="{{ skill }}">
+                    <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" onclick="removeSkill(this)" aria-label="Remove"></button>
+                  </span>
+                {% endfor %}
               </div>
             </div>
-            <div class="row mb-3">
-              <div class="job-filter-group" style="padding-left: 5%;">
-                <label class="form-label fw-bold">
-                  <i class="bi bi-filter"></i> Skills Match Mode:
-                </label>
-                <select name="skills_mode" class="form-select">
-                  <option value="AND" {% if template_data.skills_mode == 'AND' %}selected{% endif %}>Match ALL (AND)</option>
-                  <option value="OR" {% if template_data.skills_mode == 'OR' %}selected{% endif %}>Match ANY (OR)</option>
-                </select>
-                </div>
-            </div>
           </div>
+          
+          <div class="job-filter-group">
+            <label class="form-label">Skills Match Mode</label>
+            <select name="skills_mode">
+              <option value="AND" {% if template_data.skills_mode == 'AND' %}selected{% endif %}>Match ALL (AND)</option>
+              <option value="OR" {% if template_data.skills_mode == 'OR' %}selected{% endif %}>Match ANY (OR)</option>
+            </select>
+          </div>
+          
           <div class="job-filter-group">
             {{ context.form.work_style.label_tag }}
             {{ context.form.work_style }}

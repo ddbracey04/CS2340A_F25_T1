@@ -126,47 +126,180 @@ def search_candidates(request):
         return HttpResponseForbidden()
 
     form = CandidateSearchForm(request.GET or None)
+    
+    # Get bubble skills parameters
+    bubble_skills = request.GET.getlist('skill')
+    
+    # Get job_id if searching for a specific job
+    job_id = request.GET.get('job_id')
+    job = None
+    if job_id:
+        from jobs.models import Job
+        try:
+            job = Job.objects.get(id=job_id)
+        except Job.DoesNotExist:
+            job = None
+    
+    # Get recruiter's jobs for the dropdown
+    recruiter_jobs = []
+    if request.user.is_recruiter():
+        from jobs.models import Job, Application
+        from django.db.models import Count
+        # Get jobs with application counts
+        recruiter_jobs = Job.objects.filter(users=request.user).annotate(
+            applicant_count=Count('application')
+        ).order_by('-date')
+    
+    # Get all unique skills for autocomplete
+    all_profiles = Profile.objects.filter(user__role=CustomUser.Role.JOB_SEEKER)
+    skills_set = set()
+    for profile in all_profiles:
+        if profile.skill_list:
+            skills_set.update(profile.skill_list)
+    all_skills = sorted(skills_set)[:100]  # Top 100 skills
+    
     if form.is_valid():
         data = form.cleaned_data
     else:
         data = {
-            'keywords': '',
+            'experience': '',
+            'skills_mode': 'OR',
+            'location': '',
             'work_style': '',
             'sort_by': CandidateSearchForm.SORT_CHOICES[0][0],
         }
         form = CandidateSearchForm(initial=data)
 
     profiles = Profile.objects.select_related('user').filter(Q(user__role=CustomUser.Role.JOB_SEEKER) & Q(privacy__is_profile_visible=True))
+    
+    # If a specific job is selected, filter to only show applicants for that job
+    if job:
+        from jobs.models import Application
+        applicant_user_ids = Application.objects.filter(job=job).values_list('user_id', flat=True)
+        profiles = profiles.filter(user_id__in=applicant_user_ids)
 
-    keywords = data.get('keywords')
-    if keywords:
-        profiles = profiles.filter(
-            Q(user__first_name__icontains=keywords) |
-            Q(user__last_name__icontains=keywords) |
-            Q(user__username__icontains=keywords) |
-            Q(headline__icontains=keywords) |
-            Q(skills__icontains=keywords) |
-            Q(experience__icontains=keywords) |
-            Q(user__educations__degree__icontains=keywords) |
-            Q(user__educations__institution__icontains=keywords)
-        ).distinct()
+    # Bubble skills filter (AND/OR logic)
+    skills_mode = request.GET.get('skills_mode', 'OR')
+    if bubble_skills:
+        if skills_mode == 'AND':
+            # AND logic: must match all skills
+            for skill in bubble_skills:
+                skill = skill.strip()
+                if skill:
+                    profiles = profiles.filter(skills__icontains=skill)
+        else:
+            # OR logic: match any skill
+            skill_query = Q()
+            for skill in bubble_skills:
+                skill = skill.strip()
+                if skill:
+                    skill_query |= Q(skills__icontains=skill)
+            profiles = profiles.filter(skill_query)
+    
+    # Experience text search
+    experience = data.get('experience')
+    if experience:
+        profiles = profiles.filter(experience__icontains=experience)
+    
+    # Get distance parameter for filtering
+    distance_param = data.get('distance')
+    if not distance_param or distance_param == 0:
+        distance_param = 50  # Default to 50 miles
+    
+    # Calculate distance from job location if job_id is provided
+    from map.utils import haversine
+    if job and job.lat and job.lon:
+        # Calculate distance for all profiles and filter by distance
+        profiles_list = []
+        for profile in profiles:
+            if profile.lat and profile.lon:
+                try:
+                    dist = haversine(float(job.lat), float(job.lon), float(profile.lat), float(profile.lon))
+                    profile.distance = round(dist, 1)
+                    # Apply distance filter
+                    if profile.distance <= distance_param:
+                        profiles_list.append(profile)
+                except (ValueError, TypeError) as e:
+                    print(f"Error calculating distance for profile {profile.id}: {e}")
+            # If profile has no location, don't include it when filtering by job
+        profiles = profiles_list  # Replace QuerySet with filtered list
+    else:
+        # Location filter with distance calculation (original logic for manual search)
+        location = data.get('location')
+        
+        if location and location.strip():
+            from map.utils import lookupLatLon
+            
+            # Parse location input (try to split by comma)
+            location_parts = [part.strip() for part in location.split(',')]
+            city = location_parts[0] if len(location_parts) > 0 else ""
+            state = location_parts[1] if len(location_parts) > 1 else ""
+            country = location_parts[2] if len(location_parts) > 2 else ""
+            
+            # Get lat/lon for search location
+            search_lat, search_lon = lookupLatLon(cityName=city, stateName=state, countryName=country)
+            
+            if search_lat != 0 or search_lon != 0:
+                # Filter profiles by distance and store distance info
+                profile_distances = {}
+                filtered_profiles = []
+                for profile in profiles:
+                    if profile.lat and profile.lon:
+                        try:
+                            dist = haversine(search_lat, search_lon, float(profile.lat), float(profile.lon))
+                            if dist <= distance_param:
+                                filtered_profiles.append(profile.id)
+                                profile_distances[profile.id] = round(dist, 1)
+                        except (ValueError, TypeError):
+                            pass
+                
+                if filtered_profiles:
+                    profiles = profiles.filter(id__in=filtered_profiles)
+                else:
+                    # No profiles within distance, show empty results
+                    profiles = profiles.none()
+                
+                # Attach distance to each profile
+                for profile in profiles:
+                    profile.distance = profile_distances.get(profile.id)
 
+    # Work style filter
     work_style = data.get('work_style')
     if work_style and work_style != "":
-        profiles = profiles.filter((Q(work_style_preference=work_style) | Q(work_style_preference="")) & Q(privacy__show_work_style_preference=True))
+        if isinstance(profiles, list):
+            # If profiles is already a list, filter manually
+            profiles = [p for p in profiles if p.work_style_preference == work_style or p.work_style_preference == ""]
+        else:
+            profiles = profiles.filter((Q(work_style_preference=work_style) | Q(work_style_preference="")) & Q(privacy__show_work_style_preference=True))
 
+    # Sorting - handle both QuerySet and list
     sort_by = data.get('sort_by') or 'recent'
-    if sort_by == 'name':
-        profiles = profiles.order_by('user__first_name', 'user__last_name', 'user__username')
-    elif sort_by == 'headline':
-        profiles = profiles.order_by('headline', 'user__username')
+    if isinstance(profiles, list):
+        # Sort list manually
+        if sort_by == 'name':
+            profiles = sorted(profiles, key=lambda p: (p.user.first_name or '', p.user.last_name or '', p.user.username))
+        elif sort_by == 'headline':
+            profiles = sorted(profiles, key=lambda p: (p.headline or '', p.user.username))
+        else:
+            profiles = sorted(profiles, key=lambda p: p.user.date_joined, reverse=True)
     else:
-        profiles = profiles.order_by('-user__date_joined')
+        # Sort QuerySet
+        if sort_by == 'name':
+            profiles = profiles.order_by('user__first_name', 'user__last_name', 'user__username')
+        elif sort_by == 'headline':
+            profiles = profiles.order_by('headline', 'user__username')
+        else:
+            profiles = profiles.order_by('-user__date_joined')
 
     context = {
         'form': form,
         'profiles': profiles,
-        'result_count': profiles.count(),
+        'result_count': len(profiles) if isinstance(profiles, list) else profiles.count(),
+        'active_skills': bubble_skills,
+        'all_skills': all_skills,
+        'skills_mode': skills_mode,
+        'job': job,
+        'recruiter_jobs': recruiter_jobs,
     }
     return render(request, 'home/candidate_search.html', context)
 

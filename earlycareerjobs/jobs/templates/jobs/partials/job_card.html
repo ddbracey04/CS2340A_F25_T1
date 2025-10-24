@@ -16,6 +16,9 @@
         {{ job.city }}
         {% if job.state %}{% if job.city %}, {% endif %}{{ job.state }}{% endif %}
         {% if job.country %}{% if job.city or job.state %}, {% endif %}{{ job.country }}{% endif %}
+        {% if job.distance is not None %}
+          <span class="badge bg-info text-dark ms-2">{{ job.distance }} miles away</span>
+        {% endif %}
       </p>
     {% endif %}
     <ul class="job-card__meta">

@@ -21,6 +21,7 @@ def register(request):
             elif user.role == CustomUser.Role.JOB_SEEKER:
                 if 'resume' in request.FILES:
                     user.resume = request.FILES['resume']
+            
             user.save()
             
             profile, _ = Profile.objects.get_or_create(user=user)
