@@ -38,8 +38,8 @@
                 <!-- Skills Chips -->
                 <div id="skillsChips" class="mt-2 d-flex flex-wrap gap-2">
                   {% for skill in active_skills %}
-                    <span class="badge bg-primary d-flex align-items-center gap-2 skill-chip">
-                      {{ skill }}
+                    <span class="skill-badge d-flex align-items-center gap-1 skill-chip" style="height: 2rem;">
+                      {{ skill }}&nbsp;
                       <input type="hidden" name="skill" value="{{ skill }}">
                       <span class="remove-chip" onclick="removeSkill(this)" 
                             style="cursor: pointer; font-size: 1.2rem; font-weight: 300; opacity: 0.8; transition: opacity 0.2s;" 
@@ -209,23 +209,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (existingSkills.includes(skill)) return;
 
         const chip = document.createElement('span');
-        chip.className = 'badge bg-primary d-flex align-items-center gap-2 skill-chip';
+        chip.className = 'skill-badge d-flex align-items-center gap-1 skill-chip';
         chip.style.fontSize = '0.9rem';
         chip.style.padding = '0.5rem 0.75rem';
+        chip.style.height = '2rem';
         chip.innerHTML = `
-            ${skill}
+            ${skill}&nbsp;
             <input type="hidden" name="skill" value="${skill}">
             <span class="remove-chip" onclick="removeSkill(this)" style="cursor: pointer; font-size: 1.2rem; font-weight: 300; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">×</span>
         `;
         skillsChips.appendChild(chip);
         
-        searchForm.submit();
+        // searchForm.submit();
     }
 });
 
 function removeSkill(button) {
     button.closest('.skill-chip').remove();
-    document.getElementById('searchForm').submit();
+    // document.getElementById('searchForm').submit();
 }
 </script>
 
