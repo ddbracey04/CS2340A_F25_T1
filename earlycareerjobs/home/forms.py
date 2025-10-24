@@ -76,39 +76,48 @@ class PrivacySettingsForm(forms.ModelForm):
         model = ProfilePrivacy
         fields = [
             'is_profile_visible',
-            'show_full_name',
-            'show_email', 
-            'show_phone',
-            'show_location',
-            'show_resume',
+            # 'show_full_name',
+            # 'show_email', 
+            # 'show_phone',
+            # 'show_resume',
+            'show_education',
+            # 'show_location',
             'show_skills',
             'show_experience',
-            'show_education',
-            'show_bio'
+            'show_linkedin',
+            'show_github',
+            'show_website',
+            'show_work_style_preference',
         ]
         
         labels = {
             'is_profile_visible': 'Make my profile visible to recruiters',
-            'show_full_name': 'Full Name',
-            'show_email': 'Email Address',
-            'show_phone': 'Phone Number',
-            'show_location': 'Location',
-            'show_resume': 'Resume/CV',
-            'show_skills': 'Skills',
-            'show_experience': 'Years of Experience',
+            # 'show_full_name': 'Full Name',
+            # 'show_email': 'Email Address',
+            # 'show_phone': 'Phone',
+            # 'show_resume': 'Resume',
             'show_education': 'Education',
-            'show_bio': 'Bio/Summary'
+            # 'show_location': 'Location',
+            'show_skills': 'Skills',
+            'show_experience': 'Experience',
+            'show_linkedin': 'LinkedIn',
+            'show_github': 'GitHub',
+            'show_website': 'Personal Website',
+            'show_work_style_preference': 'Work Style Preference',
         }
         
-        widgets = {
+        widgets = {            
             'is_profile_visible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_full_name': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_phone': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_location': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_resume': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            # 'show_full_name': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            # 'show_email',: forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            # 'show_phone': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            # 'show_resume': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'show_education': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            # 'show_location': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'show_skills': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'show_experience': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_education': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_bio': forms.CheckboxInput(attrs={'class': 'form-check-input'})
+            'show_linkedin': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'show_github': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'show_website': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'show_work_style_preference': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

@@ -132,7 +132,7 @@ def search_candidates(request):
         }
         form = CandidateSearchForm(initial=data)
 
-    profiles = Profile.objects.select_related('user').filter(user__role=CustomUser.Role.JOB_SEEKER)
+    profiles = Profile.objects.select_related('user').filter(Q(user__role=CustomUser.Role.JOB_SEEKER) & Q(privacy__is_profile_visible=True))
 
     keywords = data.get('keywords')
     if keywords:
@@ -149,7 +149,7 @@ def search_candidates(request):
 
     work_style = data.get('work_style')
     if work_style and work_style != "":
-        profiles = profiles.filter(Q(work_style_preference=work_style) | Q(work_style_preference=""))
+        profiles = profiles.filter((Q(work_style_preference=work_style) | Q(work_style_preference="")) & Q(privacy__show_work_style_preference=True))
 
     sort_by = data.get('sort_by') or 'recent'
     if sort_by == 'name':
@@ -188,4 +188,4 @@ def privacy_settings(request):
         'form': form,
         'user': request.user
     }
-    return render(request, 'users/privacy_settings.html', context)
+    return render(request, 'home/privacy_settings.html', context)
