@@ -1,11 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import CustomUserCreationForm
 from .models import CustomUser
-from .models import CustomUser, ProfilePrivacy
-from .forms import PrivacySettingsForm
 from jobs.models import Application, Job
 
 from home.models import Profile
@@ -24,6 +22,8 @@ def register(request):
                 if 'resume' in request.FILES:
                     user.resume = request.FILES['resume']
             user.save()
+            
+            profile, _ = Profile.objects.get_or_create(user=user)
             
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
@@ -113,29 +113,6 @@ def edit_user_profile(request, user_id):
         'profile_form': profile_form
     })
 
-@login_required
-def privacy_settings(request):
-    if not request.user.is_job_seeker():
-        messages.error(request, "Only job seekers can access privacy settings.")
-        return redirect('home')
-    
-    # get or create privacy settings
-    privacy, created = ProfilePrivacy.objects.get_or_create(user=request.user)
-    
-    if request.method == 'POST':
-        form = PrivacySettingsForm(request.POST, instance=privacy)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Privacy settings updated successfully!")
-            return redirect('privacy_settings')
-    else:
-        form = PrivacySettingsForm(instance=privacy)
-    
-    context = {
-        'form': form,
-        'user': request.user
-    }
-    return render(request, 'users/privacy_settings.html', context)
 def view_jobs(request):
 
     applications = Application.objects.filter(user=request.user).select_related('job')

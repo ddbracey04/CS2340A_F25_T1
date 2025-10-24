@@ -6,8 +6,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from map.utils import lookupLatLon
 from users.models import CustomUser
 
-from .forms import CandidateSearchForm, EducationForm, ProfileForm
-from .models import Education, Profile
+from .forms import CandidateSearchForm, EducationForm, ProfileForm, PrivacySettingsForm
+from .models import Education, Profile, ProfilePrivacy
+
+from django.contrib import messages
 
 
 def index(request):
@@ -163,3 +165,27 @@ def search_candidates(request):
         'result_count': profiles.count(),
     }
     return render(request, 'home/candidate_search.html', context)
+
+@login_required
+def privacy_settings(request):
+    if not request.user.is_job_seeker():
+        messages.error(request, "Only job seekers can access privacy settings.")
+        return redirect('home')
+    
+    # get or create privacy settings
+    privacy, created = ProfilePrivacy.objects.get_or_create(profile=request.user.home_profile)
+    
+    if request.method == 'POST':
+        form = PrivacySettingsForm(request.POST, instance=privacy)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Privacy settings updated successfully!")
+            return redirect('privacy_settings')
+    else:
+        form = PrivacySettingsForm(instance=privacy)
+    
+    context = {
+        'form': form,
+        'user': request.user
+    }
+    return render(request, 'users/privacy_settings.html', context)
