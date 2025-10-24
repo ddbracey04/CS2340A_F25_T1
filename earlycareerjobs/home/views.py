@@ -6,8 +6,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from map.utils import lookupLatLon
 from users.models import CustomUser
 
-from .forms import CandidateSearchForm, EducationForm, ProfileForm
-from .models import Education, Profile
+from .forms import CandidateSearchForm, EducationForm, ProfileForm, PrivacySettingsForm
+from .models import Education, Profile, ProfilePrivacy
+
+from django.contrib import messages
 
 
 def index(request):
@@ -76,10 +78,14 @@ def save_education(request, education_id=None):
 def profile_view(request, username):
     from django.contrib.auth import get_user_model
 
-    User = get_user_model()
-    user = get_object_or_404(User, username=username)
+    CustomUser = get_user_model()
+    user = get_object_or_404(CustomUser, username=username)
     profile, _ = Profile.objects.get_or_create(user=user)
     user_education = Education.objects.filter(user=user).order_by('pk')
+
+    if user.home_profile.privacy.is_profile_visible == False and request.user.is_recruiter():
+        return redirect(request.META.get("HTTP_REFERER"))
+
     return render(request, 'home/profile_view.html', {
         'profile': profile,
         'owner': user,
@@ -164,7 +170,7 @@ def search_candidates(request):
         }
         form = CandidateSearchForm(initial=data)
 
-    profiles = Profile.objects.select_related('user').filter(user__role=CustomUser.Role.JOB_SEEKER)
+    profiles = Profile.objects.select_related('user').filter(Q(user__role=CustomUser.Role.JOB_SEEKER) & Q(privacy__is_profile_visible=True))
     
     # If a specific job is selected, filter to only show applicants for that job
     if job:
@@ -264,7 +270,7 @@ def search_candidates(request):
             # If profiles is already a list, filter manually
             profiles = [p for p in profiles if p.work_style_preference == work_style or p.work_style_preference == ""]
         else:
-            profiles = profiles.filter(Q(work_style_preference=work_style) | Q(work_style_preference=""))
+            profiles = profiles.filter((Q(work_style_preference=work_style) | Q(work_style_preference="")) & Q(privacy__show_work_style_preference=True))
 
     # Sorting - handle both QuerySet and list
     sort_by = data.get('sort_by') or 'recent'
@@ -296,3 +302,27 @@ def search_candidates(request):
         'recruiter_jobs': recruiter_jobs,
     }
     return render(request, 'home/candidate_search.html', context)
+
+@login_required
+def privacy_settings(request):
+    if not request.user.is_job_seeker():
+        messages.error(request, "Only job seekers can access privacy settings.")
+        return redirect('home')
+    
+    # get or create privacy settings
+    privacy, created = ProfilePrivacy.objects.get_or_create(profile=request.user.home_profile)
+    
+    if request.method == 'POST':
+        form = PrivacySettingsForm(request.POST, instance=privacy)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Privacy settings updated successfully!")
+            return redirect('privacy_settings')
+    else:
+        form = PrivacySettingsForm(instance=privacy)
+    
+    context = {
+        'form': form,
+        'user': request.user
+    }
+    return render(request, 'home/privacy_settings.html', context)

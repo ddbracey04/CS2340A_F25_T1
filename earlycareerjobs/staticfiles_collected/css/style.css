@@ -306,7 +306,8 @@ ol {
 	background: rgba(255, 255, 255, 0.1);
 	border-radius: 50%;
 	line-height: 30px;
-	text-align: center;
+	text-align: left;
+	padding-left: 15px;
 	display: inline-block;
 	margin-right: 5px;
 }
@@ -337,7 +338,8 @@ ol {
 	background: rgba(255, 255, 255, 0.1);
 	border-radius: 50%;
 	line-height: 30px;
-	text-align: center;
+	text-align: left;
+	padding-left: 15px;
 	display: inline-block;
 	margin-right: 5px;
 }

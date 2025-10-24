@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import CustomUserCreationForm
 from .models import CustomUser
@@ -23,6 +23,8 @@ def register(request):
                     user.resume = request.FILES['resume']
             
             user.save()
+            
+            profile, _ = Profile.objects.get_or_create(user=user)
             
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
@@ -112,7 +114,6 @@ def edit_user_profile(request, user_id):
         'profile_form': profile_form
     })
 
-@login_required
 def view_jobs(request):
 
     applications = Application.objects.filter(user=request.user).select_related('job')
@@ -125,7 +126,6 @@ def view_jobs(request):
         return render(request, 'job_seeker_pages/view_jobs.html', context)
     else:
         return render(request, 'recruiter_pages/view_jobs.html', context)
-
 
 # Recruiter: Search for candidates by skills, location, and projects
 @login_required

@@ -42,6 +42,11 @@ class CustomUserCreationForm(UserCreationForm):
             'invalid': 'Enter a valid email address.',
             'required': 'This field is required.',
         }
+        # if 'role' in self.data:
+        #     role = self.data.get('role')
+        #     if role == CustomUser.Role.RECRUITER:
+        #         self.fields['company_name'] = forms.CharField(max_length=100)
+
         # Add form-control class to all fields
         for field_name, field in self.fields.items():
             if field_name != 'role':
@@ -55,3 +60,4 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError('Company name is required for recruiters.')
         
         return company_name
+        # Do not add resume field at registration

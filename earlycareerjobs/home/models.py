@@ -61,3 +61,34 @@ class Education(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.get_level_display()}: {self.degree} from {self.institution}"
+
+class ProfilePrivacy(models.Model):
+    # user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='privacy')
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name='privacy')
+    
+    # overall visibility
+    is_profile_visible = models.BooleanField(default=True)
+    
+    # individual field visibility    
+    # show_full_name = models.BooleanField(default=True)
+    # show_email = models.BooleanField(default=True)
+    # show_phone = models.BooleanField(default=True)
+    # show_resume = models.BooleanField(default=True)
+    show_education = models.BooleanField(default=True)
+    show_location = models.BooleanField(default=True)
+    show_skills = models.BooleanField(default=True)
+    show_experience = models.BooleanField(default=True)
+    show_linkedin = models.BooleanField(default=True)
+    show_github = models.BooleanField(default=True)
+    show_website = models.BooleanField(default=True)
+    show_work_style_preference = models.BooleanField(default=True)
+
+    
+    
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Privacy settings for {self.profile.user.username}"
+    
+    class Meta:
+        verbose_name_plural = "Profile privacy settings"

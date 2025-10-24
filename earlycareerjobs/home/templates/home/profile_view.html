@@ -21,25 +21,26 @@
             </div>
 
             <hr class="my-4">
+              {% if request.user.is_recruiter and profile.privacy.show_location == False %}
+              {% elif profile.city or profile.state or profile.country %}
+                <section class="mb-4">
+                  <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Location</h2>
+                  <p class="mb-0">
+                    {% if profile.city %}{{ profile.city }}{% endif %}
+                    {% if profile.state %}
+                      {% if profile.city %}, {% endif %}
+                      {{ profile.state }}
+                    {% endif %}
+                    {% if profile.country %}
+                      {% if profile.city or profile.state %}, {% endif %}
+                      {{ profile.country }}
+                    {% endif %}
+                  </p>
+                </section>
+              {% endif %}
 
-            {% if profile.city or profile.state or profile.country %}
-              <section class="mb-4">
-                <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Location</h2>
-                <p class="mb-0">
-                  {% if profile.city %}{{ profile.city }}{% endif %}
-                  {% if profile.state %}
-                    {% if profile.city %}, {% endif %}
-                    {{ profile.state }}
-                  {% endif %}
-                  {% if profile.country %}
-                    {% if profile.city or profile.state %}, {% endif %}
-                    {{ profile.country }}
-                  {% endif %}
-                </p>
-              </section>
-            {% endif %}
-
-            {% if profile.skill_list %}
+            {% if request.user.is_recruiter and profile.privacy.show_skills == False %}
+            {% elif profile.skill_list %}
               <section class="mb-4">
                 <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Skills</h2>
                 <div class="skill-badge-group">
@@ -50,13 +51,16 @@
               </section>
             {% endif %}
 
-            {% if profile.work_style_preference %}
+            {% if request.user.is_recruiter and profile.privacy.show_work_style_preference == False %}
+            {% elif profile.work_style_preference %}
               <section class="mb-4">
                 <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Work style preference</h2>
                 <p class="mb-0">{{ profile.get_work_style_preference_display }}</p>
               </section>
             {% endif %}
 
+            {% if request.user.is_recruiter and profile.privacy.show_education == False %}
+            {% else %}
             <section class="mb-4">
               <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Education</h2>
               {% for edu in user_education %}
@@ -67,29 +71,39 @@
                 <p class="mb-0 text-muted">No education details available.</p>
               {% endfor %}
             </section>
+            {% endif %}
 
-            {% if profile.experience %}
+            
+            {% if request.user.is_recruiter and profile.privacy.show_experience == False %}
+            {% elif profile.experience %}
               <section class="mb-4">
                 <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Experience</h2>
                 <p class="mb-0">{{ profile.experience|linebreaks }}</p>
               </section>
             {% endif %}
 
-            {% if profile.linkedin or profile.github or profile.website %}
-              <section class="mb-2">
-                <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Links</h2>
-                <ul class="list-unstyled mb-0 profile-link-list">
-                  {% if profile.linkedin %}
-                    <li><span>LinkedIn:</span> <a href="{{ profile.linkedin }}" target="_blank" rel="noopener">{{ profile.linkedin }}</a></li>
-                  {% endif %}
-                  {% if profile.github %}
-                    <li><span>GitHub:</span> <a href="{{ profile.github }}" target="_blank" rel="noopener">{{ profile.github }}</a></li>
-                  {% endif %}
-                  {% if profile.website %}
-                    <li><span>Website:</span> <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a></li>
-                  {% endif %}
-                </ul>
-              </section>
+            {% if profile.privacy.show_linkedin == True or profile.privacy.show_github == True or profile.privacy.show_website == True or not request.user.is_recruiter %}
+              {% if profile.linkedin or profile.github or profile.website %}
+                <section class="mb-2">
+                  <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Links</h2>
+                  <ul class="list-unstyled mb-0 profile-link-list">
+                    {% if request.user.is_recruiter and profile.privacy.show_linkedin == False %}
+                    {% elif profile.linkedin %}
+                      <li><span>LinkedIn:</span> <a href="{{ profile.linkedin }}" target="_blank" rel="noopener">{{ profile.linkedin }}</a></li>
+                    {% endif %}
+
+                    {% if request.user.is_recruiter and profile.privacy.show_github == False %}
+                    {% elif profile.github %}
+                      <li><span>GitHub:</span> <a href="{{ profile.github }}" target="_blank" rel="noopener">{{ profile.github }}</a></li>
+                    {% endif %}
+
+                    {% if request.user.is_recruiter and profile.privacy.show_website == False %}
+                    {% elif profile.website %}
+                      <li><span>Website:</span> <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a></li>
+                    {% endif %}
+                  </ul>
+                </section>
+              {% endif %}
             {% endif %}
           </div>
         </div>
