@@ -114,46 +114,46 @@ def edit_user_profile(request, user_id):
         'profile_form': profile_form
     })
 
-def view_jobs(request):
+# def view_jobs(request):
 
-    applications = Application.objects.filter(user=request.user).select_related('job')
-    context = {
-        'applications': applications,
-        'jobs': Job.objects.all(),
-    }
+#     applications = Application.objects.filter(user=request.user).select_related('job')
+#     context = {
+#         'applications': applications,
+#         'jobs': Job.objects.all(),
+#     }
     
-    if request.user.is_job_seeker():
-        return render(request, 'job_seeker_pages/view_jobs.html', context)
-    else:
-        return render(request, 'recruiter_pages/view_jobs.html', context)
+#     if request.user.is_job_seeker():
+#         return render(request, 'job_seeker_pages/view_jobs.html', context)
+#     else:
+#         return render(request, 'recruiter_pages/view_jobs.html', context)
 
-# Recruiter: Search for candidates by skills, location, and projects
-@login_required
-def candidate_search(request):
-    if not request.user.is_recruiter():
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home.index')
+# # Recruiter: Search for candidates by skills, location, and projects
+# @login_required
+# def candidate_search(request):
+#     if not request.user.is_recruiter():
+#         messages.error(request, 'You do not have permission to access this page.')
+#         return redirect('home.index')
 
-    form = CandidateSearchForm(request.GET or None)
-    results = []
-    query = Q()
-    if form.is_valid() and (form.cleaned_data.get('skills') or form.cleaned_data.get('location') or form.cleaned_data.get('projects')):
-        skills = form.cleaned_data.get('skills', '').strip()
-        location = form.cleaned_data.get('location', '').strip()
-        projects = form.cleaned_data.get('projects', '').strip()
+#     form = CandidateSearchForm(request.GET or None)
+#     results = []
+#     query = Q()
+#     if form.is_valid() and (form.cleaned_data.get('skills') or form.cleaned_data.get('location') or form.cleaned_data.get('projects')):
+#         skills = form.cleaned_data.get('skills', '').strip()
+#         location = form.cleaned_data.get('location', '').strip()
+#         projects = form.cleaned_data.get('projects', '').strip()
 
-        if skills:
-            for skill in [s.strip() for s in skills.split(',') if s.strip()]:
-                query &= Q(skills__icontains=skill)
-        if location:
-            query &= Q(user__profile__headline__icontains=location) | Q(user__profile__experience__icontains=location)
-        if projects:
-            for project in [p.strip() for p in projects.split(',') if p.strip()]:
-                query &= Q(experience__icontains=project)
+#         if skills:
+#             for skill in [s.strip() for s in skills.split(',') if s.strip()]:
+#                 query &= Q(skills__icontains=skill)
+#         if location:
+#             query &= Q(user__profile__headline__icontains=location) | Q(user__profile__experience__icontains=location)
+#         if projects:
+#             for project in [p.strip() for p in projects.split(',') if p.strip()]:
+#                 query &= Q(experience__icontains=project)
 
-        results = Profile.objects.filter(query, user__role=CustomUser.Role.JOB_SEEKER)
+#         results = Profile.objects.filter(query, user__role=CustomUser.Role.JOB_SEEKER)
 
-    return render(request, 'recruiter_pages/candidate_search.html', {
-        'form': form,
-        'results': results,
-    })
+#     return render(request, 'recruiter_pages/candidate_search.html', {
+#         'form': form,
+#         'results': results,
+#     })

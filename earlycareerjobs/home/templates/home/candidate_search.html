@@ -89,6 +89,7 @@
         {% if job %}
           <div class="alert alert-info mb-4">
             <h5 class="mb-2"><i class="bi bi-briefcase"></i> Searching candidates for: {{ job.title }}</h5>
+            
             <p class="mb-1"><strong>Location:</strong> 
               {% if job.city %}{{ job.city }}{% endif %}{% if job.state %}{% if job.city %}, {% endif %}{{ job.state }}{% endif %}{% if job.country %}{% if job.city or job.state %}, {% endif %}{{ job.country }}{% endif %}
             </p>
@@ -104,59 +105,75 @@
         {% if profiles %}
           <div class="row g-4">
             {% for profile in profiles %}
-              <div class="col-12">
-                <div class="card border-0 shadow-sm h-100">
-                  <div class="card-body">
-                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
-                      <div>
-                        <h3 class="h5 mb-1">
-                          <a href="{% url 'profile.view' username=profile.user.username %}" class="text-decoration-none text-dark">
-                            {{ profile.user.get_full_name|default:profile.user.username }}
+              {% if request.user.is_recruiter and profile.privacy.is_profile_visible == False %}
+              {% else %}
+                <div class="col-12">
+                  <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                      <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                        <div>
+                          <h3 class="h5 mb-1">
+                            <a href="{% url 'profile.view' username=profile.user.username %}" class="text-decoration-none text-dark">
+                              {{ profile.user.get_full_name|default:profile.user.username }}
+                            </a>
+                          </h3>
+                          {% if profile.headline %}
+                            <p class="mb-2 text-muted">{{ profile.headline }}</p>
+                          {% endif %}
+
+                          
+                          <div class="mb-2">
+                            {% if request.user.is_recruiter and profile.privacy.show_location == False %}
+                            {% else %}
+                              {% if profile.city or profile.state or profile.country %}
+                                <span class="badge text-bg-light border">
+                                  <i class="bi bi-geo-alt"></i>
+                                  {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.state %}{% if profile.city %}, {% endif %}{{ profile.state }}{% endif %}{% if profile.country %}{% if profile.city or profile.state %}, {% endif %}{{ profile.country }}{% endif %}
+                                </span>
+                              {% endif %}
+                              {% if profile.distance is not None %}
+                                <span class="badge bg-info text-dark">{{ profile.distance }} miles away</span>
+                              {% endif %}
+                            {% endif %}
+
+                            {% if request.user.is_recruiter and profile.privacy.show_work_style_preference == False %}
+                            {% elif profile.work_style_preference %}
+                              <span class="badge text-bg-light border">{{ profile.get_work_style_preference_display }}</span>
+                            {% endif %}
+                          </div>
+                        
+
+                        </div>
+                        <div class="text-md-end">
+                          <a href="{% url 'profile.view' username=profile.user.username %}" class="btn btn-outline-primary">
+                            View profile
                           </a>
-                        </h3>
-                        {% if profile.headline %}
-                          <p class="mb-2 text-muted">{{ profile.headline }}</p>
-                        {% endif %}
-                        <div class="mb-2">
-                          {% if profile.city or profile.state or profile.country %}
-                            <span class="badge text-bg-light border">
-                              <i class="bi bi-geo-alt"></i>
-                              {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.state %}{% if profile.city %}, {% endif %}{{ profile.state }}{% endif %}{% if profile.country %}{% if profile.city or profile.state %}, {% endif %}{{ profile.country }}{% endif %}
-                            </span>
-                          {% endif %}
-                          {% if profile.distance is not None %}
-                            <span class="badge bg-info text-dark">{{ profile.distance }} miles away</span>
-                          {% endif %}
-                          {% if profile.work_style_preference %}
-                            <span class="badge text-bg-light border">{{ profile.get_work_style_preference_display }}</span>
-                          {% endif %}
                         </div>
                       </div>
-                      <div class="text-md-end">
-                        <a href="{% url 'profile.view' username=profile.user.username %}" class="btn btn-outline-primary">
-                          View profile
-                        </a>
-                      </div>
+
+                      {% if request.user.is_recruiter and profile.privacy.show_skills == False %}
+                      {% elif profile.skill_list %}
+                        <div class="mt-3">
+                          <p class="small text-uppercase text-muted fw-semibold mb-2">Skills</p>
+                          <div class="skill-badge-group">
+                            {% for skill in profile.skill_list %}
+                              <span class="skill-badge">{{ skill }}</span>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      {% endif %}
+
+                      {% if request.user.is_recruiter and profile.privacy.show_experience == False %}
+                      {% elif profile.experience %}
+                        <div class="mt-3">
+                          <p class="small text-uppercase text-muted fw-semibold mb-1">Experience</p>
+                          <p class="mb-0 text-muted">{{ profile.experience|truncatechars:220 }}</p>
+                        </div>
+                      {% endif %}
                     </div>
-                    {% if profile.skill_list %}
-                      <div class="mt-3">
-                        <p class="small text-uppercase text-muted fw-semibold mb-2">Skills</p>
-                        <div class="skill-badge-group">
-                          {% for skill in profile.skill_list %}
-                            <span class="skill-badge">{{ skill }}</span>
-                          {% endfor %}
-                        </div>
-                      </div>
-                    {% endif %}
-                    {% if profile.experience %}
-                      <div class="mt-3">
-                        <p class="small text-uppercase text-muted fw-semibold mb-1">Experience</p>
-                        <p class="mb-0 text-muted">{{ profile.experience|truncatechars:220 }}</p>
-                      </div>
-                    {% endif %}
                   </div>
                 </div>
-              </div>
+              {% endif %}
             {% endfor %}
           </div>
         {% else %}
