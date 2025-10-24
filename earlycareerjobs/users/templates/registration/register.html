@@ -7,7 +7,7 @@
         <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
                     {% for field in form %}
-                        <div class="mb-3">
+                        <div class="mb-3" id="div_{{ field.id_for_label }}" {% if field.name == 'company_name' %}style="display: none;"{% endif %}>
                             {{ field.label_tag }}
                             {{ field }}
                             {% if field.errors %}
@@ -28,4 +28,60 @@
         </div>
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script loaded');
+    
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    const companyNameDiv = document.getElementById('div_id_company_name');
+    const companyNameInput = document.getElementById('id_company_name');
+    
+    console.log('Role inputs found:', roleInputs.length);
+    console.log('Company name div:', companyNameDiv);
+    console.log('Company name input:', companyNameInput);
+    
+    if (!roleInputs.length) {
+        console.error('No role inputs found!');
+        return;
+    }
+    
+    if (!companyNameDiv) {
+        console.error('Company name div not found!');
+        return;
+    }
+    
+    if (!companyNameInput) {
+        console.error('Company name input not found!');
+        return;
+    }
+    
+    function toggleCompanyName() {
+        const selectedRole = document.querySelector('input[name="role"]:checked');
+        console.log('Toggle called. Selected role:', selectedRole ? selectedRole.value : 'none');
+        
+        if (selectedRole && selectedRole.value === 'recruiter') {
+            console.log('Showing company name field');
+            companyNameDiv.style.display = 'block';
+            companyNameInput.required = true;
+        } else {
+            console.log('Hiding company name field');
+            companyNameDiv.style.display = 'none';
+            companyNameInput.required = false;
+        }
+    }
+    
+    toggleCompanyName();
+    
+    roleInputs.forEach(function(input) {
+        input.addEventListener('change', toggleCompanyName);
+        input.addEventListener('click', toggleCompanyName);
+    });
+    
+    console.log('Event listeners attached');
+});
+</script>
 {% endblock %}

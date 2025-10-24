@@ -23,8 +23,13 @@ class CandidateSearchForm(forms.Form):
 class CustomUserCreationForm(UserCreationForm):
     role = forms.ChoiceField(
         choices=[(role, label) for role, label in CustomUser.Role.choices if role != CustomUser.Role.ADMIN],
-        widget=forms.RadioSelect,
+        widget=forms.RadioSelect(attrs={'id': 'id_role'}),
         initial=CustomUser.Role.JOB_SEEKER
+    )
+    company_name = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'id_company_name'})
     )
     
     class Meta:
@@ -37,7 +42,16 @@ class CustomUserCreationForm(UserCreationForm):
             'invalid': 'Enter a valid email address.',
             'required': 'This field is required.',
         }
-        if 'role' in self.data:
-            role = self.data.get('role')
-            if role == CustomUser.Role.RECRUITER:
-                self.fields['company_name'] = forms.CharField(max_length=100)
+        # Add form-control class to all fields
+        for field_name, field in self.fields.items():
+            if field_name != 'role':
+                field.widget.attrs['class'] = 'form-control'
+    
+    def clean_company_name(self):
+        role = self.cleaned_data.get('role')
+        company_name = self.cleaned_data.get('company_name')
+        
+        if role == CustomUser.Role.RECRUITER and not company_name:
+            raise forms.ValidationError('Company name is required for recruiters.')
+        
+        return company_name

@@ -96,8 +96,41 @@ def index(request):
     if data.get("work_style") and data.get("work_style") != '':
         jobs = jobs.filter(work_style=data["work_style"])
 
-    if data.get("visa_sponsorship") and data.get("visa_sponsorship") != '':
-        jobs = jobs.filter(visa_sponsorship=True)
+    # Calculate distance from user's profile location if user is a job seeker
+    from map.utils import haversine
+    user_jobs = Job.objects.none()
+    other_jobs = jobs
+    
+    if request.user.is_authenticated and request.user.is_job_seeker():
+        from home.models import Profile
+        try:
+            profile = Profile.objects.get(user=request.user)
+            if profile.lat and profile.lon:
+                # Calculate distance for all jobs
+                jobs_list = list(jobs)  # Convert QuerySet to list to allow modification
+                for job in jobs_list:
+                    if job.lat and job.lon:
+                        try:
+                            dist = haversine(float(profile.lat), float(profile.lon), float(job.lat), float(job.lon))
+                            job.distance = round(dist, 1)
+                        except (ValueError, TypeError) as e:
+                            print(f"Error calculating distance for job {job.id}: {e}")
+                            job.distance = None
+                    else:
+                        job.distance = None
+                jobs = jobs_list  # Replace QuerySet with list
+                
+                # Split jobs into user_jobs and other_jobs
+                user_jobs = [j for j in jobs_list if request.user in j.users.all()]
+                other_jobs = [j for j in jobs_list if request.user not in j.users.all()]
+        except Profile.DoesNotExist:
+            # If no profile, use default QuerySet filtering
+            user_jobs = jobs.filter(users=request.user)
+            other_jobs = jobs.exclude(users=request.user)
+    elif request.user.is_authenticated:
+        # For non-job-seekers, use QuerySet filtering
+        user_jobs = jobs.filter(users=request.user)
+        other_jobs = jobs.exclude(users=request.user)
         
 
     # Aggregate top skills for suggestions
@@ -114,12 +147,6 @@ def index(request):
         "skills_mode": skills_mode,
         "all_skills": all_skills,
     }
-
-    user_jobs = Job.objects.none()
-    other_jobs = jobs
-    if request.user.is_authenticated:
-        user_jobs = jobs.filter(users=request.user)
-        other_jobs = jobs.exclude(users=request.user)
 
     context = {
         "template_data": template_data,
