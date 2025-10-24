@@ -31,7 +31,7 @@ def register(request):
             user = authenticate(username=username, password=password)
             login(request, user)
             
-            messages.success(request, 'Registration successful!')
+            # messages.success(request, 'Registration successful!')
             return redirect('home.index')
     else:
         form = CustomUserCreationForm()
