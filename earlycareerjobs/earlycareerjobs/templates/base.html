@@ -93,7 +93,6 @@
                     {% endif %}
                     
                     {% if user.is_job_seeker %}
-                      <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a> -->
                       <li><a class="dropdown-item" href="{% url 'profile.view' username=request.user.username %}"> My Profile</a></li>
                       <li><a class="dropdown-item" href="{% url 'profile.edit' %}"> Edit Profile</a></li>
                       <li><a class="dropdown-item" href="{% url 'privacy_settings' %}">Privacy Settings</a></li>

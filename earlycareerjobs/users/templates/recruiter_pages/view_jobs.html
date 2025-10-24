@@ -9,7 +9,6 @@
         {% if user in job.users.all %}
             <li>
                 <strong>{{ job.title }}</strong><br>
-                <a href="{% url 'users.candidate_search' %}" class="btn btn-info btn-sm mt-2">Search All Candidates</a>
             </li>
         {% endif %}
         {% endfor %}
