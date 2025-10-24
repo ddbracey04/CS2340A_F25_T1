@@ -73,6 +73,13 @@
 
                                 <div class="col-md-6">
                                     <div class="form-check mb-3">
+                                        {{ form.show_location }}
+                                        <label class="form-check-label" for="{{ form.show_location.id_for_label }}">
+                                            {{ form.show_location.label }}
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-3">
                                         {{ form.show_linkedin }}
                                         <label class="form-check-label" for="{{ form.show_linkedin.id_for_label }}">
                                             {{ form.show_linkedin.label }}

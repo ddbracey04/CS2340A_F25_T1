@@ -75,7 +75,7 @@ class ProfilePrivacy(models.Model):
     # show_phone = models.BooleanField(default=True)
     # show_resume = models.BooleanField(default=True)
     show_education = models.BooleanField(default=True)
-    # show_location = models.BooleanField(default=True)
+    show_location = models.BooleanField(default=True)
     show_skills = models.BooleanField(default=True)
     show_experience = models.BooleanField(default=True)
     show_linkedin = models.BooleanField(default=True)

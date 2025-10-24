@@ -78,10 +78,14 @@ def save_education(request, education_id=None):
 def profile_view(request, username):
     from django.contrib.auth import get_user_model
 
-    User = get_user_model()
-    user = get_object_or_404(User, username=username)
+    CustomUser = get_user_model()
+    user = get_object_or_404(CustomUser, username=username)
     profile, _ = Profile.objects.get_or_create(user=user)
     user_education = Education.objects.filter(user=user).order_by('pk')
+
+    if user.home_profile.privacy.is_profile_visible == False and request.user.is_recruiter():
+        return redirect(request.META.get("HTTP_REFERER"))
+
     return render(request, 'home/profile_view.html', {
         'profile': profile,
         'owner': user,
