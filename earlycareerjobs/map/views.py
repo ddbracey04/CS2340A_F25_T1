@@ -55,6 +55,14 @@ def index(request, errorStr='', override_template_data=None, focusLat="", focusL
             if (profile.city != '' or profile.state != '' or profile.country != '') and profile.lat == 0 and profile.lon == 0:
                 errorStr = f"Could not find {profile.city}, {profile.state}, {profile.country}"
 
+            if ('centerLat' in template_data and 'centerLon' in template_data):
+                filteredJobs = []
+                for job in jobs:
+                    if haversine(float(profile.lat), float(profile.lon), float(job.lat), float(job.lon)) < float(DEFAULT_SEARCH_RADIUS):
+                        filteredJobs += [job]
+
+                template_data['jobs'] = filteredJobs
+
         except ObjectDoesNotExist:
             # Do nothing if profile does not exist yet
             # TODO: Figure out what we want to do here
