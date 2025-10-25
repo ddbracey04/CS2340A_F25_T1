@@ -4,117 +4,137 @@
 {% block title %}Track Applications{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8" style="max-width: 1200px;">
-    <!-- Header -->
-    <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">Track Your Applications</h1>
-        <p class="text-gray-600">Monitor the status of all your job applications</p>
+<section class="application-tracker py-5">
+  <div class="container">
+    <div class="tracker-hero text-center mb-5">
+      <span class="tracker-eyebrow text-uppercase">Application center</span>
+      <h1 class="tracker-title h2 mb-2">Track your applications</h1>
+      <p class="tracker-subtitle text-muted mb-0">Monitor where every opportunity stands and stay ready for the next step.</p>
     </div>
 
-    <!-- Simple Stats Bar -->
-    <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <div class="flex justify-center space-x-8 text-sm">
-            <div class="text-center">
-                <div class="text-2xl font-bold text-gray-800">{{ total_applications }}</div>
-                <div class="text-gray-600">Total</div>
-            </div>
-            <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">{{ stats.APPLIED|default:0 }}</div>
-                <div class="text-gray-600">Applied</div>
-            </div>
-            <div class="text-center">
-                <div class="text-2xl font-bold text-orange-600">{{ stats.REVIEW|default:0 }}</div>
-                <div class="text-gray-600">Review</div>
-            </div>
-            <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600">{{ stats.INTERVIEW|default:0 }}</div>
-                <div class="text-gray-600">Interview</div>
-            </div>
-            <div class="text-center">
-                <div class="text-2xl font-bold text-green-600">{{ stats.OFFER|default:0 }}</div>
-                <div class="text-gray-600">Offers</div>
-            </div>
-            <div class="text-center">
-                <div class="text-2xl font-bold text-indigo-600">{{ stats.CLOSED|default:0 }}</div>
-                <div class="text-gray-600">Closed</div>
-            </div>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-3 g-lg-4 tracker-summary mb-5">
+      <div class="col">
+        <div class="tracker-summary-card">
+          <p class="summary-label text-uppercase">Total</p>
+          <p class="summary-value">{{ total_applications }}</p>
         </div>
+      </div>
+      <div class="col">
+        <div class="tracker-summary-card tracker-summary-card--applied">
+          <p class="summary-label text-uppercase">Applied</p>
+          <p class="summary-value">{{ stats.APPLIED|default:0 }}</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="tracker-summary-card tracker-summary-card--review">
+          <p class="summary-label text-uppercase">Review</p>
+          <p class="summary-value">{{ stats.REVIEW|default:0 }}</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="tracker-summary-card tracker-summary-card--interview">
+          <p class="summary-label text-uppercase">Interview</p>
+          <p class="summary-value">{{ stats.INTERVIEW|default:0 }}</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="tracker-summary-card tracker-summary-card--offer">
+          <p class="summary-label text-uppercase">Offers</p>
+          <p class="summary-value">{{ stats.OFFER|default:0 }}</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="tracker-summary-card tracker-summary-card--closed">
+          <p class="summary-label text-uppercase">Closed</p>
+          <p class="summary-value">{{ stats.CLOSED|default:0 }}</p>
+        </div>
+      </div>
     </div>
 
-    <br>
-    <br>
-
-    <!-- Applications List -->
-    <div class="p-6 border-b">
-        <h3 class="text-lg font-semibold text-gray-800">Your Applications</h3>
-    </div>
-        
-
-    <div class="divide-y">
+    <div class="card border-0 shadow-sm application-results-card">
+      <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+          <div>
+            <span class="application-results-eyebrow text-uppercase">Your progress</span>
+            <h2 class="h5 mb-0">Applications overview</h2>
+            <p class="text-muted mb-0">Follow up on conversations, interviews, and offers without losing momentum.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-body px-0">
         {% for application in applications %}
-        <div class="p-6">
-            <div class="flex items-center justify-between">
-                <div class="card">
-                    <div class="flex items-center space-x-3 mb-2">
-                        <h4 class="text-lg font-medium text-gray-900">
-                            {% for user in application.job.users.all %}
-                                {% if user.is_recruiter %}
-                                    {{user.company_name}}
-                                {% endif %}
-                            {% endfor %}
-                        </h4>
-                        <h5>{{ application.job.title }}</h5>
-                        
-
-                        {% if application.status == 'APPLIED' %}
-                            <span class="badge rounded-pill active_application_status">
-                                Applied
-                            </span>
-                        {% elif application.status == 'REVIEW' %}
-                            <span class="badge rounded-pill review_application_status">
-                                Review
-                            </span>
-                        {% elif application.status == 'INTERVIEW' %}
-                            <span class="badge rounded-pill interview_application_status">
-                                Interview
-                            </span>
-                        {% elif application.status == 'OFFER' %}
-                            <span class="badge rounded-pill offer_application_status">
-                                Offer
-                            </span>
-                        {% elif application.status == 'CLOSED' %}
-                            <span class="badge rounded-pill closed_application_status">
-                                Closed
-                            </span>
-                        {% else %}
-                            <span class="badge rounded-pill error_application_status">
-                                NO STATE
-                            </span>
-                        {% endif %}
-                    </div>
-                    {% if application.user_note != "" %}
-                        <p class="text-gray-600 text-sm mt-2 italic">
-                            Personalized Note: <br>
-                            &nbsp;&nbsp;&nbsp;&nbsp; {{ application.user_note|truncatewords:15 }}
-                        </p>
+          <article class="application-item px-0">
+            <div class="application-item__layout d-flex flex-column flex-md-row align-items-md-start gap-4 px-4 py-4">
+              <div class="application-item__primary flex-grow-1">
+                <div class="application-item__header d-flex flex-column flex-md-row flex-wrap align-items-md-center gap-2 mb-3">
+                  <div class="application-company text-uppercase text-muted fw-semibold me-md-2">
+                    {% for user in application.job.users.all %}
+                      {% if user.is_recruiter %}
+                        {{ user.company_name }}
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                  &nbsp;&nbsp;|&nbsp;&nbsp;
+                  <h3 class="h5 mb-0">{{ application.job.title }}</h3>
+                  &nbsp;&nbsp;|&nbsp;&nbsp;
+                  {% if application.status == 'APPLIED' %}
+                    <span class="badge rounded-pill active_application_status">Applied</span>
+                  {% elif application.status == 'REVIEW' %}
+                    <span class="badge rounded-pill review_application_status">Review</span>
+                  {% elif application.status == 'INTERVIEW' %}
+                    <span class="badge rounded-pill interview_application_status">Interview</span>
+                  {% elif application.status == 'OFFER' %}
+                    <span class="badge rounded-pill offer_application_status">Offer</span>
+                  {% elif application.status == 'CLOSED' %}
+                    <span class="badge rounded-pill closed_application_status">Closed</span>
+                  {% else %}
+                    <span class="badge rounded-pill error_application_status">No state</span>
+                  {% endif %}
+                </div>
+                <div class="application-item__details d-flex flex-column gap-3">
+                  <ul class="application-meta list-inline text-muted mb-0">
+                    {% if application.job.city or application.job.state or application.job.country %}
+                      <li class="list-inline-item">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {{ application.job.city }}{% if application.job.city and application.job.state %}, {% endif %}{{ application.job.state }}
+                        {% if application.job.country %}{% if application.job.city or application.job.state %}, {% endif %}{{ application.job.country }}{% endif %}
+                      </li>
                     {% endif %}
+                    {% if application.date %}
+                      <li class="list-inline-item">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        Applied {{ application.date|date:"M j, Y" }}
+                      </li>
+                    {% endif %}
+                  </ul>
+                  {% if application.user_note != "" %}
+                    <div class="application-note">
+                      <span class="application-note__label text-uppercase text-muted">Personal note</span>
+                      <p class="application-note__body mb-0">{{ application.user_note|truncatewords:20 }}</p>
+                    </div>
+                  {% endif %}
                 </div>
+              </div>
             </div>
-        </div>
-        <br>
+          </article>
         {% empty %}
-            <div class="text-center py-12">
-                <div class="text-gray-400 mb-4">
-                    <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
-                <p class="text-gray-500 mb-4">Start applying to jobs to track your progress here.</p>
+          <div class="application-empty text-center px-4 py-5">
+            <div class="application-empty__icon mx-auto mb-3">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <path d="M8 7h8"></path>
+                <path d="M8 11h8"></path>
+                <path d="M8 15h5"></path>
+              </svg>
             </div>
+            <h3 class="h5 mb-2">No applications tracked yet</h3>
+            <p class="text-muted mb-0">Apply to your next role and it will appear here so you can follow each step.</p>
+          </div>
         {% endfor %}
+      </div>
     </div>
-</div>
+  </div>
+</section>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
