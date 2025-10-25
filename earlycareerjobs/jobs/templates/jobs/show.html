@@ -19,7 +19,7 @@
       <div class="card shadow-sm mb-4">
         <div class="job-image-wrapper">
           {% if template_data.job.image %}
-            <img src="{{ template_data.job.image.url }}" class="card-img-top" alt="{{ template_data.job.title }}">
+            <img src="{{ template_data.job.image.url }}" class="card-img-top" alt="{{ template_data.job.title }}" style="object-fit: contain;">
           {% else %}
             <div class="job-image-placeholder d-flex align-items-center justify-content-center">
               <i class="bi bi-image" aria-hidden="true"></i>
