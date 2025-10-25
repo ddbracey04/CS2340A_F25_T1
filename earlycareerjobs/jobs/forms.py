@@ -1,15 +1,6 @@
 from django import forms
 from .models import Job
 
-
-# class JobForm(forms.ModelForm):
-#     class Meta:
-#         model = Job
-#         fields = ("title", "description", "image", "lat", "lon")
-#         widgets = {
-#             "description": forms.Textarea(attrs={"rows": 4}),
-#         }
-
 class JobSearchForm(forms.ModelForm):
     class Meta:
         model = Job
@@ -83,3 +74,78 @@ class JobSearchForm(forms.ModelForm):
         if min_salary and max_salary and min_salary > max_salary:
             self.add_error("salary_max", "Maximum salary must be greater than minimum salary.")
         return data
+
+
+class JobTitleForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = ["title"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Job title"})
+        }
+
+
+class JobDescriptionForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = ["description"]
+        widgets = {
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5, "placeholder": "Describe the role..."})
+        }
+
+
+class JobSkillsForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = ["skills"]
+        widgets = {
+            "skills": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Comma-separated skills"})
+        }
+
+
+class JobLocationForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = ["city", "state", "country"]
+        widgets = {
+            "city": forms.TextInput(attrs={"class": "form-control", "placeholder": "City"}),
+            "state": forms.TextInput(attrs={"class": "form-control", "placeholder": "State"}),
+            "country": forms.TextInput(attrs={"class": "form-control", "placeholder": "Country"}),
+        }
+
+
+class JobSalaryForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = ["salary_min", "salary_max"]
+        widgets = {
+            "salary_min": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "Minimum salary"}),
+            "salary_max": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "Maximum salary"}),
+        }
+
+
+class JobImageForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = ["image"]
+        widgets = {
+            "image": forms.ClearableFileInput(attrs={"class": "form-control"})
+        }
+
+
+class JobWorkStyleForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = ["work_style"]
+        widgets = {
+            "work_style": forms.Select(attrs={"class": "form-select"})
+        }
+
+
+class JobVisaForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = ["visa_sponsorship"]
+        widgets = {
+            "visa_sponsorship": forms.CheckboxInput(attrs={"class": "form-check-input"})
+        }
