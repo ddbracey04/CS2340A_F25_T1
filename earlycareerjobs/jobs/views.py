@@ -1,14 +1,67 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Job, Application
-from .forms import JobSearchForm
+from .forms import (
+    JobSearchForm,
+    JobTitleForm,
+    JobDescriptionForm,
+    JobSkillsForm,
+    JobLocationForm,
+    JobSalaryForm,
+    JobImageForm,
+    JobWorkStyleForm,
+    JobVisaForm,
+)
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.db.models import Count, Q
 from django.urls import reverse
 from map.models import Location
 from map.utils import lookupLatLon
+
+FIELD_FORM_CONFIG = {
+    "title": {
+        "form_class": JobTitleForm,
+        "prefix": "title",
+        "success_message": "Job title updated.",
+    },
+    "description": {
+        "form_class": JobDescriptionForm,
+        "prefix": "description",
+        "success_message": "Job description updated.",
+    },
+    "skills": {
+        "form_class": JobSkillsForm,
+        "prefix": "skills",
+        "success_message": "Skills updated.",
+    },
+    "location": {
+        "form_class": JobLocationForm,
+        "prefix": "location",
+        "success_message": "Location updated.",
+    },
+    "salary": {
+        "form_class": JobSalaryForm,
+        "prefix": "salary",
+        "success_message": "Salary range updated.",
+    },
+    "work_style": {
+        "form_class": JobWorkStyleForm,
+        "prefix": "workstyle",
+        "success_message": "Work style updated.",
+    },
+    "visa": {
+        "form_class": JobVisaForm,
+        "prefix": "visa",
+        "success_message": "Visa sponsorship updated.",
+    },
+    "image": {
+        "form_class": JobImageForm,
+        "prefix": "image",
+        "success_message": "Job image updated.",
+    },
+}
 
 # Admin/Recruiter functions for managing applicants
 @login_required
@@ -250,7 +303,78 @@ def show(request, id):
     # limit to top 3 because that sounds reasonable?
     template_data['recommended_candidates'] = recommended[:3]
 
-    return render(request, 'jobs/show.html', {'template_data': template_data})
+    forms_context = {}
+    if request.user.is_authenticated and (request.user.is_admin() or request.user in job.users.all()):
+        forms_context = {
+            'title_form': FIELD_FORM_CONFIG['title']['form_class'](instance=job, prefix=FIELD_FORM_CONFIG['title']['prefix']),
+            'description_form': FIELD_FORM_CONFIG['description']['form_class'](instance=job, prefix=FIELD_FORM_CONFIG['description']['prefix']),
+            'skills_form': FIELD_FORM_CONFIG['skills']['form_class'](instance=job, prefix=FIELD_FORM_CONFIG['skills']['prefix']),
+            'location_form': FIELD_FORM_CONFIG['location']['form_class'](instance=job, prefix=FIELD_FORM_CONFIG['location']['prefix']),
+            'salary_form': FIELD_FORM_CONFIG['salary']['form_class'](instance=job, prefix=FIELD_FORM_CONFIG['salary']['prefix']),
+            'work_style_form': FIELD_FORM_CONFIG['work_style']['form_class'](instance=job, prefix=FIELD_FORM_CONFIG['work_style']['prefix']),
+            'visa_form': FIELD_FORM_CONFIG['visa']['form_class'](instance=job, prefix=FIELD_FORM_CONFIG['visa']['prefix']),
+            'image_form': FIELD_FORM_CONFIG['image']['form_class'](instance=job, prefix=FIELD_FORM_CONFIG['image']['prefix']),
+        }
+
+    context = {
+        'template_data': template_data,
+        'forms': forms_context,
+    }
+
+    return render(request, 'jobs/show.html', context)
+
+
+@login_required
+@require_POST
+def update_job_field(request, id, field):
+    job = get_object_or_404(Job, id=id)
+    if not (request.user.is_admin() or request.user in job.users.all()):
+        return HttpResponseForbidden()
+
+    config = FIELD_FORM_CONFIG.get(field)
+    if not config:
+        raise Http404()
+
+    form_class = config["form_class"]
+    form = form_class(request.POST, request.FILES, instance=job, prefix=config["prefix"])
+
+    if form.is_valid():
+        job = form.save(commit=False)
+        location_changed = field == "location" and form.has_changed()
+        job.save()
+
+        if location_changed:
+            if job.city or job.state or job.country:
+                try:
+                    location = Location.objects.get(city=job.city, state=job.state, country=job.country)
+                except Location.DoesNotExist:
+                    location = Location(
+                        city=job.city,
+                        state=job.state,
+                        country=job.country,
+                    )
+                    try:
+                        lat, lon = lookupLatLon(cityName=job.city, stateName=job.state, countryName=job.country)
+                    except Exception:
+                        lat, lon = (0, 0)
+                    location.lat = lat
+                    location.lon = lon
+                    location.save()
+                job.lat = location.lat
+                job.lon = location.lon
+            else:
+                job.lat = 0
+                job.lon = 0
+            job.save(update_fields=["lat", "lon"])
+
+        messages.success(request, config["success_message"])
+    else:
+        for errors in form.errors.values():
+            for error in errors:
+                messages.error(request, error)
+
+    return redirect('jobs.show', id=id)
+
 
 @login_required
 def start_application(request, id):
@@ -386,20 +510,33 @@ def track_applications(request, id):
     }
     return render(request, 'jobs/track_applications.html', context)
 
+# @login_required
+# def update_application_status(request, application_id):
+#     """View to update application status"""
+#     application = get_object_or_404(Application, id=application_id, user=request.user)
+
+#     if request.method == 'POST':
+#         new_status = request.POST.get('status')
+#         if new_status in dict(Application.STATUS_CHOICES):
+#             old_status = application.get_status_display()
+#             application.status = new_status
+#             application.save()
+
+#             messages.success(request, f'Status updated from {old_status} to {application.get_status_display()}')
+#         else:
+#             messages.error(request, 'Invalid status selected')
+
+#     return redirect('jobs.track_applications')
+
 @login_required
-def update_application_status(request, id, application_id):
+def update_application_status(request, application_id, new_status):
     """View to update application status"""
-    application = get_object_or_404(Application, id=application_id, user=request.user)
+    application = get_object_or_404(Application, id=application_id)
 
-    if request.method == 'POST':
-        new_status = request.POST.get('status')
-        if new_status in dict(Application.STATUS_CHOICES):
-            old_status = application.get_status_display()
-            application.status = new_status
-            application.save()
+    if new_status in dict(Application.STATUS_CHOICES):
+        application.status = new_status
+        application.save()
+    else:
+        print(new_status, "not in the application status choices")
 
-            messages.success(request, f'Status updated from {old_status} to {application.get_status_display()}')
-        else:
-            messages.error(request, 'Invalid status selected')
-
-    return redirect('jobs.track_applications')
+    return redirect('jobs.show', id=application.job.id)

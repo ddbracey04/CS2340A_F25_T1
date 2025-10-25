@@ -142,7 +142,10 @@
       </span>
 
       <button class="primary-btn" type="submit">Filter</button>
+      &nbsp;
+      <a href="{% url 'map.noFilter' %}" type="submit" class="primary-btn">Clear</a>
     </form>
+    
     {% if error %}
       <div class="alert" style="padding: 20px; background-color: #f44336; color: white; margin-bottom: 15px;">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
@@ -275,8 +278,6 @@
   {% if template_data.centerLat and template_data.centerLon and template_data.searchRadius %}
     var circle = L.circle(["{{ template_data.centerLat }}", "{{ template_data.centerLon }}"], radius={{template_data.searchRadius}}*1609.344).addTo(map);
     map.fitBounds(circle.getBounds());
-  {% elif template_data.centerLat and template_data.centerLon %}
-    map.setView([{{ template_data.centerLat }}, {{ template_data.centerLon }}], 15);
   {% endif %}
 </script>
 

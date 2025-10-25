@@ -46,7 +46,6 @@
         {% block mobile_nav %}
         <ul>
             <li><a href="{% url 'home.index' %}">Home</a></li>
-            <li><a href="{% url 'home.about' %}">About</a></li>
             <li><a href="{% url 'jobs.index' %}">Jobs</a></li>
             {% if user.is_authenticated %}
               <li class="nav-item dropdown">
@@ -93,9 +92,7 @@
                     {% endif %}
                     
                     {% if user.is_job_seeker %}
-                      <!-- <a href="{% url 'users.view_jobs' %}" class="dropdown-item">View Jobs</a> -->
                       <li><a class="dropdown-item" href="{% url 'profile.view' username=request.user.username %}"> My Profile</a></li>
-                      <li><a class="dropdown-item" href="{% url 'profile.edit' %}"> Edit Profile</a></li>
                       <li><a class="dropdown-item" href="{% url 'privacy_settings' %}">Privacy Settings</a></li>
                       <li><a class="dropdown-item" href="{% url 'jobs.track_applications' id=request.user.id %}">Track Applications</a></li>
                     {% elif user.is_recruiter %}
@@ -156,7 +153,6 @@
                   {% block nav_links %}
                     <ul>
                         <li class = "{% if request.resolver_match.url_name == 'home.index' %}active{% endif %}"><a href="{% url 'home.index' %}">Home</a></li>
-                        <li class = "{% if request.resolver_match.url_name == 'home.about' %}active{% endif %}"><a href="{% url 'home.about' %}">About</a></li>
                         <li class = "{% if request.resolver_match.url_name == 'jobs.index' %}active{% endif %}"><a href= "{% url 'jobs.index' %}">Jobs</a></li>
                         {% if user.is_authenticated %}
                           {% if user.is_recruiter or user.is_admin %}
@@ -177,7 +173,6 @@
                               
                               {% if user.is_job_seeker %}
                                 <li><a href="{% url 'profile.view' username=request.user.username %}" style="text-align: left; padding-left: 15px;">My Profile</a></li>
-                                <li><a href="{% url 'profile.edit' %}" style="text-align: left; padding-left: 15px;">Edit Profile</a></li>
                                 <li><a href="{% url 'privacy_settings' %}" style="text-align: left; padding-left: 15px;">Privacy Settings</a></li>
                                 <li><a href="{% url 'jobs.track_applications' id=request.user.id %}" style="text-align: left; padding-left: 15px;">Track Applications</a></li>
                               {% elif user.is_recruiter %}
@@ -237,7 +232,6 @@
                   <h5>Quick Links</h5>
                   <ul>
                     <li><a href="{% url 'home.index' %}">Home</a></li>
-                    <li><a href="{% url 'home.about' %}">About Us</a></li>
                     <li><a href="{% url 'jobs.index' %}">Find Jobs</a></li>
                     <li><a href="{% url 'map.index' %}">Map</a></li>
                     <li><a href="{% url 'users.register' %}">Recruiters</a></li>

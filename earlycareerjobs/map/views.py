@@ -18,7 +18,7 @@ def select_location(request):
     return redirect('map.index')
 
 
-def index(request, errorStr='', override_template_data=None, focusLat="", focusLon=""):
+def index(request, errorStr='', override_template_data=None, focusLat="", focusLon="", useFilter=True):
 
     if (override_template_data != None):
         override_template_data['jobs'] = Job.objects.filter(id__in=override_template_data['jobIds'])
@@ -34,17 +34,6 @@ def index(request, errorStr='', override_template_data=None, focusLat="", focusL
         try:
             profile = Profile.objects.get(user=request.user)
             print("HAS PROFILE")
-            DEFAULT_SEARCH_RADIUS = 5
-            template_data['searchRadius'] = DEFAULT_SEARCH_RADIUS
-
-            if (profile.city and profile.city != ''):
-                template_data['searchCity'] = profile.city
-
-            if (profile.state and profile.state != ''):
-                template_data['searchState'] = profile.state
-
-            if (profile.country and profile.country != ''):
-                template_data['searchCountry'] = profile.country
 
             if (profile.lat and profile.lat != ''):
                 template_data['centerLat'] = profile.lat
@@ -52,8 +41,29 @@ def index(request, errorStr='', override_template_data=None, focusLat="", focusL
             if (profile.lon and profile.lon != ''):
                 template_data['centerLon'] = profile.lon
 
-            if (profile.city != '' or profile.state != '' or profile.country != '') and profile.lat == 0 and profile.lon == 0:
-                errorStr = f"Could not find {profile.city}, {profile.state}, {profile.country}"
+            if useFilter:
+                DEFAULT_SEARCH_RADIUS = 5
+                template_data['searchRadius'] = DEFAULT_SEARCH_RADIUS
+
+                if (profile.city and profile.city != ''):
+                    template_data['searchCity'] = profile.city
+
+                if (profile.state and profile.state != ''):
+                    template_data['searchState'] = profile.state
+
+                if (profile.country and profile.country != ''):
+                    template_data['searchCountry'] = profile.country
+
+                if (profile.city != '' or profile.state != '' or profile.country != '') and profile.lat == 0 and profile.lon == 0:
+                    errorStr = f"Could not find {profile.city}, {profile.state}, {profile.country}"
+
+                if ('centerLat' in template_data and 'centerLon' in template_data):
+                    filteredJobs = []
+                    for job in jobs:
+                        if haversine(float(profile.lat), float(profile.lon), float(job.lat), float(job.lon)) < float(DEFAULT_SEARCH_RADIUS):
+                            filteredJobs += [job]
+
+                    template_data['jobs'] = filteredJobs
 
         except ObjectDoesNotExist:
             # Do nothing if profile does not exist yet
@@ -69,6 +79,9 @@ def index(request, errorStr='', override_template_data=None, focusLat="", focusL
 
 def indexLatLon(request, lat, lon):
     return index(request=request, focusLat=lat, focusLon=lon)
+
+def indexNoFilter(request):
+    return index(request=request, useFilter=False)
 
 def filter(request):
     if request.method == "POST":

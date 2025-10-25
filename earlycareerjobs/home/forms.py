@@ -27,6 +27,64 @@ class ProfileForm(forms.ModelForm):
         }
 
 
+class ProfileHeadlineForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['headline']
+        widgets = {
+            'headline': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Write a short professional headline'})
+        }
+
+
+class ProfileLocationForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['city', 'state', 'country']
+        widgets = {
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
+            'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State'}),
+            'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}),
+        }
+
+
+class ProfileSkillsForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['skills']
+        widgets = {
+            'skills': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Comma-separated skills'})
+        }
+
+
+class ProfileWorkStyleForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['work_style_preference']
+        widgets = {
+            'work_style_preference': forms.Select(attrs={'class': 'form-select'})
+        }
+
+
+class ProfileExperienceForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['experience']
+        widgets = {
+            'experience': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Highlight your experience...'})
+        }
+
+
+class ProfileLinksForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['linkedin', 'github', 'website']
+        widgets = {
+            'linkedin': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'LinkedIn URL'}),
+            'github': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'GitHub URL'}),
+            'website': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Personal website URL'}),
+        }
+
+
 class CandidateSearchForm(forms.Form):
     SORT_CHOICES = (
         ("recent", "Most recent"),
