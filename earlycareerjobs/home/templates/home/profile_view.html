@@ -24,11 +24,11 @@
                   {% endif %}
                 {% endif %}
               </div>
-              {% if request.user == owner or request.user.is_admin %}
+              <!-- {% if request.user == owner or request.user.is_admin %}
                 <div class="text-md-end">
                   <a class="btn btn-outline-primary" href="{% url 'profile.edit' %}">Open full editor</a>
                 </div>
-              {% endif %}
+              {% endif %} -->
             </div>
 
             {% if forms.headline_form %}
@@ -120,7 +120,7 @@
                     {% endfor %}
                   </div>
                 {% else %}
-                  <p class="text-muted fst-italic mb-0">No skills listed yet.</p>
+                  <p class="text-muted fst-italic mb-0">No skills listed yet</p>
                 {% endif %}
                 {% if forms.skills_form %}
                 <div class="collapse mt-2" id="edit-skills-form">
@@ -216,7 +216,7 @@
                         </div>
                       </div>
                     {% empty %}
-                      <p class="mb-0 text-muted">No education details available yet.</p>
+                      <p class="mb-0 text-muted">No education details provided yet</p>
                     {% endfor %}
                   </div>
                 </section>
@@ -249,7 +249,7 @@
                 {% if profile.experience %}
                   <p class="mb-0">{{ profile.experience|linebreaks }}</p>
                 {% else %}
-                  <p class="text-muted fst-italic mb-0">Share your experience to help recruiters understand your background.</p>
+                  <p class="text-muted fst-italic mb-0">No experience details provided yet</p>
                 {% endif %}
                 {% if forms.experience_form %}
                 <div class="collapse mt-2" id="edit-experience-form">
@@ -270,7 +270,7 @@
             {% endif %}
 
             {% if profile.privacy.show_linkedin == True or profile.privacy.show_github == True or profile.privacy.show_website == True or not request.user.is_recruiter %}
-              {% if profile.linkedin or profile.github or profile.website %}
+              {% if profile.linkedin or profile.github or profile.website or forms.links_form %}
                 <section class="mb-2">
                   <div class="d-flex justify-content-between align-items-center mb-1">
                     <h2 class="h6 text-uppercase text-muted fw-semibold mb-0">Links</h2>
@@ -281,20 +281,26 @@
                     {% endif %}
                   </div>
                   <ul class="list-unstyled mb-0 profile-link-list">
-                    {% if request.user.is_recruiter and profile.privacy.show_linkedin == False %}
-                    {% elif profile.linkedin %}
-                      <li><span>LinkedIn:</span> <a href="{{ profile.linkedin }}" target="_blank" rel="noopener">{{ profile.linkedin }}</a></li>
-                    {% endif %}
+                    <p class="mb-0">
+                      {% if request.user.is_recruiter and profile.privacy.show_linkedin == False %}
+                      {% elif profile.linkedin %}
+                        <li><span>LinkedIn:</span> <a href="{{ profile.linkedin }}" target="_blank" rel="noopener">{{ profile.linkedin }}</a></li>
+                      {% endif %}
 
-                    {% if request.user.is_recruiter and profile.privacy.show_github == False %}
-                    {% elif profile.github %}
-                      <li><span>GitHub:</span> <a href="{{ profile.github }}" target="_blank" rel="noopener">{{ profile.github }}</a></li>
-                    {% endif %}
+                      {% if request.user.is_recruiter and profile.privacy.show_github == False %}
+                      {% elif profile.github %}
+                        <li><span>GitHub:</span> <a href="{{ profile.github }}" target="_blank" rel="noopener">{{ profile.github }}</a></li>
+                      {% endif %}
 
-                    {% if request.user.is_recruiter and profile.privacy.show_website == False %}
-                    {% elif profile.website %}
-                      <li><span>Website:</span> <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a></li>
-                    {% endif %}
+                      {% if request.user.is_recruiter and profile.privacy.show_website == False %}
+                      {% elif profile.website %}
+                        <li><span>Website:</span> <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a></li>
+                      {% endif %}
+
+                      {% if not profile.linkedin and not profile.github and not profile.website %}
+                        <span class="text-muted fst-italic">No links provided yet</span>
+                      {% endif %}
+                    </p>
                   </ul>
                   {% if forms.links_form %}
                   <div class="collapse mt-2" id="edit-links-form">
