@@ -3209,6 +3209,181 @@ ol {
   margin-right: 0.5rem;
 }
 
+.application-tracker {
+  background: linear-gradient(180deg, #f7f8ff 0%, #ffffff 45%);
+}
+
+.tracker-hero .tracker-eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #5d61ea;
+  margin-bottom: 0.45rem;
+}
+
+.tracker-title {
+  font-weight: 700;
+  color: #1f2348;
+}
+
+.tracker-summary-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.35rem;
+  box-shadow: 0 12px 28px rgba(32, 36, 70, 0.08);
+  border: 1px solid rgba(93, 97, 234, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  border-top: 4px solid #5d61ea;
+}
+
+.tracker-summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 36px rgba(32, 36, 70, 0.12);
+}
+
+.tracker-summary-card .summary-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #7b7f98;
+  letter-spacing: 0.08em;
+}
+
+.tracker-summary-card .summary-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2348;
+  margin: 0;
+}
+
+.tracker-summary-card--applied {
+  border-top-color: #1976d2;
+}
+
+.tracker-summary-card--review {
+  border-top-color: #f57c00;
+}
+
+.tracker-summary-card--interview {
+  border-top-color: #7b1fa2;
+}
+
+.tracker-summary-card--offer {
+  border-top-color: #388e3c;
+}
+
+.tracker-summary-card--closed {
+  border-top-color: #303f9f;
+}
+
+.application-results-card {
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.application-results-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #7b7f98;
+}
+
+.application-item {
+  border-bottom: 1px solid rgba(93, 97, 234, 0.08);
+}
+
+.application-item:last-of-type {
+  border-bottom: none;
+}
+
+.application-item__layout {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.application-item__headline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+}
+
+.application-item__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.application-company {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+
+.application-meta i {
+  color: #5d61ea;
+}
+
+.application-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.4rem;
+}
+
+.application-meta .list-inline-item + .list-inline-item::before {
+  content: "•";
+  color: #c3c5d7;
+  margin: 0 0.6rem;
+}
+
+.application-meta .list-inline-item {
+  margin-right: 0;
+}
+
+.application-note {
+  background-color: #f4f5ff;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+
+.application-note__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.25rem;
+  display: inline-block;
+}
+
+.application-note__body {
+  color: #42465c;
+  font-style: italic;
+}
+
+.application-empty {
+  background-color: #fafbff;
+}
+
+.application-empty__icon svg {
+  color: #5d61ea;
+}
+
+@media (max-width: 576px) {
+  .tracker-summary-card {
+    padding: 1.1rem;
+  }
+
+  .tracker-summary-card .summary-value {
+    font-size: 1.6rem;
+  }
+
+  .application-item {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
+
 .candidate-search-hero {
   background: linear-gradient(135deg, rgba(93,97,234,0.12), rgba(157,124,241,0.18));
   border-radius: 20px;
