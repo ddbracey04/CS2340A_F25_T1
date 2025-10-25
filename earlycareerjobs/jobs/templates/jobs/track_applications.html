@@ -74,7 +74,9 @@
                       {% endif %}
                     {% endfor %}
                   </div>
+                  &nbsp;&nbsp;|&nbsp;&nbsp;
                   <h3 class="h5 mb-0">{{ application.job.title }}</h3>
+                  &nbsp;&nbsp;|&nbsp;&nbsp;
                   {% if application.status == 'APPLIED' %}
                     <span class="badge rounded-pill active_application_status">Applied</span>
                   {% elif application.status == 'REVIEW' %}
