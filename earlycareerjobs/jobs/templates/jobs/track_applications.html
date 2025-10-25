@@ -34,6 +34,10 @@
                 <div class="text-2xl font-bold text-green-600">{{ stats.OFFER|default:0 }}</div>
                 <div class="text-gray-600">Offers</div>
             </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-indigo-600">{{ stats.CLOSED|default:0 }}</div>
+                <div class="text-gray-600">Closed</div>
+            </div>
         </div>
     </div>
 
@@ -77,6 +81,10 @@
                         {% elif application.status == 'OFFER' %}
                             <span class="badge rounded-pill offer_application_status">
                                 Offer
+                            </span>
+                        {% elif application.status == 'CLOSED' %}
+                            <span class="badge rounded-pill closed_application_status">
+                                Closed
                             </span>
                         {% else %}
                             <span class="badge rounded-pill error_application_status">

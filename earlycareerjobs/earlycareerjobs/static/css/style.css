@@ -3165,6 +3165,21 @@ ol {
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
+.closed_application_status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  background-color: #C5CAE9;
+  color: #303F9F;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(32, 32, 60, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
 .error_application_status {
   display: inline-flex;
   align-items: center;
@@ -4090,4 +4105,28 @@ ol {
   .recommendation-card__actions {
     flex-direction: column;
   }
+}
+
+
+.earlycareerjobs-btn {
+    background-color: #6161e5; /* Custom background */
+    color: white;              /* Text color */
+    border-color: #6161e5;       /* Keep border same */
+}
+
+.earlycareerjobs-btn:hover {
+    background-color: #4848ac; /* Darker shade on hover */
+    border-color: #4848ac;       /* Keep border same */
+    color: white;                /* Text color on hover */
+}
+
+.earlycareerjobs-btn-outline {
+    color: #6161e5;              /* Text color */
+    border-color: #6161e5;       /* Border color */
+}
+
+.earlycareerjobs-btn-outline:hover {
+    color: white;                /* Text color on hover */
+    background-color: #6161e5;   /* Background on hover */
+    border-color: #6161e5;       /* Keep border same */
 }
