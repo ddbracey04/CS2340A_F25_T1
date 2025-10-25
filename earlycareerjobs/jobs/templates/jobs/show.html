@@ -17,50 +17,163 @@
     <div class="col-lg-8 mb-4">
       <!-- Job Header Card -->
       <div class="card shadow-sm mb-4">
-        {% if template_data.job.image %}
-        <img src="{{ template_data.job.image.url }}" class="card-img-top" alt="{{ template_data.job.title }}" style="height: 300px; object-fit: cover;">
-        {% endif %}
+        <div class="job-image-wrapper">
+          {% if template_data.job.image %}
+            <img src="{{ template_data.job.image.url }}" class="card-img-top" alt="{{ template_data.job.title }}">
+          {% else %}
+            <div class="job-image-placeholder d-flex align-items-center justify-content-center">
+              <i class="bi bi-image" aria-hidden="true"></i>
+            </div>
+          {% endif %}
+          {% if forms.image_form and template_data.can_edit %}
+            <button class="job-image-edit-btn btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#edit-image-form" aria-expanded="false" aria-controls="edit-image-form">
+              <i class="bi bi-pencil"></i> Edit photo
+            </button>
+          {% endif %}
+        </div>
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
-              <h2 class="card-title mb-2">{{ template_data.job.title }}</h2>
+              <h2 class="card-title mb-2 d-flex align-items-center gap-2">
+                <span>{{ template_data.job.title }}</span>
+                {% if forms.title_form and template_data.can_edit %}
+                  <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-title-form" aria-expanded="false" aria-controls="edit-title-form">
+                    <i class="bi bi-pencil"></i>
+                    <span class="visually-hidden">Edit title</span>
+                  </button>
+                {% endif %}
+              </h2>
               {% if template_data.job.company %}
               <p class="text-muted mb-0">
                 <i class="bi bi-building"></i> {{ template_data.job.company }}
               </p>
               {% endif %}
             </div>
-            {% if template_data.can_edit or user.is_admin %}
-            <div class="btn-group">
-              <a href="{% url 'jobs.edit' id=template_data.job.id %}" class="btn btn-warning btn-sm">
-                <i class="bi bi-pencil"></i> Edit
-              </a>
-              <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                <i class="bi bi-trash"></i> Delete
-              </button>
+            <div class="d-flex flex-column flex-sm-row align-items-sm-start justify-content-end gap-2">
+              {% if template_data.can_edit or user.is_admin %}
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                  <i class="bi bi-trash"></i> Delete
+                </button>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if forms.title_form and template_data.can_edit %}
+          <div class="collapse mt-2" id="edit-title-form">
+            <form method="post" action="{% url 'jobs.update_field' id=template_data.job.id field='title' %}" class="card card-body border-0 shadow-sm">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ forms.title_form.title.id_for_label }}">Job title</label>
+                {{ forms.title_form.title }}
+              </div>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="bi bi-check-lg"></i> Save
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-title-form">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          {% if forms.image_form and template_data.can_edit %}
+          <div class="collapse mt-2" id="edit-image-form">
+            <form method="post" action="{% url 'jobs.update_field' id=template_data.job.id field='image' %}" enctype="multipart/form-data" class="card card-body border-0 shadow-sm">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ forms.image_form.image.id_for_label }}">Job image</label>
+                {{ forms.image_form.image }}
+              </div>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="bi bi-cloud-arrow-up"></i> Upload
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-image-form">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          <!-- Job Description -->
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="mb-0">
+                <i class="bi bi-file-text"></i> Job Description
+              </h5>
+              {% if forms.description_form and template_data.can_edit %}
+                <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-description-form" aria-expanded="false" aria-controls="edit-description-form">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+              {% endif %}
+            </div>
+            <p class="text-secondary">{{ template_data.job.description }}</p>
+            {% if forms.description_form and template_data.can_edit %}
+            <div class="collapse" id="edit-description-form">
+              <form method="post" action="{% url 'jobs.update_field' id=template_data.job.id field='description' %}" class="card card-body border-0 shadow-sm">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" for="{{ forms.description_form.description.id_for_label }}">Description</label>
+                  {{ forms.description_form.description }}
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-check-lg"></i> Save
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-description-form">
+                    Cancel
+                  </button>
+                </div>
+              </form>
             </div>
             {% endif %}
           </div>
 
-          <!-- Job Description -->
-          <div class="mb-4">
-            <h5 class="mb-3">
-              <i class="bi bi-file-text"></i> Job Description
-            </h5>
-            <p class="text-secondary">{{ template_data.job.description }}</p>
-          </div>
-
           <!-- Required Skills -->
-          {% if template_data.job.skill_list %}
+          {% if template_data.job.skill_list or forms.skills_form %}
           <div class="mb-4">
-            <h5 class="mb-3">
-              <i class="bi bi-gear"></i> Required Skills
-            </h5>
-            <div class="skill-badge-group">
-              {% for skill in template_data.job.skill_list %}
-                <span class="skill-badge">{{ skill }}</span>
-              {% endfor %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="mb-0">
+                <i class="bi bi-gear"></i> Required Skills
+              </h5>
+              {% if forms.skills_form and template_data.can_edit %}
+                <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-skills-form" aria-expanded="false" aria-controls="edit-skills-form">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+              {% endif %}
             </div>
+            {% if template_data.job.skill_list %}
+              <div class="skill-badge-group">
+                {% for skill in template_data.job.skill_list %}
+                  <span class="skill-badge">{{ skill }}</span>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted fst-italic mb-0">No skills listed yet.</p>
+            {% endif %}
+            {% if forms.skills_form and template_data.can_edit %}
+            <div class="collapse mt-2" id="edit-skills-form">
+              <form method="post" action="{% url 'jobs.update_field' id=template_data.job.id field='skills' %}" class="card card-body border-0 shadow-sm">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" for="{{ forms.skills_form.skills.id_for_label }}">Skills</label>
+                  {{ forms.skills_form.skills }}
+                  <small class="text-muted">Separate skills with commas.</small>
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-check-lg"></i> Save
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-skills-form">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+            {% endif %}
           </div>
           {% endif %}
         </div>
@@ -75,56 +188,202 @@
         </div>
         <div class="card-body">
           <div class="row g-3">
-            {% if template_data.job.city or template_data.job.state or template_data.job.country %}
+            {% if template_data.job.city or template_data.job.state or template_data.job.country or forms.location_form %}
             <div class="col-12">
-              <p class="mb-1 text-muted small">
-                <i class="bi bi-geo-alt"></i> Location
-              </p>
-              <p class="mb-0">
-                {{ template_data.job.city }}{% if template_data.job.state %}, {{ template_data.job.state }}{% endif %}{% if template_data.job.country %}, {{ template_data.job.country }}{% endif %}
-              </p>
-            </div>
-            {% endif %}
-
-            {% if template_data.job.work_style %}
-            <div class="col-12">
-              <p class="mb-1 text-muted small">
-                <i class="bi bi-laptop"></i> Work Style
-              </p>
-              <p class="mb-0">{{ template_data.job.get_work_style_display }}</p>
-            </div>
-            {% endif %}
-
-            {% if template_data.job.salary_min or template_data.job.salary_max %}
-            <div class="col-12">
-              <p class="mb-1 text-muted small">
-                <i class="bi bi-currency-dollar"></i> Salary Range
-              </p>
-              <p class="mb-0">
-                {% if template_data.job.salary_min and template_data.job.salary_max %}
-                  ${{ template_data.job.salary_min|floatformat:2 }} - ${{ template_data.job.salary_max|floatformat:2 }}
-                {% elif template_data.job.salary_min %}
-                  From ${{ template_data.job.salary_min|floatformat:2 }}
-                {% elif template_data.job.salary_max %}
-                  Up to ${{ template_data.job.salary_max|floatformat:2 }}
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="mb-1 text-muted small">
+                    <i class="bi bi-geo-alt"></i> Location
+                  </p>
+                  <p class="mb-0">
+                    {% if template_data.job.city or template_data.job.state or template_data.job.country %}
+                      {{ template_data.job.city }}{% if template_data.job.state %}, {{ template_data.job.state }}{% endif %}{% if template_data.job.country %}, {{ template_data.job.country }}{% endif %}
+                    {% else %}
+                      <span class="text-muted fst-italic">Not specified</span>
+                    {% endif %}
+                  </p>
+                </div>
+                {% if forms.location_form and template_data.can_edit %}
+                  <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-location-form" aria-expanded="false" aria-controls="edit-location-form">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
                 {% endif %}
-              </p>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if template_data.job.work_style or forms.work_style_form %}
+            <div class="col-12">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="mb-1 text-muted small">
+                    <i class="bi bi-laptop"></i> Work Style
+                  </p>
+                  <p class="mb-0">
+                    {% if template_data.job.work_style %}
+                      {{ template_data.job.get_work_style_display }}
+                    {% else %}
+                      <span class="text-muted fst-italic">Not specified</span>
+                    {% endif %}
+                  </p>
+                </div>
+                {% if forms.work_style_form and template_data.can_edit %}
+                  <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-workstyle-form" aria-expanded="false" aria-controls="edit-workstyle-form">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+
+            {% if template_data.job.salary_min or template_data.job.salary_max or forms.salary_form %}
+            <div class="col-12">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="mb-1 text-muted small">
+                    <i class="bi bi-currency-dollar"></i> Salary Range
+                  </p>
+                  <p class="mb-0">
+                    {% if template_data.job.salary_min and template_data.job.salary_max %}
+                      ${{ template_data.job.salary_min|floatformat:2 }} - ${{ template_data.job.salary_max|floatformat:2 }}
+                    {% elif template_data.job.salary_min %}
+                      From ${{ template_data.job.salary_min|floatformat:2 }}
+                    {% elif template_data.job.salary_max %}
+                      Up to ${{ template_data.job.salary_max|floatformat:2 }}
+                    {% else %}
+                      <span class="text-muted fst-italic">Not specified</span>
+                    {% endif %}
+                  </p>
+                </div>
+                {% if forms.salary_form and template_data.can_edit %}
+                  <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-salary-form" aria-expanded="false" aria-controls="edit-salary-form">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                {% endif %}
+              </div>
             </div>
             {% endif %}
 
             <div class="col-12">
-              <p class="mb-1 text-muted small">
-                <i class="bi bi-globe"></i> Visa Sponsorship
-              </p>
-              <p class="mb-0">
-                {% if template_data.job.visa_sponsorship %}
-                  <span class="badge bg-success">Available</span>
-                {% else %}
-                  <span class="badge bg-secondary">Not Available</span>
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="mb-1 text-muted small">
+                    <i class="bi bi-globe"></i> Visa Sponsorship
+                  </p>
+                  <p class="mb-0">
+                    {% if template_data.job.visa_sponsorship %}
+                      <span class="badge bg-success">Available</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Not Available</span>
+                    {% endif %}
+                  </p>
+                </div>
+                {% if forms.visa_form and template_data.can_edit %}
+                  <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-visa-form" aria-expanded="false" aria-controls="edit-visa-form">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
                 {% endif %}
-              </p>
+              </div>
             </div>
           </div>
+
+          {% if forms.location_form and template_data.can_edit %}
+          <div class="collapse mt-3" id="edit-location-form">
+            <form method="post" action="{% url 'jobs.update_field' id=template_data.job.id field='location' %}" class="card card-body border-0 shadow-sm">
+              {% csrf_token %}
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold" for="{{ forms.location_form.city.id_for_label }}">City</label>
+                  {{ forms.location_form.city }}
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold" for="{{ forms.location_form.state.id_for_label }}">State</label>
+                  {{ forms.location_form.state }}
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold" for="{{ forms.location_form.country.id_for_label }}">Country</label>
+                  {{ forms.location_form.country }}
+                </div>
+              </div>
+              <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="bi bi-check-lg"></i> Save
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-location-form">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          {% if forms.salary_form and template_data.can_edit %}
+          <div class="collapse mt-3" id="edit-salary-form">
+            <form method="post" action="{% url 'jobs.update_field' id=template_data.job.id field='salary' %}" class="card card-body border-0 shadow-sm">
+              {% csrf_token %}
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="{{ forms.salary_form.salary_min.id_for_label }}">Minimum</label>
+                  {{ forms.salary_form.salary_min }}
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="{{ forms.salary_form.salary_max.id_for_label }}">Maximum</label>
+                  {{ forms.salary_form.salary_max }}
+                </div>
+              </div>
+              <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="bi bi-check-lg"></i> Save
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-salary-form">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          {% if forms.work_style_form and template_data.can_edit %}
+          <div class="collapse mt-3" id="edit-workstyle-form">
+            <form method="post" action="{% url 'jobs.update_field' id=template_data.job.id field='work_style' %}" class="card card-body border-0 shadow-sm">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ forms.work_style_form.work_style.id_for_label }}">Work style</label>
+                {{ forms.work_style_form.work_style }}
+              </div>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="bi bi-check-lg"></i> Save
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-workstyle-form">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          {% if forms.visa_form and template_data.can_edit %}
+          <div class="collapse mt-3" id="edit-visa-form">
+            <form method="post" action="{% url 'jobs.update_field' id=template_data.job.id field='visa' %}" class="card card-body border-0 shadow-sm">
+              {% csrf_token %}
+              <div class="form-check mb-3">
+                {{ forms.visa_form.visa_sponsorship }}
+                <label class="form-check-label" for="{{ forms.visa_form.visa_sponsorship.id_for_label }}">
+                  Offer visa sponsorship
+                </label>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="bi bi-check-lg"></i> Save
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-visa-form">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
         </div>
       </div>
 
