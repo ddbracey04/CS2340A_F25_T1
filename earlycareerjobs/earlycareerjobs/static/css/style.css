@@ -3407,6 +3407,16 @@ ol {
   font-style: italic;
 }
 
+.edit-inline-btn {
+  color: #5d61ea;
+  text-decoration: none;
+}
+
+.edit-inline-btn:hover {
+  color: #3b3fd2;
+  text-decoration: underline;
+}
+
 .application-empty {
   background-color: #fafbff;
 }

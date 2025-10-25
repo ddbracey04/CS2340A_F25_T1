@@ -1,15 +1,61 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from map.utils import lookupLatLon
 from users.models import CustomUser
 
-from .forms import CandidateSearchForm, EducationForm, ProfileForm, PrivacySettingsForm
+from .forms import (
+    CandidateSearchForm,
+    EducationForm,
+    ProfileForm,
+    PrivacySettingsForm,
+    ProfileHeadlineForm,
+    ProfileLocationForm,
+    ProfileSkillsForm,
+    ProfileWorkStyleForm,
+    ProfileExperienceForm,
+    ProfileLinksForm,
+)
 from .models import Education, Profile, ProfilePrivacy
 
 from django.contrib import messages
+
+
+PROFILE_FIELD_FORM_CONFIG = {
+    "headline": {
+        "form_class": ProfileHeadlineForm,
+        "prefix": "headline",
+        "success_message": "Headline updated.",
+    },
+    "location": {
+        "form_class": ProfileLocationForm,
+        "prefix": "location",
+        "success_message": "Location updated.",
+    },
+    "skills": {
+        "form_class": ProfileSkillsForm,
+        "prefix": "skills",
+        "success_message": "Skills updated.",
+    },
+    "work_style": {
+        "form_class": ProfileWorkStyleForm,
+        "prefix": "workstyle",
+        "success_message": "Work style preference updated.",
+    },
+    "experience": {
+        "form_class": ProfileExperienceForm,
+        "prefix": "experience",
+        "success_message": "Experience updated.",
+    },
+    "links": {
+        "form_class": ProfileLinksForm,
+        "prefix": "links",
+        "success_message": "Links updated.",
+    },
+}
 
 
 def index(request):
@@ -75,21 +121,75 @@ def save_education(request, education_id=None):
     })
 
 
+@login_required
+@require_POST
+def update_profile_field(request, username, field):
+    user = get_object_or_404(CustomUser, username=username)
+    if not (request.user == user or request.user.is_admin()):
+        return HttpResponseForbidden()
+
+    profile, _ = Profile.objects.get_or_create(user=user)
+    config = PROFILE_FIELD_FORM_CONFIG.get(field)
+    if not config:
+        raise Http404()
+
+    form = config["form_class"](request.POST, instance=profile, prefix=config["prefix"])
+
+    if form.is_valid():
+        profile = form.save(commit=False)
+        location_changed = field == "location" and form.has_changed()
+        profile.save()
+
+        if location_changed:
+            if profile.city or profile.state or profile.country:
+                try:
+                    profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+                except Exception:
+                    profile.lat, profile.lon = (0, 0)
+            else:
+                profile.lat, profile.lon = (0, 0)
+            profile.save(update_fields=['lat', 'lon'])
+
+        messages.success(request, config["success_message"])
+    else:
+        for errors in form.errors.values():
+            for error in errors:
+                messages.error(request, error)
+
+    return redirect('profile.view', username=username)
+
+
 def profile_view(request, username):
     from django.contrib.auth import get_user_model
 
     CustomUser = get_user_model()
     user = get_object_or_404(CustomUser, username=username)
     profile, _ = Profile.objects.get_or_create(user=user)
+    ProfilePrivacy.objects.get_or_create(profile=profile)
     user_education = Education.objects.filter(user=user).order_by('pk')
 
-    if user.home_profile.privacy.is_profile_visible == False and request.user.is_recruiter():
+    if profile.privacy and profile.privacy.is_profile_visible == False and request.user.is_recruiter():
         return redirect(request.META.get("HTTP_REFERER"))
+
+    forms_context = {}
+    education_form = None
+    if request.user.is_authenticated and (request.user == user or request.user.is_admin()):
+        forms_context = {
+            'headline_form': PROFILE_FIELD_FORM_CONFIG['headline']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['headline']["prefix"]),
+            'location_form': PROFILE_FIELD_FORM_CONFIG['location']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['location']["prefix"]),
+            'skills_form': PROFILE_FIELD_FORM_CONFIG['skills']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['skills']["prefix"]),
+            'work_style_form': PROFILE_FIELD_FORM_CONFIG['work_style']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['work_style']["prefix"]),
+            'experience_form': PROFILE_FIELD_FORM_CONFIG['experience']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['experience']["prefix"]),
+            'links_form': PROFILE_FIELD_FORM_CONFIG['links']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['links']["prefix"]),
+        }
+        education_form = EducationForm()
 
     return render(request, 'home/profile_view.html', {
         'profile': profile,
         'owner': user,
         'user_education': user_education,
+        'forms': forms_context,
+        'education_form': education_form,
     })
 
 
