@@ -386,20 +386,33 @@ def track_applications(request, id):
     }
     return render(request, 'jobs/track_applications.html', context)
 
+# @login_required
+# def update_application_status(request, application_id):
+#     """View to update application status"""
+#     application = get_object_or_404(Application, id=application_id, user=request.user)
+
+#     if request.method == 'POST':
+#         new_status = request.POST.get('status')
+#         if new_status in dict(Application.STATUS_CHOICES):
+#             old_status = application.get_status_display()
+#             application.status = new_status
+#             application.save()
+
+#             messages.success(request, f'Status updated from {old_status} to {application.get_status_display()}')
+#         else:
+#             messages.error(request, 'Invalid status selected')
+
+#     return redirect('jobs.track_applications')
+
 @login_required
-def update_application_status(request, id, application_id):
+def update_application_status(request, application_id, new_status):
     """View to update application status"""
-    application = get_object_or_404(Application, id=application_id, user=request.user)
+    application = get_object_or_404(Application, id=application_id)
 
-    if request.method == 'POST':
-        new_status = request.POST.get('status')
-        if new_status in dict(Application.STATUS_CHOICES):
-            old_status = application.get_status_display()
-            application.status = new_status
-            application.save()
+    if new_status in dict(Application.STATUS_CHOICES):
+        application.status = new_status
+        application.save()
+    else:
+        print(new_status, "not in the application status choices")
 
-            messages.success(request, f'Status updated from {old_status} to {application.get_status_display()}')
-        else:
-            messages.error(request, 'Invalid status selected')
-
-    return redirect('jobs.track_applications')
+    return redirect('jobs.show', id=application.job.id)

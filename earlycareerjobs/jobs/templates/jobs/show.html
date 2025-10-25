@@ -211,6 +211,51 @@
                   </p>
                   {% endif %}
 
+
+                  <div class="btn-group" role="group" style="padding-bottom: 3px;">
+                    {% if rec.application.status == "APPLIED" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='APPLIED' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='APPLIED' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Applied
+                    </a>
+
+                    {% if rec.application.status == "REVIEW" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='REVIEW' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='REVIEW' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Under Review
+                    </a>
+
+                    {% if rec.application.status == "INTERVIEW" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='INTERVIEW' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='INTERVIEW' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Interview
+                    </a>
+
+                    {% if rec.application.status == "OFFER" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='OFFER' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='OFFER' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Offer
+                    </a>
+
+                    {% if rec.application.status == "CLOSED" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='CLOSED' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=rec.application.id new_status='CLOSED' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Closed
+                    </a>
+                  </div>
+
+                  <br>
+
                   {% if request.user.is_recruiter and rec.user.home_profile.privacy.is_profile_visible == False %}
                   {% else %}
                     <a href="{% url 'profile.view' username=rec.user.username %}" class="btn btn-sm btn-outline-primary">
@@ -268,10 +313,12 @@
                   {% if application.status %}
                   <div class="mb-2">
                     <span class="badge 
-                      {% if application.status == 'pending' %}bg-warning text-dark
-                      {% elif application.status == 'accepted' %}bg-success
-                      {% elif application.status == 'rejected' %}bg-danger
-                      {% else %}bg-secondary{% endif %}">
+                      {% if application.status == 'APPLIED' %}active_application_status
+                      {% elif application.status == 'REVIEW' %}review_application_status
+                      {% elif application.status == 'INTERVIEW' %}interview_application_status
+                      {% elif application.status == 'OFFER' %}offer_application_status
+                      {% elif application.status == 'CLOSED' %}closed_application_status
+                      {% else %}error_application_status{% endif %}">
                       {{ application.get_status_display }}
                     </span>
                   </div>
@@ -283,6 +330,51 @@
                     <p class="mb-0 text-secondary">{{ application.user_note }}</p>
                   </div>
                   {% endif %}
+
+
+                  <div class="btn-group" role="group" style="padding-bottom: 3px;">
+                    {% if application.status == "APPLIED" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='APPLIED' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='APPLIED' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Applied
+                    </a>
+
+                    {% if application.status == "REVIEW" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='REVIEW' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='REVIEW' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Under Review
+                    </a>
+
+                    {% if application.status == "INTERVIEW" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='INTERVIEW' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='INTERVIEW' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Interview
+                    </a>
+
+                    {% if application.status == "OFFER" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='OFFER' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='OFFER' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Offer
+                    </a>
+
+                    {% if application.status == "CLOSED" %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='CLOSED' %}" class="btn btn-sm earlycareerjobs-btn">
+                    {% else %}
+                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='CLOSED' %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                    {% endif %}
+                      <i class="bi bi-person"></i> Closed
+                    </a>
+                  </div>
+
+                  <br>
 
                   <div class="btn-group" role="group">
                     {% if request.user.is_recruiter and application.user.home_profile.privacy.is_profile_visible == False %}
