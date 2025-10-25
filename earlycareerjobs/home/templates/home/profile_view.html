@@ -8,84 +8,278 @@
           <div class="card-body p-4 p-lg-5">
             <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
               <div>
-                <h1 class="h4 mb-1">{{ owner.get_full_name|default:owner.username }}</h1>
+                <h1 class="h4 mb-1 d-flex align-items-center gap-2">
+                  <span>{{ owner.get_full_name|default:owner.username }}</span>
+                  {% if forms.headline_form %}
+                    <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-headline-form" aria-expanded="false" aria-controls="edit-headline-form">
+                      <i class="bi bi-pencil"></i><span class="visually-hidden">Edit headline</span>
+                    </button>
+                  {% endif %}
+                </h1>
                 {% if profile.headline %}
                   <p class="text-muted mb-0">{{ profile.headline }}</p>
+                {% else %}
+                  {% if forms.headline_form %}
+                    <p class="text-muted fst-italic mb-0">Add a headline to highlight your strengths.</p>
+                  {% endif %}
                 {% endif %}
               </div>
               {% if request.user == owner or request.user.is_admin %}
                 <div class="text-md-end">
-                  <a class="btn btn-outline-primary" href="{% url 'profile.edit' %}">Edit profile</a>
+                  <a class="btn btn-outline-primary" href="{% url 'profile.edit' %}">Open full editor</a>
                 </div>
               {% endif %}
             </div>
 
+            {% if forms.headline_form %}
+            <div class="collapse mt-3" id="edit-headline-form">
+              <form method="post" action="{% url 'profile.update_field' username=owner.username field='headline' %}" class="card card-body border-0 shadow-sm">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" for="{{ forms.headline_form.headline.id_for_label }}">Professional headline</label>
+                  {{ forms.headline_form.headline }}
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg"></i> Save</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-headline-form">Cancel</button>
+                </div>
+              </form>
+            </div>
+            {% endif %}
+
             <hr class="my-4">
               {% if request.user.is_recruiter and profile.privacy.show_location == False %}
-              {% elif profile.city or profile.state or profile.country %}
+              {% else %}
                 <section class="mb-4">
-                  <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Location</h2>
-                  <p class="mb-0">
-                    {% if profile.city %}{{ profile.city }}{% endif %}
-                    {% if profile.state %}
-                      {% if profile.city %}, {% endif %}
-                      {{ profile.state }}
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h2 class="h6 text-uppercase text-muted fw-semibold mb-0">Location</h2>
+                    {% if forms.location_form %}
+                      <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-location-form" aria-expanded="false" aria-controls="edit-location-form">
+                        <i class="bi bi-pencil"></i> Edit
+                      </button>
                     {% endif %}
-                    {% if profile.country %}
-                      {% if profile.city or profile.state %}, {% endif %}
-                      {{ profile.country }}
+                  </div>
+                  <p class="mb-0">
+                    {% if profile.city or profile.state or profile.country %}
+                      {% if profile.city %}{{ profile.city }}{% endif %}
+                      {% if profile.state %}
+                        {% if profile.city %}, {% endif %}
+                        {{ profile.state }}
+                      {% endif %}
+                      {% if profile.country %}
+                        {% if profile.city or profile.state %}, {% endif %}
+                        {{ profile.country }}
+                      {% endif %}
+                    {% else %}
+                      <span class="text-muted fst-italic">Not specified</span>
                     {% endif %}
                   </p>
+                  {% if forms.location_form %}
+                  <div class="collapse mt-2" id="edit-location-form">
+                    <form method="post" action="{% url 'profile.update_field' username=owner.username field='location' %}" class="card card-body border-0 shadow-sm">
+                      {% csrf_token %}
+                      <div class="row g-2">
+                        <div class="col-md-4">
+                          <label class="form-label fw-semibold" for="{{ forms.location_form.city.id_for_label }}">City</label>
+                          {{ forms.location_form.city }}
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label fw-semibold" for="{{ forms.location_form.state.id_for_label }}">State</label>
+                          {{ forms.location_form.state }}
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label fw-semibold" for="{{ forms.location_form.country.id_for_label }}">Country</label>
+                          {{ forms.location_form.country }}
+                        </div>
+                      </div>
+                      <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg"></i> Save</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-location-form">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                  {% endif %}
                 </section>
               {% endif %}
 
             {% if request.user.is_recruiter and profile.privacy.show_skills == False %}
-            {% elif profile.skill_list %}
+            {% else %}
               <section class="mb-4">
-                <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Skills</h2>
-                <div class="skill-badge-group">
-                  {% for skill in profile.skill_list %}
-                    <span class="skill-badge">{{ skill }}</span>
-                  {% endfor %}
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h2 class="h6 text-uppercase text-muted fw-semibold mb-0">Skills</h2>
+                  {% if forms.skills_form %}
+                    <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-skills-form" aria-expanded="false" aria-controls="edit-skills-form">
+                      <i class="bi bi-pencil"></i> Edit
+                    </button>
+                  {% endif %}
                 </div>
+                {% if profile.skill_list %}
+                  <div class="skill-badge-group">
+                    {% for skill in profile.skill_list %}
+                      <span class="skill-badge">{{ skill }}</span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-muted fst-italic mb-0">No skills listed yet.</p>
+                {% endif %}
+                {% if forms.skills_form %}
+                <div class="collapse mt-2" id="edit-skills-form">
+                  <form method="post" action="{% url 'profile.update_field' username=owner.username field='skills' %}" class="card card-body border-0 shadow-sm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold" for="{{ forms.skills_form.skills.id_for_label }}">Skills</label>
+                      {{ forms.skills_form.skills }}
+                      <small class="text-muted">Separate skills with commas.</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg"></i> Save</button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-skills-form">Cancel</button>
+                    </div>
+                  </form>
+                </div>
+                {% endif %}
               </section>
             {% endif %}
 
             {% if request.user.is_recruiter and profile.privacy.show_work_style_preference == False %}
-            {% elif profile.work_style_preference %}
+            {% else %}
               <section class="mb-4">
-                <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Work style preference</h2>
-                <p class="mb-0">{{ profile.get_work_style_preference_display }}</p>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h2 class="h6 text-uppercase text-muted fw-semibold mb-0">Work style preference</h2>
+                  {% if forms.work_style_form %}
+                    <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-workstyle-form" aria-expanded="false" aria-controls="edit-workstyle-form">
+                      <i class="bi bi-pencil"></i> Edit
+                    </button>
+                  {% endif %}
+                </div>
+                <p class="mb-0">
+                  {% if profile.work_style_preference %}
+                    {{ profile.get_work_style_preference_display }}
+                  {% else %}
+                    <span class="text-muted fst-italic">Not specified</span>
+                  {% endif %}
+                </p>
+                {% if forms.work_style_form %}
+                  <div class="collapse mt-2" id="edit-workstyle-form">
+                    <form method="post" action="{% url 'profile.update_field' username=owner.username field='work_style' %}" class="card card-body border-0 shadow-sm">
+                      {% csrf_token %}
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ forms.work_style_form.work_style_preference.id_for_label }}">Work style</label>
+                        {{ forms.work_style_form.work_style_preference }}
+                      </div>
+                      <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg"></i> Save</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-workstyle-form">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                {% endif %}
               </section>
             {% endif %}
 
             {% if request.user.is_recruiter and profile.privacy.show_education == False %}
             {% else %}
-            <section class="mb-4">
-              <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Education</h2>
-              {% for edu in user_education %}
-                <p class="mb-1">
-                  <strong>{{ edu.get_level_display }} - {{ edu.institution }}:</strong> {{ edu.degree }}
-                </p>
-              {% empty %}
-                <p class="mb-0 text-muted">No education details available.</p>
-              {% endfor %}
-            </section>
+              {% if request.user == owner or request.user.is_admin %}
+                <section class="mb-4">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h2 class="h6 text-uppercase text-muted fw-semibold mb-0">Education</h2>
+                    <button type="button" class="btn btn-primary btn-sm" id="add-education-btn" data-bs-toggle="modal" data-bs-target="#educationModal">
+                      Add education
+                    </button>
+                  </div>
+                  <div id="education-list" class="mt-2">
+                    {% for edu in user_education %}
+                      <div id="edu-{{ edu.id }}" class="mb-2 p-2 border rounded">
+                        <p class="mb-1 fw-semibold">{{ edu.institution }}</p>
+                        <p class="mb-2 small text-muted">{{ edu.get_level_display }}</p>
+                        <p class="mb-2">{{ edu.degree }}</p>
+                        <div class="d-flex gap-2">
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary edit-education-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#educationModal"
+                            data-id="{{ edu.id }}"
+                            data-level="{{ edu.level }}"
+                            data-degree="{{ edu.degree }}"
+                            data-institution="{{ edu.institution }}"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger delete-education-btn"
+                            data-id="{{ edu.id }}"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    {% empty %}
+                      <p class="mb-0 text-muted">No education details available yet.</p>
+                    {% endfor %}
+                  </div>
+                </section>
+              {% else %}
+                <section class="mb-4">
+                  <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Education</h2>
+                  {% for edu in user_education %}
+                    <p class="mb-1">
+                      <strong>{{ edu.get_level_display }} - {{ edu.institution }}:</strong> {{ edu.degree }}
+                    </p>
+                  {% empty %}
+                    <p class="mb-0 text-muted">No education details available.</p>
+                  {% endfor %}
+                </section>
+              {% endif %}
             {% endif %}
 
             
             {% if request.user.is_recruiter and profile.privacy.show_experience == False %}
-            {% elif profile.experience %}
+            {% else %}
               <section class="mb-4">
-                <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Experience</h2>
-                <p class="mb-0">{{ profile.experience|linebreaks }}</p>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h2 class="h6 text-uppercase text-muted fw-semibold mb-0">Experience</h2>
+                  {% if forms.experience_form %}
+                    <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-experience-form" aria-expanded="false" aria-controls="edit-experience-form">
+                      <i class="bi bi-pencil"></i> Edit
+                    </button>
+                  {% endif %}
+                </div>
+                {% if profile.experience %}
+                  <p class="mb-0">{{ profile.experience|linebreaks }}</p>
+                {% else %}
+                  <p class="text-muted fst-italic mb-0">Share your experience to help recruiters understand your background.</p>
+                {% endif %}
+                {% if forms.experience_form %}
+                <div class="collapse mt-2" id="edit-experience-form">
+                  <form method="post" action="{% url 'profile.update_field' username=owner.username field='experience' %}" class="card card-body border-0 shadow-sm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold" for="{{ forms.experience_form.experience.id_for_label }}">Experience</label>
+                      {{ forms.experience_form.experience }}
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg"></i> Save</button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-experience-form">Cancel</button>
+                    </div>
+                  </form>
+                </div>
+                {% endif %}
               </section>
             {% endif %}
 
             {% if profile.privacy.show_linkedin == True or profile.privacy.show_github == True or profile.privacy.show_website == True or not request.user.is_recruiter %}
               {% if profile.linkedin or profile.github or profile.website %}
                 <section class="mb-2">
-                  <h2 class="h6 text-uppercase text-muted fw-semibold mb-2">Links</h2>
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h2 class="h6 text-uppercase text-muted fw-semibold mb-0">Links</h2>
+                    {% if forms.links_form %}
+                      <button class="btn btn-link btn-sm edit-inline-btn" type="button" data-bs-toggle="collapse" data-bs-target="#edit-links-form" aria-expanded="false" aria-controls="edit-links-form">
+                        <i class="bi bi-pencil"></i> Edit
+                      </button>
+                    {% endif %}
+                  </div>
                   <ul class="list-unstyled mb-0 profile-link-list">
                     {% if request.user.is_recruiter and profile.privacy.show_linkedin == False %}
                     {% elif profile.linkedin %}
@@ -102,6 +296,29 @@
                       <li><span>Website:</span> <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a></li>
                     {% endif %}
                   </ul>
+                  {% if forms.links_form %}
+                  <div class="collapse mt-2" id="edit-links-form">
+                    <form method="post" action="{% url 'profile.update_field' username=owner.username field='links' %}" class="card card-body border-0 shadow-sm">
+                      {% csrf_token %}
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ forms.links_form.linkedin.id_for_label }}">LinkedIn</label>
+                        {{ forms.links_form.linkedin }}
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ forms.links_form.github.id_for_label }}">GitHub</label>
+                        {{ forms.links_form.github }}
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ forms.links_form.website.id_for_label }}">Website</label>
+                        {{ forms.links_form.website }}
+                      </div>
+                      <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg"></i> Save</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-links-form">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                  {% endif %}
                 </section>
               {% endif %}
             {% endif %}
@@ -111,4 +328,163 @@
     </div>
   </div>
 </section>
+
+{% if education_form %}
+<div class="modal fade" id="educationModal" tabindex="-1" role="dialog" aria-labelledby="educationModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="educationModalLabel">Add Education</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="education-form" method="post" action="{% url 'save_education_add' %}">
+          {% csrf_token %}
+          <input type="hidden" id="education-id-field" name="education_id">
+          {{ education_form.as_p }}
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="save-education-btn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock content %}
+
+{% block extra_js %}
+{{ block.super }}
+{% if education_form %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const addBtn = document.getElementById('add-education-btn');
+  const educationForm = document.getElementById('education-form');
+  const educationList = document.getElementById('education-list');
+  const educationIdField = document.getElementById('education-id-field');
+  const educationModalLabel = document.getElementById('educationModalLabel');
+  const saveBtn = document.getElementById('save-education-btn');
+  const modalElement = document.getElementById('educationModal');
+  const modal = modalElement && window.bootstrap ? window.bootstrap.Modal.getOrCreateInstance(modalElement) : null;
+
+  if (!educationForm || !educationList || !saveBtn) {
+    return;
+  }
+
+  const baseAddUrl = "{% url 'save_education_add' %}";
+  const baseEditUrl = "{% url 'save_education_edit' education_id=0 %}".replace('/0/', '/');
+  const baseDeleteUrl = "{% url 'delete_education' education_id=0 %}".replace('/0/', '/');
+
+  const csrfToken = educationForm.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  if (addBtn) {
+    addBtn.addEventListener('click', function(){
+      educationForm.reset();
+      educationModalLabel.textContent = 'Add Education';
+      educationIdField.value = '';
+    });
+  }
+
+  educationList.addEventListener('click', function(event){
+    const target = event.target;
+    if (target.classList.contains('edit-education-btn')) {
+      const id = target.getAttribute('data-id');
+      const level = target.getAttribute('data-level');
+      const degree = target.getAttribute('data-degree');
+      const institution = target.getAttribute('data-institution');
+
+      educationModalLabel.textContent = 'Edit Education';
+      educationIdField.value = id;
+      document.getElementById('id_level').value = level;
+      document.getElementById('id_degree').value = degree;
+      document.getElementById('id_institution').value = institution;
+    }
+
+    if (target.classList.contains('delete-education-btn')) {
+      const educationId = target.getAttribute('data-id');
+      if (!educationId) {
+        return;
+      }
+      if (confirm('Are you sure you want to delete this education entry?')) {
+        fetch(baseDeleteUrl + educationId + '/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken,
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              const row = document.getElementById('edu-' + data.id);
+              if (row) {
+                row.remove();
+              }
+            } else {
+              alert('Error deleting education entry. ' + (data.message || ''));
+            }
+          })
+          .catch(err => alert('There was an error deleting the education entry. Please try again.'));
+      }
+    }
+  });
+
+  saveBtn.addEventListener('click', function(){
+    const educationId = educationIdField.value;
+    const url = educationId ? baseEditUrl + educationId + '/' : baseAddUrl;
+    const formData = new URLSearchParams(new FormData(educationForm));
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const newHtml = `
+            <p class="mb-1 fw-semibold">${data.institution}</p>
+            <p class="mb-2 small text-muted">${data.level}</p>
+            <p class="mb-2">${data.degree}</p>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-primary edit-education-btn"
+                data-bs-toggle="modal" data-bs-target="#educationModal"
+                data-id="${data.id}" data-level="${data.form_data.level}"
+                data-degree="${data.degree}" data-institution="${data.institution}">
+                Edit
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger delete-education-btn" data-id="${data.id}">
+                Delete
+              </button>
+            </div>`;
+
+          const wrapper = document.createElement('div');
+          wrapper.id = `edu-${data.id}`;
+          wrapper.className = 'mb-2 p-2 border rounded';
+          wrapper.innerHTML = newHtml;
+
+          const existing = document.getElementById(`edu-${data.id}`);
+          if (existing) {
+            existing.replaceWith(wrapper);
+          } else {
+            educationList.appendChild(wrapper);
+          }
+
+          if (modal) {
+            modal.hide();
+          }
+          educationForm.reset();
+          educationIdField.value = '';
+        } else {
+          alert('Error saving education entry.');
+        }
+      })
+      .catch(err => alert('There was an error saving your education. Please try again.'));
+  });
+});
+</script>
+{% endif %}
+{% endblock %}
