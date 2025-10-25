@@ -7,4 +7,4 @@ class CustomUserAdmin(admin.ModelAdmin):
     search_fields = ['username', 'email']
     list_filter = ['role']
 
-admin.site.register(CustomUser, CustomUserAdmin)
+#admin.site.register(CustomUser, CustomUserAdmin)
