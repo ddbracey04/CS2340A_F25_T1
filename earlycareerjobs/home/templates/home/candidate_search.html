@@ -107,8 +107,8 @@
             {% for profile in profiles %}
               {% if request.user.is_recruiter and profile.privacy.is_profile_visible == False %}
               {% else %}
-                <div class="col-12">
-                  <div class="card border-0 shadow-sm h-100">
+                <div class="col-12" style="margin-bottom: 0.5rem;">
+                  <div class="card border-1 shadow-sm h-100">
                     <div class="card-body">
                       <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
                         <div>
