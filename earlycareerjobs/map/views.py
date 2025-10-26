@@ -70,10 +70,10 @@ def index(request, errorStr='', override_template_data=None, focusLat="", focusL
             # TODO: Figure out what we want to do here
             pass
     
-    if focusLat != "":
+    if focusLat != "" and focusLon != "":
         template_data['centerLat'] = float(focusLat)
-    if focusLon != "":
         template_data['centerLon'] = float(focusLon)
+        template_data['searchRadius'] = ''
 
     return render(request, 'map/index.html', {'template_data': template_data, 'error': errorStr})
 
