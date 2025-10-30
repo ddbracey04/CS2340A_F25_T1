@@ -13,6 +13,7 @@ urlpatterns = [
     path('<int:id>/applications/', views.application_list, name='jobs.application_list'),
     path('<int:id>/applications/track/', views.track_applications, name='jobs.track_applications'),
     path('applications/<int:application_id>/update_status/<str:new_status>', views.update_application_status, name='jobs.update_application_status'),
+    path('applications/<int:application_id>/ajax/update_status/', views.update_application_status_ajax, name='jobs.update_application_status_ajax'),
     path('recommendations/hide/', views.hide_recommendations, name='jobs.recommendations.hide'),
     path('recommendations/show/', views.show_recommendations, name='jobs.recommendations.show'),
 ]

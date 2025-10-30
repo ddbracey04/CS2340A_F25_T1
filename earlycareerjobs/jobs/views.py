@@ -12,13 +12,14 @@ from .forms import (
     JobVisaForm,
 )
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.db.models import Count, Q
 from django.urls import reverse
 from map.models import Location
 from map.utils import lookupLatLon
+import json
 
 FIELD_FORM_CONFIG = {
     "title": {
@@ -494,7 +495,12 @@ def application_list(request, id):
 @login_required
 def track_applications(request, id):
     """View to display all user's applications with their current status"""
-    applications = Application.objects.filter(user=request.user)
+    applications = (
+        Application.objects.filter(user=request.user)
+        .select_related('job')
+        .prefetch_related('job__users')
+        .order_by('-date')
+    )
 
     # Get status statistics
     status_stats = applications.values('status').annotate(count=Count('status'))
@@ -502,11 +508,41 @@ def track_applications(request, id):
     # Convert to dictionary for easier template access
     stats_dict = {stat['status']: stat['count'] for stat in status_stats}
 
+    # Prepare Kanban data structure
+    status_lookup = dict(Application.STATUS_CHOICES)
+    kanban_columns = [
+        {
+            "key": status_key,
+            "label": status_lookup.get(status_key, status_key.title()),
+            "applications": [],
+        }
+        for status_key, _ in Application.STATUS_CHOICES
+    ]
+
+    column_index_map = {column["key"]: idx for idx, column in enumerate(kanban_columns)}
+
+    for application in applications:
+        recruiter_company = next(
+            (
+                user.company_name
+                for user in application.job.users.all()
+                if user.is_recruiter()
+            ),
+            "",
+        )
+        application.company_name = recruiter_company
+        idx = column_index_map.get(application.status)
+        if idx is not None:
+            kanban_columns[idx]["applications"].append(application)
+
+    for column in kanban_columns:
+        column["count"] = len(column["applications"])
+
     context = {
-        'applications': applications,
         'stats': stats_dict,
         'total_applications': applications.count(),
-
+        'kanban_columns': kanban_columns,
+        'status_lookup': status_lookup,
     }
     return render(request, 'jobs/track_applications.html', context)
 
@@ -540,3 +576,48 @@ def update_application_status(request, application_id, new_status):
         print(new_status, "not in the application status choices")
 
     return redirect('jobs.show', id=application.job.id)
+
+
+@login_required
+@require_POST
+def update_application_status_ajax(request, application_id):
+    """AJAX endpoint to update an application's status for the authenticated user."""
+    application = get_object_or_404(Application, id=application_id, user=request.user)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        payload = {}
+
+    new_status = payload.get("status") or request.POST.get("status")
+    valid_statuses = dict(Application.STATUS_CHOICES)
+
+    if new_status not in valid_statuses:
+        return JsonResponse(
+            {"success": False, "error": "Invalid status value."},
+            status=400,
+        )
+
+    previous_status = application.status
+    application.status = new_status
+    application.save(update_fields=["status"])
+
+    # Recalculate stats for dashboard widgets
+    status_stats = (
+        Application.objects.filter(user=request.user)
+        .values("status")
+        .annotate(count=Count("status"))
+    )
+    stats_dict = {stat["status"]: stat["count"] for stat in status_stats}
+
+    return JsonResponse(
+        {
+            "success": True,
+            "application_id": application.id,
+            "status": new_status,
+            "status_display": application.get_status_display(),
+            "previous_status": previous_status,
+            "stats": stats_dict,
+            "total_applications": sum(stats_dict.values()),
+        }
+    )
