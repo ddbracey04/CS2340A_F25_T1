@@ -542,150 +542,168 @@
               {% endif %}
             </div>
             <div class="card-body">
-              {% if template_data.applications %}
-              <div class="list-group list-group-flush">
-                {% for application in template_data.applications %}
-                <div class="list-group-item hover-shadow mb-2 rounded">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                      <h6 class="mb-1">
-                        {% if request.user.is_recruiter and application.user.home_profile.privacy.is_profile_visible == False %}
-                          {{ application.user.get_full_name|default:application.user.username }}
-                        {% else %}
-                          <a href="{% url 'profile.view' username=application.user.username %}" class="text-decoration-none">
-                            {{ application.user.get_full_name|default:application.user.username }}
-                          </a>
-                        {% endif %}
-                      </h6>
-                      <small class="text-muted">
-                        <i class="bi bi-envelope"></i> {{ application.user.email }}
-                        {% if application.user.profile.phone_number %}
-                        | <i class="bi bi-telephone"></i> {{ application.user.profile.phone_number }}
-                        {% endif %}
-                      </small>
-                    </div>
-                    <small class="text-muted">
-                      <i class="bi bi-calendar"></i> {{ application.date|date:"M d, Y" }}
-                    </small>
-                  </div>
-                  
-                  {% if application.status %}
-                  <div class="mb-2">
-                    <span class="badge 
-                      {% if application.status == 'APPLIED' %}active_application_status
-                      {% elif application.status == 'REVIEW' %}review_application_status
-                      {% elif application.status == 'INTERVIEW' %}interview_application_status
-                      {% elif application.status == 'OFFER' %}offer_application_status
-                      {% elif application.status == 'CLOSED' %}closed_application_status
-                      {% else %}error_application_status{% endif %}">
-                      {{ application.get_status_display }}
-                    </span>
-                  </div>
-                  {% endif %}
-
-                  {% if application.user_note %}
-                  <div class="border-start border-3 border-primary ps-3 mb-3">
-                    <small class="text-muted d-block mb-1">Cover Letter:</small>
-                    <p class="mb-0 text-secondary">{{ application.user_note }}</p>
-                  </div>
-                  {% endif %}
-
-
-                  <div class="btn-group" role="group" style="padding-bottom: 3px;">
-                    {% if application.status == "APPLIED" %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='APPLIED' %}" class="btn btn-sm earlycareerjobs-btn">
-                    {% else %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='APPLIED' %}" class="btn btn-sm earlycareerjobs-btn-outline">
-                    {% endif %}
-                      <i class="bi bi-person"></i> Applied
-                    </a>
-
-                    {% if application.status == "REVIEW" %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='REVIEW' %}" class="btn btn-sm earlycareerjobs-btn">
-                    {% else %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='REVIEW' %}" class="btn btn-sm earlycareerjobs-btn-outline">
-                    {% endif %}
-                      <i class="bi bi-person"></i> Under Review
-                    </a>
-
-                    {% if application.status == "INTERVIEW" %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='INTERVIEW' %}" class="btn btn-sm earlycareerjobs-btn">
-                    {% else %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='INTERVIEW' %}" class="btn btn-sm earlycareerjobs-btn-outline">
-                    {% endif %}
-                      <i class="bi bi-person"></i> Interview
-                    </a>
-
-                    {% if application.status == "OFFER" %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='OFFER' %}" class="btn btn-sm earlycareerjobs-btn">
-                    {% else %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='OFFER' %}" class="btn btn-sm earlycareerjobs-btn-outline">
-                    {% endif %}
-                      <i class="bi bi-person"></i> Offer
-                    </a>
-
-                    {% if application.status == "CLOSED" %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='CLOSED' %}" class="btn btn-sm earlycareerjobs-btn">
-                    {% else %}
-                    <a href="{% url 'jobs.update_application_status' application_id=application.id new_status='CLOSED' %}" class="btn btn-sm earlycareerjobs-btn-outline">
-                    {% endif %}
-                      <i class="bi bi-person"></i> Closed
-                    </a>
-                  </div>
-
-                  <br>
-
-                  <div class="btn-group" role="group">
-                    {% if request.user.is_recruiter and application.user.home_profile.privacy.is_profile_visible == False %}
-                    {% else %}
-                      <a href="{% url 'profile.view' username=application.user.username %}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-person"></i> View Profile
-                      </a>
-                    {% endif %}
-                    {% if request.user.is_admin %}
-                    <a href="{% url 'jobs.edit_applicant' job_id=template_data.job.id app_id=application.id %}" class="btn btn-sm btn-outline-warning">
-                      <i class="bi bi-pencil"></i> Edit
-                    </a>
-                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAppModal{{ application.id }}">
-                      <i class="bi bi-trash"></i> Remove
-                    </button>
-                    {% endif %}
-                  </div>
-
-                  <!-- Delete Confirmation Modal -->
-                  {% if template_data.can_edit %}
-                  <div class="modal fade" id="deleteAppModal{{ application.id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title">Confirm Removal</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                          Are you sure you want to remove {{ application.user.username }}'s application?
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                          <form method="post" action="{% url 'jobs.delete_applicant' job_id=template_data.job.id app_id=application.id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">Remove</button>
-                          </form>
-                        </div>
-                      </div>
+              {% if template_data.can_edit %}
+                {% if template_data.kanban_total %}
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 g-lg-4 mb-4">
+                  <div class="col">
+                    <div class="tracker-summary-card">
+                      <p class="summary-label text-uppercase">Total</p>
+                      <p class="summary-value" data-summary-total>{{ template_data.kanban_total }}</p>
                     </div>
                   </div>
-                  {% endif %}
+                  {% for column in template_data.kanban_columns %}
+                  <div class="col">
+                    <div class="tracker-summary-card tracker-summary-card--{{ column.key|lower }}">
+                      <p class="summary-label text-uppercase">{{ column.label }}</p>
+                      <p class="summary-value" data-summary-status="{{ column.key }}">{{ column.count }}</p>
+                    </div>
+                  </div>
+                  {% endfor %}
                 </div>
-                {% endfor %}
-              </div>
+                <div class="kanban-columns px-2 pb-4">
+                  <div class="kanban-columns__inner">
+                    {% for column in template_data.kanban_columns %}
+                    <section class="kanban-column" data-status="{{ column.key }}">
+                      <header class="kanban-column__header">
+                        <div class="kanban-column__titles">
+                          <span class="kanban-column__title">{{ column.label }}</span>
+                          <small class="kanban-column__subtitle text-muted" data-column-count="{{ column.key }}">{{ column.count }} {% if column.count == 1 %}applicant{% else %}applicants{% endif %}</small>
+                        </div>
+                        <span class="kanban-column__count badge rounded-pill" data-status-count="{{ column.key }}">{{ column.count }}</span>
+                      </header>
+                      <div class="kanban-column__body" data-column-body="{{ column.key }}">
+                        <div class="kanban-column__empty text-muted"{% if column.applications %} style="display: none;"{% endif %}>
+                          <p class="mb-0">Drop applicants here to move them into {{ column.label|lower }}.</p>
+                        </div>
+                        {% for application in column.applications %}
+                        <article
+                          class="kanban-card"
+                          draggable="true"
+                          data-application-id="{{ application.id }}"
+                          data-update-url="{% url 'jobs.update_application_status_ajax' application.id %}"
+                          data-current-status="{{ application.status }}"
+                        >
+                          <div class="kanban-card__header">
+                            <h3 class="kanban-card__title h6 mb-0">
+                              {{ application.user.get_full_name|default:application.user.username }}
+                            </h3>
+                            <div class="kanban-card__company text-uppercase text-muted fw-semibold">
+                              Applied {{ application.date|date:"M d, Y" }}
+                            </div>
+                          </div>
+                          <ul class="kanban-card__meta list-unstyled mb-3">
+                            <li>
+                              <i class="bi bi-envelope me-1"></i>
+                              {{ application.user.email }}
+                            </li>
+                            {% if application.user.profile.phone_number %}
+                            <li>
+                              <i class="bi bi-telephone me-1"></i>
+                              {{ application.user.profile.phone_number }}
+                            </li>
+                            {% endif %}
+                          </ul>
+                          {% if application.user_note %}
+                          <div class="kanban-card__note">
+                            <span class="kanban-card__note-label text-uppercase">Candidate message</span>
+                            <p class="kanban-card__note-text mb-0">{{ application.user_note|truncatewords:22 }}</p>
+                          </div>
+                          {% endif %}
+                          <div class="kanban-card__actions">
+                            <div class="d-grid gap-2">
+                              {% if request.user.is_recruiter and application.user.home_profile.privacy.is_profile_visible == False %}
+                                <span class="text-muted small">Profile hidden by candidate.</span>
+                              {% else %}
+                                <a href="{% url 'profile.view' username=application.user.username %}" class="btn btn-sm earlycareerjobs-btn-outline">
+                                  View Profile
+                                </a>
+                              {% endif %}
+                              {% if request.user.is_admin %}
+                                <a href="{% url 'jobs.edit_applicant' job_id=template_data.job.id app_id=application.id %}" class="btn btn-sm btn-outline-warning">
+                                  Edit Notes
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAppModal{{ application.id }}">
+                                  Remove
+                                </button>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </article>
+                        {% endfor %}
+                      </div>
+                    </section>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                  <p class="mt-3">No applications yet. Share this job posting to attract candidates!</p>
+                </div>
+                {% endif %}
               {% else %}
-              <div class="text-center py-5 text-muted">
-                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                <p class="mt-3">No applications yet. Share this job posting to attract candidates!</p>
-              </div>
+                {% if template_data.applications %}
+                <div class="list-group list-group-flush">
+                  {% for application in template_data.applications %}
+                  <div class="list-group-item hover-shadow mb-2 rounded">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h6 class="mb-1">
+                          {{ application.user.get_full_name|default:application.user.username }}
+                        </h6>
+                        <small class="text-muted">
+                          <i class="bi bi-calendar"></i> {{ application.date|date:"M d, Y" }}
+                        </small>
+                      </div>
+                      <span class="badge 
+                        {% if application.status == 'APPLIED' %}active_application_status
+                        {% elif application.status == 'REVIEW' %}review_application_status
+                        {% elif application.status == 'INTERVIEW' %}interview_application_status
+                        {% elif application.status == 'OFFER' %}offer_application_status
+                        {% elif application.status == 'CLOSED' %}closed_application_status
+                        {% else %}error_application_status{% endif %}">
+                        {{ application.get_status_display }}
+                      </span>
+                    </div>
+                    {% if application.user_note %}
+                    <p class="mb-0 text-secondary small">"{{ application.user_note|truncatewords:25 }}"</p>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                  <p class="mt-3">No applications yet. Share this job posting to attract candidates!</p>
+                </div>
+                {% endif %}
               {% endif %}
             </div>
           </div>
+        {% if template_data.can_edit and user.is_admin %}
+          {% for application in template_data.applications %}
+          <div class="modal fade" id="deleteAppModal{{ application.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Confirm Removal</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  Are you sure you want to remove {{ application.user.username }}'s application?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <form method="post" action="{% url 'jobs.delete_applicant' job_id=template_data.job.id app_id=application.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Remove</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% endif %}
         {% endif %}
       {% endif %}
     </div>
@@ -720,6 +738,162 @@
     </div>
   </div>
 </div>
+{% endif %}
+
+{% if template_data.can_edit %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const draggableCards = document.querySelectorAll('.kanban-card');
+  const columnBodies = document.querySelectorAll('[data-column-body]');
+  if (!draggableCards.length || !columnBodies.length) {
+    return;
+  }
+
+  const summaryTotal = document.querySelector('[data-summary-total]');
+  const summaryByStatus = document.querySelectorAll('[data-summary-status]');
+  const columnCountLabels = document.querySelectorAll('[data-column-count]');
+  const statusBadges = document.querySelectorAll('[data-status-count]');
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function toggleEmptyState(body) {
+    const emptyState = body.querySelector('.kanban-column__empty');
+    if (!emptyState) {
+      return;
+    }
+    const hasCards = body.querySelectorAll('.kanban-card').length > 0;
+    emptyState.style.display = hasCards ? 'none' : 'block';
+  }
+
+  function formatCountLabel(count) {
+    return count + ' ' + (count === 1 ? 'applicant' : 'applicants');
+  }
+
+  function applyStats(stats, total) {
+    if (summaryTotal) {
+      summaryTotal.textContent = total;
+    }
+
+    summaryByStatus.forEach(summary => {
+      const status = summary.getAttribute('data-summary-status');
+      const count = stats[status] || 0;
+      summary.textContent = count;
+    });
+
+    statusBadges.forEach(badge => {
+      const status = badge.getAttribute('data-status-count');
+      const count = stats[status] || 0;
+      badge.textContent = count;
+    });
+
+    columnCountLabels.forEach(label => {
+      const status = label.getAttribute('data-column-count');
+      const count = stats[status] || 0;
+      label.textContent = formatCountLabel(count);
+    });
+  }
+
+  function attachDragEvents(card) {
+    card.addEventListener('dragstart', (event) => {
+      card.classList.add('is-dragging');
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', card.dataset.applicationId);
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('is-dragging');
+    });
+  }
+
+  draggableCards.forEach(attachDragEvents);
+
+  columnBodies.forEach(body => {
+    body.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      body.classList.add('is-drag-over');
+      event.dataTransfer.dropEffect = 'move';
+    });
+
+    body.addEventListener('dragleave', () => {
+      body.classList.remove('is-drag-over');
+    });
+
+    body.addEventListener('drop', (event) => {
+      event.preventDefault();
+      body.classList.remove('is-drag-over');
+
+      const applicationId = event.dataTransfer.getData('text/plain');
+      if (!applicationId) {
+        return;
+      }
+
+      const card = document.querySelector('.kanban-card.is-dragging') || document.querySelector(`.kanban-card[data-application-id="${applicationId}"]`);
+      if (!card) {
+        return;
+      }
+
+      const targetStatus = body.getAttribute('data-column-body');
+      const currentStatus = card.dataset.currentStatus;
+      if (!targetStatus || targetStatus === currentStatus) {
+        return;
+      }
+
+      const originBody = document.querySelector(`[data-column-body="${currentStatus}"]`);
+      const updateUrl = card.getAttribute('data-update-url');
+
+      body.appendChild(card);
+      toggleEmptyState(body);
+      if (originBody) {
+        toggleEmptyState(originBody);
+      }
+
+      fetch(updateUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ status: targetStatus }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Request failed');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (!data.success) {
+            throw new Error(data.error || 'Unable to update application status.');
+          }
+          card.dataset.currentStatus = data.status;
+          applyStats(data.stats || {}, data.total_applications || 0);
+        })
+        .catch(error => {
+          if (originBody) {
+            originBody.appendChild(card);
+            toggleEmptyState(originBody);
+          }
+          toggleEmptyState(body);
+          console.error(error);
+          alert('Unable to update the application status right now. Please try again.');
+        });
+    });
+  });
+});
+</script>
 {% endif %}
 
 <style>
