@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Candidate Notification</title>
+</head>
+<body>
+    <h2>Hi {{ recruiter_name }},</h2>
+    <p>We've found new candidates that match your saved search: <strong>"{{ search_name }}"</strong>.</p>
+
+    <ul>
+        {% for candidate in candidates %}
+            <li>
+                <a href="{{ request.scheme }}://{{ request.get_host }}{% url 'profile.view' username=candidate.user.username %}">
+                    {{ candidate.user.get_full_name|default:candidate.user.username }}
+                </a>
+                {% if candidate.headline %}- {{ candidate.headline }}{% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <p>
+        <a href="{{ request.scheme }}://{{ request.get_host }}{% url 'candidate_search' %}?{{ search_url }}">
+            View all matching candidates
+        </a>
+    </p>
+
+    <p>Thank you for using our platform!</p>
+</body>
+</html>
