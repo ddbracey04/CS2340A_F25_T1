@@ -22,6 +22,11 @@ from .forms import (
 from .models import Education, Profile, ProfilePrivacy
 
 from django.contrib import messages
+from django.conf import settings
+
+from .models import Message
+from .forms import MessageForm
+from django.views.decorators.http import require_GET
 
 
 PROFILE_FIELD_FORM_CONFIG = {
@@ -426,3 +431,73 @@ def privacy_settings(request):
         'user': request.user
     }
     return render(request, 'home/privacy_settings.html', context)
+
+
+@login_required
+def message_compiler(request):
+    # Only recruiter or admin may send messages
+    if not (request.user.is_recruiter() or request.user.is_admin()):
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            recipient_username = form.cleaned_data['recipient_username'].strip()
+            job_id = form.cleaned_data.get('job_id')
+            message_text = form.cleaned_data['message_text']
+            send_method = form.cleaned_data.get('send_method')
+            send_in_app = True if send_method == 'in_app' else False
+
+            # Resolve recipient
+            recipient = get_object_or_404(CustomUser, username=recipient_username)
+
+            # Resolve optional job
+            job = None
+            if job_id:
+                try:
+                    from jobs.models import Job
+                    job = Job.objects.filter(pk=job_id).first()
+                except Exception:
+                    job = None
+
+            # Create message instance
+            Message.objects.create(
+                job=job,
+                sender=request.user,
+                recipient=recipient,
+                text=message_text,
+                in_app=send_in_app,
+            )
+
+            messages.success(request, 'Message Sent.')
+            return redirect('home.message_compiler')
+    else:
+        recipient_prefill = request.GET.get('recipient', '')
+        job_prefill = request.GET.get('job_id', '')
+        initial = {}
+        if recipient_prefill:
+            initial['recipient_username'] = recipient_prefill
+        if job_prefill:
+            initial['job_id'] = job_prefill
+        form = MessageForm(initial=initial)
+
+    return render(request, 'home/message_compiler.html', {'form': form})
+
+
+@login_required
+@require_GET
+def search_usernames(request):
+    """Return JSON list of job seeker usernames matching query 'q'.
+
+    Accessible only to recruiters or admins.
+    """
+    if not (request.user.is_recruiter() or request.user.is_admin()):
+        return JsonResponse({'results': []}, status=403)
+
+    q = request.GET.get('q', '').strip()
+    if not q:
+        return JsonResponse({'results': []})
+
+    # Match usernames (case-insensitive startswith), limit results
+    matches = CustomUser.objects.filter(username__istartswith=q, role=CustomUser.Role.JOB_SEEKER).order_by('username')[:20]
+    return JsonResponse({'results': [u.username for u in matches]})

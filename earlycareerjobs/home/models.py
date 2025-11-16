@@ -92,3 +92,15 @@ class ProfilePrivacy(models.Model):
     
     class Meta:
         verbose_name_plural = "Profile privacy settings"
+
+
+class Message(models.Model):
+    job = models.ForeignKey('jobs.Job', null=True, blank=True, on_delete=models.SET_NULL, related_name='messages')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_messages')
+    text = models.TextField()
+    in_app = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.sender.username} to {self.recipient.username} ({'in-app' if self.in_app else 'email'})"

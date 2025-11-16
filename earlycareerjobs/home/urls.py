@@ -11,4 +11,6 @@ urlpatterns = [
     path('profile/<str:username>/', views.profile_view, name='profile.view'),
     path('candidates/', views.search_candidates, name='candidates.search'),
     path('privacy/', views.privacy_settings, name='privacy_settings'),
+    path('message/', views.message_compiler, name='home.message_compiler'),
+    path('api/usernames/', views.search_usernames, name='home.search_usernames'),
 ]
