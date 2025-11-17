@@ -96,8 +96,9 @@
                       <li><a class="dropdown-item" href="{% url 'privacy_settings' %}">Privacy Settings</a></li>
                       <li><a class="dropdown-item" href="{% url 'jobs.track_applications' id=request.user.id %}">Track Applications</a></li>
                     {% elif user.is_recruiter %}
-                      <li><a href="{% url 'jobs.create' %}">Post a Job</a></li>
+                      <li><a class="dropdown-item" href="{% url 'jobs.create' %}">Post a Job</a></li>
                       <li><a href="{% url 'saved_searches' %}">Saved Searches</a></li>
+                      <li><a class="dropdown-item" href="{% url 'home.about' %}">Message a Candidate</a></li>
                     {% endif %}
                     <li>
                         <form id="logout-form-mobile" method="post" action="{% url 'users.logout' %}">
@@ -185,6 +186,7 @@
                                     <span class="badge bg-danger ms-1">{{ unread_notifications_count }}</span>
                                   {% endif %}
                                 </a></li>
+                                <li><a href="{% url 'home.message_compiler' %}" style="text-align: left; padding-left: 15px;">Message a Candidate</a></li>
                               {% endif %}
 
                               <li>

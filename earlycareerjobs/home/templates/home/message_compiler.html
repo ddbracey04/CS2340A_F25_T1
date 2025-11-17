@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Message a Candidate{% endblock title %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+	<h2>Message a Candidate</h2>
+
+	<form method="post" id="message-compiler-form">
+		{% csrf_token %}
+
+		{% if messages %}
+			{% for message in messages %}
+				<div class="alert alert-{{ message.tags }} mt-3">{{ message }}</div>
+			{% endfor %}
+		{% endif %}
+
+		<!-- Header bar: recipient username -->
+		<div class="mb-3">
+			<label for="id_recipient_username" class="form-label">Candidate username</label>
+			{{ form.recipient_username }}
+			<div id="recipient-suggestions" class="list-group" style="position: absolute; z-index: 2000; display:none; max-height:200px; overflow:auto; width:100%;"></div>
+		</div>
+
+		<!-- Large message field -->
+		<div class="mb-3">
+			<label for="id_message_text" class="form-label">Message</label>
+			{{ form.message_text }}
+		</div>
+
+		<!-- Send method buttons -->
+		<div class="mb-4">
+			<label class="form-label d-block">Send method</label>
+			<div class="btn-group" role="group" aria-label="Send method">
+				<input type="radio" name="send_method" id="id_send_method_0" value="in_app" style="display:none;" {% if form.send_method.value == 'in_app' %}checked{% endif %}>
+				<label class="btn btn-outline-primary {% if form.send_method.value == 'in_app' %}active{% endif %}" for="id_send_method_0">Message in App</label>
+
+				<input type="radio" name="send_method" id="id_send_method_1" value="email" style="display:none;" {% if form.send_method.value == 'email' %}checked{% endif %}>
+				<label class="btn btn-outline-secondary {% if form.send_method.value == 'email' %}active{% endif %}" for="id_send_method_1">Email Candidate</label>
+			</div>
+		</div>
+
+		<!-- Send button -->
+		<div class="mb-3">
+			<button type="submit" class="btn btn-success">Send</button>
+		</div>
+
+	</form>
+</div>
+
+<script>
+// Toggle active class on the button labels when radios change
+document.addEventListener('DOMContentLoaded', function () {
+	const rInApp = document.getElementById('id_send_method_0');
+	const rEmail = document.getElementById('id_send_method_1');
+	const lInApp = document.querySelector("label[for='id_send_method_0']");
+	const lEmail = document.querySelector("label[for='id_send_method_1']");
+
+	function updateActive() {
+		if (rInApp.checked) {
+			lInApp.classList.add('active');
+			lEmail.classList.remove('active');
+		} else if (rEmail.checked) {
+			lEmail.classList.add('active');
+			lInApp.classList.remove('active');
+		}
+	}
+
+	lInApp && lInApp.addEventListener('click', function () { setTimeout(updateActive, 0); });
+	lEmail && lEmail.addEventListener('click', function () { setTimeout(updateActive, 0); });
+	updateActive();
+});
+</script>
+
+<script>
+// Autocomplete for recipient username
+document.addEventListener('DOMContentLoaded', function () {
+	const input = document.getElementById('id_recipient_username');
+	const list = document.getElementById('recipient-suggestions');
+	let timer = null;
+
+	function hideList() {
+		list.style.display = 'none';
+		list.innerHTML = '';
+	}
+
+	function showList(items) {
+		list.innerHTML = '';
+		if (!items || items.length === 0) { hideList(); return; }
+		items.forEach(function (username) {
+			const el = document.createElement('button');
+			el.type = 'button';
+			el.className = 'list-group-item list-group-item-action';
+			el.textContent = username;
+			el.addEventListener('click', function () {
+				input.value = username;
+				hideList();
+				input.focus();
+			});
+			list.appendChild(el);
+		});
+		list.style.display = 'block';
+	}
+
+	input.addEventListener('input', function () {
+		const q = input.value.trim();
+		if (timer) clearTimeout(timer);
+		if (!q) { hideList(); return; }
+		timer = setTimeout(function () {
+			fetch(window.location.pathname.replace(/message\/?$/, '') + 'api/usernames/?q=' + encodeURIComponent(q), { credentials: 'same-origin' })
+				.then(function (resp) { return resp.json(); })
+				.then(function (data) {
+					if (data && data.results) showList(data.results);
+					else hideList();
+				}).catch(function () { hideList(); });
+		}, 250);
+	});
+
+	// Hide suggestions when clicking outside
+	document.addEventListener('click', function (e) {
+		if (!list.contains(e.target) && e.target !== input) hideList();
+	});
+});
+</script>
+
+{% endblock content %}

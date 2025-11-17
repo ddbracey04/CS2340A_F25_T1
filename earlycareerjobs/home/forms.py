@@ -197,22 +197,55 @@ class PrivacySettingsForm(forms.ModelForm):
             'show_website': 'Personal Website',
             'show_work_style_preference': 'Work Style Preference',
         }
+
+
+class MessageForm(forms.Form):
+    recipient_username = forms.CharField(
+        required=True,
+        label="Recipient username",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Candidate username'})
+    )
+
+    job_id = forms.IntegerField(
+        required=False,
+        label="Job (optional)",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Optional job id'})
+    )
+
+    message_text = forms.CharField(
+        required=True,
+        label="Message",
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 8, 'placeholder': 'Write your message here...'})
+    )
+
+    SEND_METHOD_CHOICES = (
+        ("in_app", "Message in App"),
+        ("email", "Email Candidate"),
+    )
+
+    send_method = forms.ChoiceField(
+        required=True,
+        label="Send method",
+        choices=SEND_METHOD_CHOICES,
+        initial="in_app",
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
         
-        widgets = {            
-            'is_profile_visible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'show_full_name': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'show_email',: forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'show_phone': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'show_resume': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_education': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_location': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_skills': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_experience': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_linkedin': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_github': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_website': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_work_style_preference': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }
+    widgets = {            
+        'is_profile_visible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        # 'show_full_name': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        # 'show_email',: forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        # 'show_phone': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        # 'show_resume': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_education': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_location': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_skills': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_experience': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_linkedin': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_github': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_website': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_work_style_preference': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+    }
 
 
 class SavedSearchForm(forms.ModelForm):
