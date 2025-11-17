@@ -97,6 +97,7 @@
                       <li><a class="dropdown-item" href="{% url 'jobs.track_applications' id=request.user.id %}">Track Applications</a></li>
                     {% elif user.is_recruiter %}
                       <li><a href="{% url 'jobs.create' %}">Post a Job</a></li>
+                      <li><a href="{% url 'saved_searches' %}">Saved Searches</a></li>
                     {% endif %}
                     <li>
                         <form id="logout-form-mobile" method="post" action="{% url 'users.logout' %}">
@@ -177,6 +178,13 @@
                                 <li><a href="{% url 'jobs.track_applications' id=request.user.id %}" style="text-align: left; padding-left: 15px;">Track Applications</a></li>
                               {% elif user.is_recruiter %}
                                 <li><a href="{% url 'jobs.create' %}" style="text-align: left; padding-left: 15px;">Post a Job</a></li>
+                                <li><a href="{% url 'saved_searches' %}" style="text-align: left; padding-left: 15px;">Saved Searches</a></li>
+                                <li><a href="{% url 'notifications' %}" style="text-align: left; padding-left: 15px;">
+                                  Notifications
+                                  {% if unread_notifications_count > 0 %}
+                                    <span class="badge bg-danger ms-1">{{ unread_notifications_count }}</span>
+                                  {% endif %}
+                                </a></li>
                               {% endif %}
 
                               <li>
@@ -204,6 +212,28 @@
 </header>
 <!-- Header End -->
 {% endblock header %}
+
+{% if user.is_authenticated and user.is_recruiter and unread_notifications_count > 0 %}
+<div class="alert alert-info alert-dismissible fade show m-0 rounded-0 border-0 border-bottom" role="alert" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none !important;">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-bell-fill me-2" style="font-size: 1.5rem;"></i>
+        <div>
+          <strong>You have {{ unread_notifications_count }} new notification{{ unread_notifications_count|pluralize }}!</strong>
+          <p class="mb-0 small">New candidates match your saved searches.</p>
+        </div>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <a href="{% url 'notifications' %}" class="btn btn-light btn-sm">
+          <i class="bi bi-eye"></i> View Notifications
+        </a>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 {% block content %}
 {% endblock content %}

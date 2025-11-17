@@ -80,6 +80,9 @@
               <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary" style="background-color: #5D61EA; border-color: #5D61EA;">Search</button>
                 <a href="{% url 'candidates.search' %}" class="btn btn-outline-secondary">Reset</a>
+                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#saveSearchModal">
+                  <i class="bi bi-bookmark-plus"></i> Save Search
+                </button>
               </div>
             </form>
           </div>
@@ -189,12 +192,96 @@
   </div>
 </section>
 
+<!-- Save Search Modal -->
+<div class="modal fade" id="saveSearchModal" tabindex="-1" aria-labelledby="saveSearchModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="saveSearchModalLabel">Save Candidate Search</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p>You are about to save the current search filters. You can receive notifications when new candidates match these criteria.</p>
+          
+          <div class="card bg-light mb-3">
+            <div class="card-body">
+              <h6 class="card-title">Current Search Filters:</h6>
+              <ul class="mb-0" style="font-size: 0.9rem;">
+                {% if current_filters.skills %}
+                  <li><strong>Skills:</strong> {{ current_filters.skills }} ({{ current_filters.skills_mode }})</li>
+                {% endif %}
+                {% if current_filters.experience %}
+                  <li><strong>Experience:</strong> {{ current_filters.experience }}</li>
+                {% endif %}
+                {% if current_filters.location %}
+                  <li><strong>Location:</strong> {{ current_filters.location }} within {{ current_filters.distance }} miles</li>
+                {% endif %}
+                {% if current_filters.work_style %}
+                  <li><strong>Work Style:</strong> {{ current_filters.work_style }}</li>
+                {% endif %}
+                {% if not current_filters.skills and not current_filters.experience and not current_filters.location and not current_filters.work_style %}
+                  <li><em>No filters applied (all candidates)</em></li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+          
+          {% for field in saved_search_form.hidden_fields %}
+            {{ field }}
+          {% endfor %}
+
+          <div class="mb-3">
+            <label for="id_name" class="form-label">Search Name</label>
+            {{ saved_search_form.name }}
+            <div class="form-text">Give this search a memorable name (e.g., "Senior Python Devs in SF").</div>
+          </div>
+
+          <div class="form-check">
+            {{ saved_search_form.is_notification_active }}
+            <label class="form-check-label" for="{{ saved_search_form.is_notification_active.id_for_label }}">
+              {{ saved_search_form.is_notification_active.label }}
+            </label>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="save_search" class="btn btn-primary">Save Search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden form to populate modal fields -->
+<form id="hidden-filter-form">
+    <input type="hidden" name="experience" value="{{ current_filters.experience|default:'' }}">
+    <input type="hidden" name="skills" value="{{ current_filters.skills|default:'' }}">
+    <input type="hidden" name="skills_mode" value="{{ current_filters.skills_mode|default:'OR' }}">
+    <input type="hidden" name="location" value="{{ current_filters.location|default:'' }}">
+    <input type="hidden" name="distance" value="{{ current_filters.distance|default:50 }}">
+    <input type="hidden" name="work_style" value="{{ current_filters.work_style|default:'' }}">
+</form>
+
 <!-- Skills Bubble JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const skillInput = document.getElementById('skillInput');
     const skillsChips = document.getElementById('skillsChips');
     const searchForm = document.getElementById('searchForm');
+    const saveSearchModal = document.getElementById('saveSearchModal');
+
+    saveSearchModal.addEventListener('show.bs.modal', function () {
+        // Populate the hidden fields in the modal form with the current filter values
+        document.querySelector('#saveSearchModal input[name="experience"]').value = document.querySelector('#hidden-filter-form input[name="experience"]').value;
+        document.querySelector('#saveSearchModal input[name="skills"]').value = document.querySelector('#hidden-filter-form input[name="skills"]').value;
+        document.querySelector('#saveSearchModal input[name="skills_mode"]').value = document.querySelector('#hidden-filter-form input[name="skills_mode"]').value;
+        document.querySelector('#saveSearchModal input[name="location"]').value = document.querySelector('#hidden-filter-form input[name="location"]').value;
+        document.querySelector('#saveSearchModal input[name="distance"]').value = document.querySelector('#hidden-filter-form input[name="distance"]').value;
+        document.querySelector('#saveSearchModal input[name="work_style"]').value = document.querySelector('#hidden-filter-form input[name="work_style"]').value;
+    });
 
     skillInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ',') {
