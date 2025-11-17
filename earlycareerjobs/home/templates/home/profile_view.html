@@ -60,16 +60,11 @@
                     {% endif %}
                   </div>
                   <p class="mb-0">
-                    {% if profile.city or profile.state or profile.country %}
-                      {% if profile.city %}{{ profile.city }}{% endif %}
-                      {% if profile.state %}
-                        {% if profile.city %}, {% endif %}
-                        {{ profile.state }}
-                      {% endif %}
-                      {% if profile.country %}
-                        {% if profile.city or profile.state %}, {% endif %}
-                        {{ profile.country }}
-                      {% endif %}
+                    {% if profile.street_address or profile.city or profile.state or profile.country %}
+                      {% if profile.street_address %}{{ profile.street_address }}{% if profile.city or profile.state or profile.country %}, {% endif %}{% endif %}
+                      {% if profile.city %}{{ profile.city }}{% if profile.state or profile.country %}, {% endif %}{% endif %}
+                      {% if profile.state %}{{ profile.state }}{% if profile.country %}, {% endif %}{% endif %}
+                      {% if profile.country %}{{ profile.country }}{% endif %}
                     {% else %}
                       <span class="text-muted fst-italic">Not specified</span>
                     {% endif %}
@@ -79,6 +74,10 @@
                     <form method="post" action="{% url 'profile.update_field' username=owner.username field='location' %}" class="card card-body border-0 shadow-sm">
                       {% csrf_token %}
                       <div class="row g-2">
+                        <div class="col-md-4">
+                          <label class="form-label fw-semibold" for="{{ forms.location_form.street_address.id_for_label }}">Street Address</label>
+                          {{ forms.location_form.street_address }}
+                        </div>
                         <div class="col-md-4">
                           <label class="form-label fw-semibold" for="{{ forms.location_form.city.id_for_label }}">City</label>
                           {{ forms.location_form.city }}

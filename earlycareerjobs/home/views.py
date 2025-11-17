@@ -80,7 +80,7 @@ def profile_edit(request):
         form = ProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
-            profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+            profile.lat, profile.lon = lookupLatLon(streetAddr=profile.street_address, cityName=profile.city, stateName=profile.state, countryName=profile.country)
             profile.save()
             return redirect('profile.view', username=request.user.username)
     else:
@@ -147,9 +147,9 @@ def update_profile_field(request, username, field):
         profile.save()
 
         if location_changed:
-            if profile.city or profile.state or profile.country:
+            if profile.street_address or profile.city or profile.state or profile.country:
                 try:
-                    profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+                    profile.lat, profile.lon = lookupLatLon(streetAddr=profile.street_address, cityName=profile.city, stateName=profile.state, countryName=profile.country)
                 except Exception:
                     profile.lat, profile.lon = (0, 0)
             else:

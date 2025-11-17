@@ -3,12 +3,14 @@ from geopy.geocoders import Nominatim
 import time
 import math
 
-def lookupLatLon(cityName="", stateName="", countryName=""):
+def lookupLatLon(streetAddr="", cityName="", stateName="", countryName=""):
     # Initialize the Nominatim geocoder
     geolocator = Nominatim(user_agent="GATech_CS2340A_F25_T1")
 
     query = {}
 
+    if streetAddr != "":
+        query["street"] = streetAddr
     if cityName != "":
         query["city"] = cityName
     if stateName != "":
@@ -51,7 +53,7 @@ def lookupLatLon(cityName="", stateName="", countryName=""):
     if location:
         return location.latitude, location.longitude
     else:
-        print(f"'{cityName}', '{stateName}', '{countryName}' not found.")
+        print(f"'{streetAddr}', '{cityName}', '{stateName}', '{countryName}' not found.")
         return 0, 0
     
 def reverseLocationLookup(lat: float, lon: float):
@@ -79,6 +81,7 @@ def reverseLocationLookup(lat: float, lon: float):
     
     # Perform reverse geocoding up to city level
     # NOTE: Attribution already given to OpenStreetMaps on map
+    # location = geolocator.reverse(query, zoom=18)
     location = geolocator.reverse(query, zoom=13)
 
     # Save time after geocode call to ensure proper rate limiting
@@ -86,6 +89,21 @@ def reverseLocationLookup(lat: float, lon: float):
     
     if location:
         addressDict = location.raw["address"]
+
+        # houseNum = ""
+        # if "house_number" in addressDict:
+        #     houseNum = addressDict["house_number"]
+        # elif "housenumber" in addressDict:
+        #     houseNum = addressDict["housenumber"]
+        
+        # street = ""
+        # if "road" in addressDict:
+        #     street = addressDict["road"]
+        # elif "street" in addressDict:
+        #     street = addressDict["street"]
+        
+        # streetAddr = houseNum + " " + street
+
         if "city" in addressDict:
             city = addressDict["city"]
         elif "town" in addressDict:
@@ -109,6 +127,7 @@ def reverseLocationLookup(lat: float, lon: float):
         else:
             country = ""
         
+        # return streetAddr, city, state, country
         return city, state, country
     else:
         print(f'Error Reverse Searching Lat/Long: {lat} lat, {lon} long')

@@ -10,7 +10,7 @@ def select_location(request):
         job = Job.objects.get(id=request.POST["jobId"])
         job.lat = request.POST["lat"]
         job.lon = request.POST["lon"]
-        job.city, job.state, job.country = reverseLocationLookup(request.POST["lat"], request.POST["lon"])
+        _, job.city, job.state, job.country = reverseLocationLookup(request.POST["lat"], request.POST["lon"])
         job.save()
 
         return redirect('map.indexLatLon', lat=request.POST["lat"], lon=request.POST["lon"])
@@ -101,7 +101,7 @@ def filter(request):
             return index(request, "No Filter Location Provided", old_template_data)
 
 
-        searchLat, searchLon = lookupLatLon(searchCity, searchState, searchCountry)
+        searchLat, searchLon = lookupLatLon(cityName=searchCity, stateName=searchState, countryName=searchCountry)
 
         if searchLat == 0 and searchLon == 0:
             old_template_data = {}
