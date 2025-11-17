@@ -3,6 +3,11 @@ from jobs.models import Job
 from .utils import lookupLatLon, reverseLocationLookup, haversine
 from home.models import Profile
 from django.core.exceptions import ObjectDoesNotExist
+from users.models import CustomUser
+
+# import numpy as np
+# from scipy.cluster.hierarchy import linkage, fcluster
+# from scipy.spatial.distance import squareform
 
 # Create your views here.
 def select_location(request):
@@ -78,6 +83,36 @@ def index(request, errorStr='', override_template_data=None, focusLat="", focusL
         template_data['centerLat'] = float(focusLat)
         template_data['centerLon'] = float(focusLon)
         template_data['searchRadius'] = ''
+
+    if request.user.is_authenticated:
+        if request.user.is_recruiter() or request.user.is_admin():
+            all_profiles = list(Profile.objects.filter(user__role=CustomUser.Role.JOB_SEEKER))
+            template_data["profiles"] = all_profiles
+            # dist_map = np.array([[0 for _ in range(len(all_profiles))] for _ in range(len(all_profiles))])
+            # print(dist_map)
+            # for i in range(len(all_profiles)):
+            #     for j in range(len(all_profiles) - i - 1):
+            #         j += i + 1
+            #         print(i, ", ", j)
+            #         dist = haversine(all_profiles[i].lat, all_profiles[i].lon, all_profiles[j].lat, all_profiles[j].lon)
+            #         dist_map[i][j] = dist
+            #         dist_map[j][i] = dist
+
+            # print(dist_map)
+
+            # # Convert square distance matrix to condensed form
+            # condensed_dist = squareform(dist_map)
+
+            # # Perform hierarchical clustering (average linkage)
+            # Z = linkage(condensed_dist, method='average')
+
+            # # Assign cluster labels (e.g., 2 clusters)
+            # labels = fcluster(Z, t=1, criterion='maxclust')
+
+            # print("Cluster labels:", labels)
+
+            # print(list(all_profiles))
+            # print(list(all_profiles)[0].lat)
 
     return render(request, 'map/index.html', {'template_data': template_data, 'error': errorStr})
 
