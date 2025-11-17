@@ -1,5 +1,5 @@
 from django import forms
-from .models import Profile, Education, ProfilePrivacy
+from .models import Profile, Education, ProfilePrivacy, SavedSearch
 
 class ProfileForm(forms.ModelForm):
     class Meta:
@@ -246,3 +246,22 @@ class MessageForm(forms.Form):
         'show_website': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         'show_work_style_preference': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
     }
+
+
+class SavedSearchForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({'class': 'form-control'})
+        self.fields['is_notification_active'].widget.attrs.update({'class': 'form-check-input'})
+
+    class Meta:
+        model = SavedSearch
+        fields = ['name', 'experience', 'skills', 'skills_mode', 'location', 'distance', 'work_style', 'is_notification_active']
+        widgets = {
+            'experience': forms.HiddenInput(),
+            'skills': forms.HiddenInput(),
+            'skills_mode': forms.HiddenInput(),
+            'location': forms.HiddenInput(),
+            'distance': forms.HiddenInput(),
+            'work_style': forms.HiddenInput(),
+        }
