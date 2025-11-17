@@ -42,8 +42,12 @@ def index(request, errorStr='', override_template_data=None, focusLat="", focusL
                 template_data['centerLon'] = profile.lon
 
             if useFilter:
-                DEFAULT_SEARCH_RADIUS = 5
-                template_data['searchRadius'] = DEFAULT_SEARCH_RADIUS
+                
+                if (profile.commute_radius and profile.commute_radius > 0):
+                    template_data['searchRadius'] = profile.commute_radius
+                else:
+                    DEFAULT_SEARCH_RADIUS = 5
+                    template_data['searchRadius'] = DEFAULT_SEARCH_RADIUS
 
                 if (profile.city and profile.city != ''):
                     template_data['searchCity'] = profile.city
