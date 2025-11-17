@@ -131,7 +131,10 @@
                               {% if profile.city or profile.state or profile.country %}
                                 <span class="badge text-bg-light border">
                                   <i class="bi bi-geo-alt"></i>
-                                  {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.state %}{% if profile.city %}, {% endif %}{{ profile.state }}{% endif %}{% if profile.country %}{% if profile.city or profile.state %}, {% endif %}{{ profile.country }}{% endif %}
+                                  <!-- {% if profile.street_address %}{{ profile.street_address }}{% if profile.city or profile.state or profile.country %}, {% endif %}{% endif %} -->
+                                  {% if profile.city %}{{ profile.city }}{% if profile.state or profile.country %}, {% endif %}{% endif %}
+                                  {% if profile.state %}{{ profile.state }}{% if profile.country %}, {% endif %}{% endif %}
+                                  {% if profile.country %}{{ profile.country }}{% endif %}
                                 </span>
                               {% endif %}
                               {% if profile.distance is not None %}

@@ -8,9 +8,11 @@ class ProfileForm(forms.ModelForm):
             'headline',
             'skills',
             'experience',
+            'street_address',
             'city',
             'state',
             'country',
+            'commute_radius',
             'linkedin',
             'github',
             'website',
@@ -39,11 +41,20 @@ class ProfileHeadlineForm(forms.ModelForm):
 class ProfileLocationForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['city', 'state', 'country']
+        fields = ['street_address', 'city', 'state', 'country']
         widgets = {
+            'street_address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Street Address'}),
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
             'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State'}),
             'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}),
+        }
+
+class ProfileCommuteRadiusForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['commute_radius']
+        widgets = {
+            'commute_radius': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '50'}),
         }
 
 

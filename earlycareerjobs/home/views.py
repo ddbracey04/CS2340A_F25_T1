@@ -14,6 +14,7 @@ from .forms import (
     PrivacySettingsForm,
     ProfileHeadlineForm,
     ProfileLocationForm,
+    ProfileCommuteRadiusForm,
     ProfileSkillsForm,
     ProfileWorkStyleForm,
     ProfileExperienceForm,
@@ -40,6 +41,11 @@ PROFILE_FIELD_FORM_CONFIG = {
         "form_class": ProfileLocationForm,
         "prefix": "location",
         "success_message": "Location updated.",
+    },
+    "commute_radius": {
+        "form_class": ProfileCommuteRadiusForm,
+        "prefix": "commute_radius",
+        "success_message": "Commute Radius updated.",
     },
     "skills": {
         "form_class": ProfileSkillsForm,
@@ -80,7 +86,7 @@ def profile_edit(request):
         form = ProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
-            profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+            profile.lat, profile.lon = lookupLatLon(streetAddr=profile.street_address, cityName=profile.city, stateName=profile.state, countryName=profile.country)
             profile.save()
             return redirect('profile.view', username=request.user.username)
     else:
@@ -147,9 +153,9 @@ def update_profile_field(request, username, field):
         profile.save()
 
         if location_changed:
-            if profile.city or profile.state or profile.country:
+            if profile.street_address or profile.city or profile.state or profile.country:
                 try:
-                    profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+                    profile.lat, profile.lon = lookupLatLon(streetAddr=profile.street_address, cityName=profile.city, stateName=profile.state, countryName=profile.country)
                 except Exception:
                     profile.lat, profile.lon = (0, 0)
             else:
@@ -183,6 +189,7 @@ def profile_view(request, username):
         forms_context = {
             'headline_form': PROFILE_FIELD_FORM_CONFIG['headline']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['headline']["prefix"]),
             'location_form': PROFILE_FIELD_FORM_CONFIG['location']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['location']["prefix"]),
+            'commute_radius_form': PROFILE_FIELD_FORM_CONFIG['commute_radius']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['commute_radius']["prefix"]),
             'skills_form': PROFILE_FIELD_FORM_CONFIG['skills']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['skills']["prefix"]),
             'work_style_form': PROFILE_FIELD_FORM_CONFIG['work_style']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['work_style']["prefix"]),
             'experience_form': PROFILE_FIELD_FORM_CONFIG['experience']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['experience']["prefix"]),
