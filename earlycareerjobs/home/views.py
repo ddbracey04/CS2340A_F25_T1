@@ -14,6 +14,7 @@ from .forms import (
     PrivacySettingsForm,
     ProfileHeadlineForm,
     ProfileLocationForm,
+    ProfileCommuteRadiusForm,
     ProfileSkillsForm,
     ProfileWorkStyleForm,
     ProfileExperienceForm,
@@ -40,6 +41,11 @@ PROFILE_FIELD_FORM_CONFIG = {
         "form_class": ProfileLocationForm,
         "prefix": "location",
         "success_message": "Location updated.",
+    },
+    "commute_radius": {
+        "form_class": ProfileCommuteRadiusForm,
+        "prefix": "commute_radius",
+        "success_message": "Commute Radius updated.",
     },
     "skills": {
         "form_class": ProfileSkillsForm,
@@ -183,6 +189,7 @@ def profile_view(request, username):
         forms_context = {
             'headline_form': PROFILE_FIELD_FORM_CONFIG['headline']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['headline']["prefix"]),
             'location_form': PROFILE_FIELD_FORM_CONFIG['location']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['location']["prefix"]),
+            'commute_radius_form': PROFILE_FIELD_FORM_CONFIG['commute_radius']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['commute_radius']["prefix"]),
             'skills_form': PROFILE_FIELD_FORM_CONFIG['skills']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['skills']["prefix"]),
             'work_style_form': PROFILE_FIELD_FORM_CONFIG['work_style']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['work_style']["prefix"]),
             'experience_form': PROFILE_FIELD_FORM_CONFIG['experience']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['experience']["prefix"]),

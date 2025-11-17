@@ -24,7 +24,7 @@ class Profile(models.Model):
     city = models.CharField(max_length=100, blank=True)
     state = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100, blank=True)
-
+    commute_radius = models.FloatField(null=True, blank=True)
     linkedin = models.URLField(blank=True)
     github = models.URLField(blank=True)
     website = models.URLField(blank=True)
