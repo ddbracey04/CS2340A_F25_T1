@@ -16,8 +16,13 @@
           </p>
         {% endwith %}
       </div>
-      {% if user.is_authenticated and user.is_recruiter %}
-        <a href="{% url 'jobs.create' %}" class="btn btn-primary job-search-hero__cta">Post a job</a>
+      {% if user.is_authenticated %}
+        {% if user.is_recruiter or user.is_admin %}
+        <div class="job-search-hero__actions d-flex flex-column flex-sm-row gap-3 gap-sm-4">
+          <a href="{% url 'jobs.create' %}" class="btn btn-primary job-search-hero__cta">Post a job</a>
+          <a href="{% url 'jobs.application_board_redirect' %}" class="btn btn-primary job-search-hero__cta">View applications</a>
+        </div>
+        {% endif %}
       {% endif %}
     </div>
 

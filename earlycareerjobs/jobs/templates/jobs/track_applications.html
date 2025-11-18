@@ -16,302 +16,142 @@
       <div class="col">
         <div class="tracker-summary-card">
           <p class="summary-label text-uppercase">Total</p>
-          <p class="summary-value" data-summary-total>{{ total_applications }}</p>
+          <p class="summary-value">{{ total_applications }}</p>
         </div>
       </div>
       <div class="col">
         <div class="tracker-summary-card tracker-summary-card--applied">
           <p class="summary-label text-uppercase">Applied</p>
-          <p class="summary-value" data-summary-status="APPLIED">{{ stats.APPLIED|default:0 }}</p>
+          <p class="summary-value">{{ stats.APPLIED|default:0 }}</p>
         </div>
       </div>
       <div class="col">
         <div class="tracker-summary-card tracker-summary-card--review">
           <p class="summary-label text-uppercase">Review</p>
-          <p class="summary-value" data-summary-status="REVIEW">{{ stats.REVIEW|default:0 }}</p>
+          <p class="summary-value">{{ stats.REVIEW|default:0 }}</p>
         </div>
       </div>
       <div class="col">
         <div class="tracker-summary-card tracker-summary-card--interview">
           <p class="summary-label text-uppercase">Interview</p>
-          <p class="summary-value" data-summary-status="INTERVIEW">{{ stats.INTERVIEW|default:0 }}</p>
+          <p class="summary-value">{{ stats.INTERVIEW|default:0 }}</p>
         </div>
       </div>
       <div class="col">
         <div class="tracker-summary-card tracker-summary-card--offer">
           <p class="summary-label text-uppercase">Offers</p>
-          <p class="summary-value" data-summary-status="OFFER">{{ stats.OFFER|default:0 }}</p>
+          <p class="summary-value">{{ stats.OFFER|default:0 }}</p>
         </div>
       </div>
       <div class="col">
         <div class="tracker-summary-card tracker-summary-card--closed">
           <p class="summary-label text-uppercase">Closed</p>
-          <p class="summary-value" data-summary-status="CLOSED">{{ stats.CLOSED|default:0 }}</p>
+          <p class="summary-value">{{ stats.CLOSED|default:0 }}</p>
         </div>
       </div>
     </div>
 
-    <div class="kanban-wrapper card border-0 shadow-sm application-results-card">
+    <div class="card border-0 shadow-sm application-results-card">
       <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
           <div>
             <span class="application-results-eyebrow text-uppercase">Your progress</span>
-            <h2 class="h5 mb-0">Application pipeline</h2>
-            <p class="text-muted mb-0">Drag cards between columns to update each application's status.</p>
+            <h2 class="h5 mb-0">Applications overview</h2>
+            <p class="text-muted mb-0">Follow up on conversations, interviews, and offers without losing momentum.</p>
           </div>
         </div>
       </div>
-
-      {% if total_applications == 0 %}
-        <div class="kanban-empty text-center px-4 py-5">
-          <div class="kanban-empty__icon mx-auto mb-3">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-              <path d="M8 7h8"></path>
-              <path d="M8 11h8"></path>
-              <path d="M8 15h5"></path>
-            </svg>
-          </div>
-          <h3 class="h5 mb-2">No applications tracked yet</h3>
-          <p class="text-muted mb-0">Apply to your next role and it will appear here so you can follow each step.</p>
-        </div>
-      {% else %}
-        <div class="kanban-columns px-4 pb-4">
-          <div class="kanban-columns__inner">
-            {% for column in kanban_columns %}
-              <section class="kanban-column" data-status="{{ column.key }}">
-                <header class="kanban-column__header">
-                  <div class="kanban-column__titles">
-                    <span class="kanban-column__title">{{ column.label }}</span>
-                    <small class="kanban-column__subtitle text-muted" data-column-count="{{ column.key }}">{{ column.count }} {% if column.count == 1 %}application{% else %}applications{% endif %}</small>
-                  </div>
-                  <span class="kanban-column__count badge rounded-pill" data-status-count="{{ column.key }}">{{ column.count }}</span>
-                </header>
-
-                <div class="kanban-column__body" data-column-body="{{ column.key }}">
-                  <div class="kanban-column__empty text-muted"{% if column.applications %} style="display: none;"{% endif %}>
-                    <p class="mb-0">Drop applications here to move them into {{ column.label|lower }}.</p>
-                  </div>
-
-                  {% for application in column.applications %}
-                    <article
-                      class="kanban-card"
-                      draggable="true"
-                      data-application-id="{{ application.id }}"
-                      data-update-url="{% url 'jobs.update_application_status_ajax' application.id %}"
-                      data-current-status="{{ application.status }}"
-                    >
-                      <div class="kanban-card__header">
-                        <div class="kanban-card__company text-uppercase text-muted fw-semibold">
-                          {% if application.company_name %}
-                            {{ application.company_name }}
-                          {% else %}
-                            {{ application.job.title }}
-                          {% endif %}
-                        </div>
-                        <h3 class="kanban-card__title h6 mb-0">{{ application.job.title }}</h3>
-                      </div>
-                      <ul class="kanban-card__meta list-unstyled mb-3">
-                        {% if application.job.city or application.job.state or application.job.country %}
-                        <li>
-                          <i class="bi bi-geo-alt me-1"></i>
-                          {{ application.job.city }}{% if application.job.city and application.job.state %}, {% endif %}{{ application.job.state }}
-                          {% if application.job.country %}{% if application.job.city or application.job.state %}, {% endif %}{{ application.job.country }}{% endif %}
-                        </li>
-                        {% endif %}
-                        {% if application.date %}
-                        <li>
-                          <i class="bi bi-calendar-check me-1"></i>
-                          Applied {{ application.date|date:"M j, Y" }}
-                        </li>
-                        {% endif %}
-                      </ul>
-                      {% if application.user_note %}
-                        <div class="kanban-card__note">
-                          <span class="kanban-card__note-label text-uppercase">Personal note</span>
-                          <p class="kanban-card__note-text mb-0">{{ application.user_note|truncatewords:22 }}</p>
-                        </div>
+      <div class="card-body px-0">
+        {% for application in applications %}
+          <article class="application-item px-0">
+            <div class="application-item__layout d-flex flex-column flex-md-row align-items-md-start gap-4 px-4 py-4">
+              <div class="application-item__primary flex-grow-1">
+                <div class="application-item__header d-flex flex-column flex-md-row flex-wrap align-items-md-center gap-2 mb-3">
+                  <div class="application-company text-uppercase text-muted fw-semibold me-md-2">
+                    {% for user in application.job.users.all %}
+                      {% if user.is_recruiter %}
+                        {{ user.company_name }}
                       {% endif %}
-                      <div class="kanban-card__actions">
-                        <a href="{% url 'jobs.show' application.job.id %}" class="btn btn-sm earlycareerjobs-btn-outline">
-                          View Job
-                        </a>
-                      </div>
-                    </article>
-                  {% endfor %}
+                    {% endfor %}
+                  </div>
+                  &nbsp;&nbsp;|&nbsp;&nbsp;
+                  <h3 class="h5 mb-0">{{ application.job.title }}</h3>
+                  &nbsp;&nbsp;|&nbsp;&nbsp;
+                  {% if application.status == 'APPLIED' %}
+                    <span class="badge rounded-pill active_application_status">Applied</span>
+                  {% elif application.status == 'REVIEW' %}
+                    <span class="badge rounded-pill review_application_status">Review</span>
+                  {% elif application.status == 'INTERVIEW' %}
+                    <span class="badge rounded-pill interview_application_status">Interview</span>
+                  {% elif application.status == 'OFFER' %}
+                    <span class="badge rounded-pill offer_application_status">Offer</span>
+                  {% elif application.status == 'CLOSED' %}
+                    <span class="badge rounded-pill closed_application_status">Closed</span>
+                  {% else %}
+                    <span class="badge rounded-pill error_application_status">No state</span>
+                  {% endif %}
                 </div>
-              </section>
-            {% endfor %}
+                <div class="application-item__details d-flex flex-column gap-3">
+                  <ul class="application-meta list-inline text-muted mb-0">
+                    {% if application.job.city or application.job.state or application.job.country %}
+                      <li class="list-inline-item">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {{ application.job.city }}{% if application.job.city and application.job.state %}, {% endif %}{{ application.job.state }}
+                        {% if application.job.country %}{% if application.job.city or application.job.state %}, {% endif %}{{ application.job.country }}{% endif %}
+                      </li>
+                    {% endif %}
+                    {% if application.date %}
+                      <li class="list-inline-item">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        Applied {{ application.date|date:"M j, Y" }}
+                      </li>
+                    {% endif %}
+                  </ul>
+                  {% if application.user_note != "" %}
+                    <div class="application-note">
+                      <span class="application-note__label text-uppercase text-muted">Personal note</span>
+                      <p class="application-note__body mb-0">{{ application.user_note|truncatewords:20 }}</p>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </article>
+        {% empty %}
+          <div class="application-empty text-center px-4 py-5">
+            <div class="application-empty__icon mx-auto mb-3">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <path d="M8 7h8"></path>
+                <path d="M8 11h8"></path>
+                <path d="M8 15h5"></path>
+              </svg>
+            </div>
+            <h3 class="h5 mb-2">No applications tracked yet</h3>
+            <p class="text-muted mb-0">Apply to your next role and it will appear here so you can follow each step.</p>
           </div>
-        </div>
-      {% endif %}
+        {% endfor %}
+      </div>
     </div>
   </div>
 </section>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const draggableCards = document.querySelectorAll('.kanban-card');
-  const columnBodies = document.querySelectorAll('.kanban-column__body');
-  const summaryTotal = document.querySelector('[data-summary-total]');
-  const summaryByStatus = document.querySelectorAll('[data-summary-status]');
+    const statusForms = document.querySelectorAll('.status-update-form');
 
-  let draggedCard = null;
+    statusForms.forEach(form => {
+        const select = form.querySelector('select');
+        const originalValue = select.value;
 
-  function formatCount(count) {
-    return count + ' ' + (count === 1 ? 'application' : 'applications');
-  }
-
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-
-  function updateSummaryCounts() {
-    if (summaryTotal) {
-      let total = 0;
-      columnBodies.forEach(body => {
-        total += body.querySelectorAll('.kanban-card').length;
-      });
-      summaryTotal.textContent = total;
-    }
-
-    summaryByStatus.forEach(summary => {
-      const status = summary.getAttribute('data-summary-status');
-      const column = document.querySelector('[data-column-body="' + status + '"]');
-      if (column) {
-        summary.textContent = column.querySelectorAll('.kanban-card').length;
-      }
+        select.addEventListener('change', function() {
+            if (confirm('Are you sure you want to update the status?')) {
+                form.submit();
+            } else {
+                select.value = originalValue;
+            }
+        });
     });
-
-    document.querySelectorAll('[data-status-count]').forEach(badge => {
-      const status = badge.getAttribute('data-status-count');
-      const column = document.querySelector('[data-column-body="' + status + '"]');
-      if (column) {
-        badge.textContent = column.querySelectorAll('.kanban-card').length;
-      }
-    });
-
-    document.querySelectorAll('[data-column-count]').forEach(label => {
-      const status = label.getAttribute('data-column-count');
-      const column = document.querySelector('[data-column-body="' + status + '"]');
-      if (column) {
-        const count = column.querySelectorAll('.kanban-card').length;
-        label.textContent = formatCount(count);
-      }
-    });
-  }
-
-  function toggleEmptyStates(columnBody) {
-    const emptyState = columnBody.querySelector('.kanban-column__empty');
-    if (!emptyState) {
-      return;
-    }
-    const hasCards = columnBody.querySelectorAll('.kanban-card').length > 0;
-    emptyState.style.display = hasCards ? 'none' : 'block';
-  }
-
-  function attachCardEvents(card) {
-    card.addEventListener('dragstart', (event) => {
-      draggedCard = card;
-      card.classList.add('is-dragging');
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', card.dataset.applicationId);
-    });
-
-    card.addEventListener('dragend', () => {
-      card.classList.remove('is-dragging');
-      draggedCard = null;
-    });
-  }
-
-  draggableCards.forEach(card => attachCardEvents(card));
-
-  columnBodies.forEach(body => {
-    body.addEventListener('dragover', (event) => {
-      event.preventDefault();
-      body.classList.add('is-drag-over');
-      event.dataTransfer.dropEffect = 'move';
-    });
-
-    body.addEventListener('dragleave', () => {
-      body.classList.remove('is-drag-over');
-    });
-
-    body.addEventListener('drop', (event) => {
-      event.preventDefault();
-      body.classList.remove('is-drag-over');
-
-      if (!draggedCard) {
-        return;
-      }
-
-      const card = draggedCard;
-      const targetStatus = body.getAttribute('data-column-body');
-      const applicationId = card.getAttribute('data-application-id');
-
-      if (!targetStatus || !applicationId || targetStatus === card.dataset.currentStatus) {
-        return;
-      }
-
-      const initialStatus = card.dataset.currentStatus;
-      const originBody = document.querySelector('[data-column-body="' + initialStatus + '"]');
-      const updateUrl = card.getAttribute('data-update-url');
-
-      body.appendChild(card);
-      card.dataset.currentStatus = targetStatus;
-      toggleEmptyStates(body);
-      if (originBody) {
-        toggleEmptyStates(originBody);
-      }
-      updateSummaryCounts();
-
-      fetch(updateUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({ status: targetStatus })
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (!data.success) {
-          throw new Error(data.error || 'Unable to update status.');
-        }
-        if (data.status) {
-          card.dataset.currentStatus = data.status;
-        }
-        updateSummaryCounts();
-      })
-      .catch(error => {
-        if (originBody) {
-          originBody.appendChild(card);
-          card.dataset.currentStatus = initialStatus;
-          toggleEmptyStates(originBody);
-          toggleEmptyStates(body);
-          updateSummaryCounts();
-        }
-        console.error(error);
-        alert('Unable to update the application status right now. Please try again.');
-      });
-    });
-  });
 });
 </script>
 {% endblock %}

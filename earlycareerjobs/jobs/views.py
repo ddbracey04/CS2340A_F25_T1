@@ -274,7 +274,12 @@ def show(request, id):
         can_edit = False
     template_data['has_applied'] = has_applied
     template_data['can_edit'] = can_edit
-    applications = Application.objects.filter(job=job)
+    applications_qs = (
+        Application.objects.filter(job=job)
+        .select_related('user')
+        .prefetch_related('user__home_profile')
+    )
+    applications = list(applications_qs)
     template_data['applications'] = applications
 
     # Make recommended candidates list
@@ -303,6 +308,29 @@ def show(request, id):
             recommended.sort(key=lambda x: (-x['match_count'], x['application'].date))
     # limit to top 3 because that sounds reasonable?
     template_data['recommended_candidates'] = recommended[:3]
+
+    if can_edit:
+        status_lookup = dict(Application.STATUS_CHOICES)
+        kanban_columns = [
+            {
+                "key": status_key,
+                "label": status_lookup.get(status_key, status_label),
+                "applications": [],
+            }
+            for status_key, status_label in Application.STATUS_CHOICES
+        ]
+        column_map = {column["key"]: column for column in kanban_columns}
+
+        for application in applications:
+            column = column_map.get(application.status)
+            if column is not None:
+                column["applications"].append(application)
+
+        for column in kanban_columns:
+            column["count"] = len(column["applications"])
+
+        template_data["kanban_columns"] = kanban_columns
+        template_data["kanban_total"] = len(applications)
 
     forms_context = {}
     if request.user.is_authenticated and (request.user.is_admin() or request.user in job.users.all()):
@@ -495,12 +523,7 @@ def application_list(request, id):
 @login_required
 def track_applications(request, id):
     """View to display all user's applications with their current status"""
-    applications = (
-        Application.objects.filter(user=request.user)
-        .select_related('job')
-        .prefetch_related('job__users')
-        .order_by('-date')
-    )
+    applications = Application.objects.filter(user=request.user)
 
     # Get status statistics
     status_stats = applications.values('status').annotate(count=Count('status'))
@@ -508,43 +531,92 @@ def track_applications(request, id):
     # Convert to dictionary for easier template access
     stats_dict = {stat['status']: stat['count'] for stat in status_stats}
 
-    # Prepare Kanban data structure
+    context = {
+        'applications': applications,
+        'stats': stats_dict,
+        'total_applications': applications.count(),
+    }
+    return render(request, 'jobs/track_applications.html', context)
+
+
+@login_required
+def application_board_redirect(request):
+    """Redirect recruiters/admins to a job-specific board they manage."""
+    user = request.user
+    is_recruiter = hasattr(user, "is_recruiter") and user.is_recruiter()
+    is_admin = hasattr(user, "is_admin") and user.is_admin()
+
+    if not (is_recruiter or is_admin):
+        messages.error(request, "Application board is only available to recruiters and admins.")
+        return redirect('jobs.index')
+
+    if is_admin:
+        job = Job.objects.order_by('title').first()
+    else:
+        job = Job.objects.filter(users=user).order_by('title').first()
+
+    if job:
+        return redirect('jobs.application_board', id=job.id)
+
+    messages.info(request, "Once you have active job postings, you'll be able to manage applications here.")
+    return redirect('jobs.index')
+
+
+@login_required
+def application_board(request, id):
+    """Kanban dashboard for a specific job."""
+    job = get_object_or_404(Job.objects.prefetch_related('users'), id=id)
+    user = request.user
+    is_admin = hasattr(user, "is_admin") and user.is_admin()
+    is_recruiter_for_job = hasattr(user, "is_recruiter") and user.is_recruiter() and user in job.users.all()
+
+    if not (is_admin or is_recruiter_for_job):
+        return HttpResponseForbidden()
+
+    if is_admin:
+        managed_jobs = Job.objects.order_by('title').distinct()
+    else:
+        managed_jobs = Job.objects.filter(users=user).order_by('title').distinct()
+
+    applications = (
+        Application.objects.filter(job=job)
+        .select_related('user')
+        .prefetch_related('user__home_profile')
+        .order_by('-date')
+    )
+
+    status_stats = applications.values('status').annotate(count=Count('status'))
+    stats_dict = {stat['status']: stat['count'] for stat in status_stats}
+    total_applications = applications.count()
+
     status_lookup = dict(Application.STATUS_CHOICES)
     kanban_columns = [
         {
             "key": status_key,
-            "label": status_lookup.get(status_key, status_key.title()),
+            "label": status_lookup.get(status_key, status_label),
             "applications": [],
         }
-        for status_key, _ in Application.STATUS_CHOICES
+        for status_key, status_label in Application.STATUS_CHOICES
     ]
-
-    column_index_map = {column["key"]: idx for idx, column in enumerate(kanban_columns)}
+    column_map = {column["key"]: column for column in kanban_columns}
 
     for application in applications:
-        recruiter_company = next(
-            (
-                user.company_name
-                for user in application.job.users.all()
-                if user.is_recruiter()
-            ),
-            "",
-        )
-        application.company_name = recruiter_company
-        idx = column_index_map.get(application.status)
-        if idx is not None:
-            kanban_columns[idx]["applications"].append(application)
+        column = column_map.get(application.status)
+        if column is not None:
+            column["applications"].append(application)
 
     for column in kanban_columns:
         column["count"] = len(column["applications"])
 
     context = {
-        'stats': stats_dict,
-        'total_applications': applications.count(),
+        'job': job,
+        'managed_jobs': managed_jobs,
         'kanban_columns': kanban_columns,
-        'status_lookup': status_lookup,
+        'stats': stats_dict,
+        'total_applications': total_applications,
+        'applications': applications,
     }
-    return render(request, 'jobs/track_applications.html', context)
+    return render(request, 'jobs/application_board.html', context)
 
 # @login_required
 # def update_application_status(request, application_id):
@@ -582,7 +654,18 @@ def update_application_status(request, application_id, new_status):
 @require_POST
 def update_application_status_ajax(request, application_id):
     """AJAX endpoint to update an application's status for the authenticated user."""
-    application = get_object_or_404(Application, id=application_id, user=request.user)
+    application = get_object_or_404(Application, id=application_id)
+
+    user = request.user
+    is_owner = application.user_id == user.id
+    is_admin = user.is_admin() if hasattr(user, "is_admin") else user.is_superuser
+    is_recruiter_for_job = user.is_authenticated and hasattr(user, "is_recruiter") and user.is_recruiter() and application.job.users.filter(id=user.id).exists()
+
+    if not (is_owner or is_admin or is_recruiter_for_job):
+        return JsonResponse(
+            {"success": False, "error": "You are not allowed to update this application."},
+            status=403,
+        )
 
     try:
         payload = json.loads(request.body.decode("utf-8") or "{}")
@@ -603,11 +686,12 @@ def update_application_status_ajax(request, application_id):
     application.save(update_fields=["status"])
 
     # Recalculate stats for dashboard widgets
-    status_stats = (
-        Application.objects.filter(user=request.user)
-        .values("status")
-        .annotate(count=Count("status"))
-    )
+    if is_recruiter_for_job or is_admin:
+        status_source = Application.objects.filter(job=application.job)
+    else:
+        status_source = Application.objects.filter(user=request.user)
+
+    status_stats = status_source.values("status").annotate(count=Count("status"))
     stats_dict = {stat["status"]: stat["count"] for stat in status_stats}
 
     return JsonResponse(
@@ -619,5 +703,6 @@ def update_application_status_ajax(request, application_id):
             "previous_status": previous_status,
             "stats": stats_dict,
             "total_applications": sum(stats_dict.values()),
+            "job_id": application.job.id,
         }
     )

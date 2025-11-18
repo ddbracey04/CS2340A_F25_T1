@@ -545,6 +545,13 @@
               {% endif %}
             </div>
             <div class="card-body">
+              {% if template_data.can_edit %}
+              <div class="d-flex justify-content-end mb-3">
+                <a href="{% url 'jobs.application_board' id=template_data.job.id %}" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-kanban"></i> Manage in Kanban View
+                </a>
+              </div>
+              {% endif %}
               {% if template_data.applications %}
               <div class="list-group list-group-flush">
                 {% for application in template_data.applications %}
