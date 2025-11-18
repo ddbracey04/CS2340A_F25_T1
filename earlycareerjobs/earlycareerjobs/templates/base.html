@@ -98,7 +98,11 @@
                     {% elif user.is_recruiter %}
                       <li><a class="dropdown-item" href="{% url 'jobs.create' %}">Post a Job</a></li>
                       <li><a href="{% url 'saved_searches' %}">Saved Searches</a></li>
-                      <li><a class="dropdown-item" href="{% url 'home.about' %}">Message a Candidate</a></li>
+                      <li><a class="dropdown-item" href="{% url 'home.message_compiler' %}">Message a Candidate</a></li>
+                      <li><a href="{% url 'jobs.application_board_redirect' %}">Application Board</a></li>
+                    {% elif user.is_admin %}
+                      <li><a href="{% url 'jobs.create' %}">Post a Job</a></li>
+                      <li><a href="{% url 'jobs.application_board_redirect' %}">Application Board</a></li>
                     {% endif %}
                     <li>
                         <form id="logout-form-mobile" method="post" action="{% url 'users.logout' %}">
@@ -187,6 +191,14 @@
                                   {% endif %}
                                 </a></li>
                                 <li><a href="{% url 'home.message_compiler' %}" style="text-align: left; padding-left: 15px;">Message a Candidate</a></li>
+                                <li><a href="{% url 'jobs.application_board_redirect' %}" style="text-align: left; padding-left: 15px;">Application Board</a></li>
+                              {% elif user.is_admin %}
+                                <li><a href="{% url 'jobs.create' %}" style="text-align: left; padding-left: 15px;">Post a Job</a></li>
+                                <li><a href="{% url 'jobs.application_board_redirect' %}" style="text-align: left; padding-left: 15px;">Application Board</a></li>
+                                <li><a href="{% url 'jobs.application_board_redirect' %}" style="text-align: left; padding-left: 15px;">Application Board</a></li>
+                              {% elif user.is_admin %}
+                                <li><a href="{% url 'jobs.create' %}" style="text-align: left; padding-left: 15px;">Post a Job</a></li>
+                                <li><a href="{% url 'jobs.application_board_redirect' %}" style="text-align: left; padding-left: 15px;">Application Board</a></li>
                               {% endif %}
 
                               <li>

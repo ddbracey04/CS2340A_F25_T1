@@ -538,6 +538,86 @@ def track_applications(request, id):
     }
     return render(request, 'jobs/track_applications.html', context)
 
+
+@login_required
+def application_board_redirect(request):
+    """Redirect recruiters/admins to a job-specific board they manage."""
+    user = request.user
+    is_recruiter = hasattr(user, "is_recruiter") and user.is_recruiter()
+    is_admin = hasattr(user, "is_admin") and user.is_admin()
+
+    if not (is_recruiter or is_admin):
+        messages.error(request, "Application board is only available to recruiters and admins.")
+        return redirect('jobs.index')
+
+    if is_admin:
+        job = Job.objects.order_by('title').first()
+    else:
+        job = Job.objects.filter(users=user).order_by('title').first()
+
+    if job:
+        return redirect('jobs.application_board', id=job.id)
+
+    messages.info(request, "Once you have active job postings, you'll be able to manage applications here.")
+    return redirect('jobs.index')
+
+
+@login_required
+def application_board(request, id):
+    """Kanban dashboard for a specific job."""
+    job = get_object_or_404(Job.objects.prefetch_related('users'), id=id)
+    user = request.user
+    is_admin = hasattr(user, "is_admin") and user.is_admin()
+    is_recruiter_for_job = hasattr(user, "is_recruiter") and user.is_recruiter() and user in job.users.all()
+
+    if not (is_admin or is_recruiter_for_job):
+        return HttpResponseForbidden()
+
+    if is_admin:
+        managed_jobs = Job.objects.order_by('title').distinct()
+    else:
+        managed_jobs = Job.objects.filter(users=user).order_by('title').distinct()
+
+    applications = (
+        Application.objects.filter(job=job)
+        .select_related('user')
+        .prefetch_related('user__home_profile')
+        .order_by('-date')
+    )
+
+    status_stats = applications.values('status').annotate(count=Count('status'))
+    stats_dict = {stat['status']: stat['count'] for stat in status_stats}
+    total_applications = applications.count()
+
+    status_lookup = dict(Application.STATUS_CHOICES)
+    kanban_columns = [
+        {
+            "key": status_key,
+            "label": status_lookup.get(status_key, status_label),
+            "applications": [],
+        }
+        for status_key, status_label in Application.STATUS_CHOICES
+    ]
+    column_map = {column["key"]: column for column in kanban_columns}
+
+    for application in applications:
+        column = column_map.get(application.status)
+        if column is not None:
+            column["applications"].append(application)
+
+    for column in kanban_columns:
+        column["count"] = len(column["applications"])
+
+    context = {
+        'job': job,
+        'managed_jobs': managed_jobs,
+        'kanban_columns': kanban_columns,
+        'stats': stats_dict,
+        'total_applications': total_applications,
+        'applications': applications,
+    }
+    return render(request, 'jobs/application_board.html', context)
+
 # @login_required
 # def update_application_status(request, application_id):
 #     """View to update application status"""

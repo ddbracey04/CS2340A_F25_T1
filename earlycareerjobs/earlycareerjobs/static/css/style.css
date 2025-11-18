@@ -4189,6 +4189,23 @@ ol {
 }
 
 .job-search-hero__cta {
+
+.job-search-hero__actions {
+  gap: 0.75rem;
+}
+
+@media (min-width: 576px) {
+  .job-search-hero__actions {
+    gap: 2.5rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .job-search-hero__actions {
+    gap: 3.5rem;
+  }
+}
+
   align-self: flex-start;
   background-color: #5d61ea;
   border-color: #5d61ea;
@@ -4539,3 +4556,113 @@ ol {
     background-color: #6161e5;   /* Background on hover */
     border-color: #6161e5;       /* Keep border same */
 }
+
+.job-board-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(93, 97, 234, 0.14);
+  box-shadow: 0 16px 34px rgba(35, 38, 72, 0.12);
+  padding: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.job-board-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.job-board-card__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #1f2348;
+  margin: 0;
+}
+
+.job-board-card__subtitle {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #6a6d90;
+}
+
+.job-board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.job-board-list__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 15px;
+  background: #ffffff;
+  border: 1px solid rgba(93, 97, 234, 0.16);
+  color: #2f3158;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.job-board-list__item:hover,
+.job-board-list__item:focus {
+  transform: translateX(4px);
+  box-shadow: 0 12px 24px rgba(49, 52, 110, 0.16);
+  background-color: rgba(93, 97, 234, 0.1);
+  color: #1f2348;
+}
+
+.job-board-list__item.is-active {
+  background: linear-gradient(135deg, rgba(93, 97, 234, 0.88), rgba(157, 124, 241, 0.75));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 18px 32px rgba(52, 49, 141, 0.3);
+}
+
+.job-board-list__item.is-active .job-board-list__count {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.job-board-list__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.job-board-list__name {
+  font-weight: 600;
+}
+
+.job-board-list__count {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6a6d90;
+}
+
+.job-board-list__empty {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #6a6d90;
+  padding: 1rem 0.5rem;
+  border-radius: 14px;
+  border: 1px dashed rgba(93, 97, 234, 0.35);
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.board-summary .summary-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.board-summary .summary-value {
+  font-size: 1.6rem;
+}
+
