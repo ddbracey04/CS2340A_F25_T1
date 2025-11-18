@@ -11,4 +11,11 @@ urlpatterns = [
     path('profile/<str:username>/', views.profile_view, name='profile.view'),
     path('candidates/', views.search_candidates, name='candidates.search'),
     path('privacy/', views.privacy_settings, name='privacy_settings'),
+    path('saved-searches/', views.saved_searches, name='saved_searches'),
+    path('saved-searches/delete/<int:search_id>/', views.delete_saved_search, name='delete_saved_search'),
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/mark-read/<int:notification_id>/', views.mark_notification_read, name='mark_notification_read'),
+    path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('message/', views.message_compiler, name='home.message_compiler'),
+    path('api/usernames/', views.search_usernames, name='home.search_usernames'),
 ]

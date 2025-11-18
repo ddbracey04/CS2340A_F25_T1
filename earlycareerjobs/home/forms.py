@@ -1,5 +1,5 @@
 from django import forms
-from .models import Profile, Education, ProfilePrivacy
+from .models import Profile, Education, ProfilePrivacy, SavedSearch
 
 class ProfileForm(forms.ModelForm):
     class Meta:
@@ -8,9 +8,11 @@ class ProfileForm(forms.ModelForm):
             'headline',
             'skills',
             'experience',
+            'street_address',
             'city',
             'state',
             'country',
+            'commute_radius',
             'linkedin',
             'github',
             'website',
@@ -39,11 +41,20 @@ class ProfileHeadlineForm(forms.ModelForm):
 class ProfileLocationForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['city', 'state', 'country']
+        fields = ['street_address', 'city', 'state', 'country']
         widgets = {
+            'street_address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Street Address'}),
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
             'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State'}),
             'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}),
+        }
+
+class ProfileCommuteRadiusForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['commute_radius']
+        widgets = {
+            'commute_radius': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '50'}),
         }
 
 
@@ -197,19 +208,71 @@ class PrivacySettingsForm(forms.ModelForm):
             'show_website': 'Personal Website',
             'show_work_style_preference': 'Work Style Preference',
         }
+
+
+class MessageForm(forms.Form):
+    recipient_username = forms.CharField(
+        required=True,
+        label="Recipient username",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Candidate username'})
+    )
+
+    job_id = forms.IntegerField(
+        required=False,
+        label="Job (optional)",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Optional job id'})
+    )
+
+    message_text = forms.CharField(
+        required=True,
+        label="Message",
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 8, 'placeholder': 'Write your message here...'})
+    )
+
+    SEND_METHOD_CHOICES = (
+        ("in_app", "Message in App"),
+        ("email", "Email Candidate"),
+    )
+
+    send_method = forms.ChoiceField(
+        required=True,
+        label="Send method",
+        choices=SEND_METHOD_CHOICES,
+        initial="in_app",
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
         
-        widgets = {            
-            'is_profile_visible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'show_full_name': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'show_email',: forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'show_phone': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'show_resume': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_education': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_location': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_skills': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_experience': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_linkedin': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_github': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_website': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'show_work_style_preference': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+    widgets = {            
+        'is_profile_visible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        # 'show_full_name': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        # 'show_email',: forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        # 'show_phone': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        # 'show_resume': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_education': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_location': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_skills': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_experience': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_linkedin': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_github': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_website': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        'show_work_style_preference': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+    }
+
+
+class SavedSearchForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({'class': 'form-control'})
+        self.fields['is_notification_active'].widget.attrs.update({'class': 'form-check-input'})
+
+    class Meta:
+        model = SavedSearch
+        fields = ['name', 'experience', 'skills', 'skills_mode', 'location', 'distance', 'work_style', 'is_notification_active']
+        widgets = {
+            'experience': forms.HiddenInput(),
+            'skills': forms.HiddenInput(),
+            'skills_mode': forms.HiddenInput(),
+            'location': forms.HiddenInput(),
+            'distance': forms.HiddenInput(),
+            'work_style': forms.HiddenInput(),
         }

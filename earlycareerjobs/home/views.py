@@ -14,14 +14,21 @@ from .forms import (
     PrivacySettingsForm,
     ProfileHeadlineForm,
     ProfileLocationForm,
+    ProfileCommuteRadiusForm,
     ProfileSkillsForm,
     ProfileWorkStyleForm,
     ProfileExperienceForm,
     ProfileLinksForm,
+    SavedSearchForm,
 )
-from .models import Education, Profile, ProfilePrivacy
+from .models import Education, Profile, ProfilePrivacy, SavedSearch, Notification
 
 from django.contrib import messages
+from django.conf import settings
+
+from .models import Message
+from .forms import MessageForm
+from django.views.decorators.http import require_GET
 
 
 PROFILE_FIELD_FORM_CONFIG = {
@@ -34,6 +41,11 @@ PROFILE_FIELD_FORM_CONFIG = {
         "form_class": ProfileLocationForm,
         "prefix": "location",
         "success_message": "Location updated.",
+    },
+    "commute_radius": {
+        "form_class": ProfileCommuteRadiusForm,
+        "prefix": "commute_radius",
+        "success_message": "Commute Radius updated.",
     },
     "skills": {
         "form_class": ProfileSkillsForm,
@@ -74,7 +86,7 @@ def profile_edit(request):
         form = ProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
-            profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+            profile.lat, profile.lon = lookupLatLon(streetAddr=profile.street_address, cityName=profile.city, stateName=profile.state, countryName=profile.country)
             profile.save()
             return redirect('profile.view', username=request.user.username)
     else:
@@ -141,9 +153,9 @@ def update_profile_field(request, username, field):
         profile.save()
 
         if location_changed:
-            if profile.city or profile.state or profile.country:
+            if profile.street_address or profile.city or profile.state or profile.country:
                 try:
-                    profile.lat, profile.lon = lookupLatLon(profile.city, profile.state, profile.country)
+                    profile.lat, profile.lon = lookupLatLon(streetAddr=profile.street_address, cityName=profile.city, stateName=profile.state, countryName=profile.country)
                 except Exception:
                     profile.lat, profile.lon = (0, 0)
             else:
@@ -177,6 +189,7 @@ def profile_view(request, username):
         forms_context = {
             'headline_form': PROFILE_FIELD_FORM_CONFIG['headline']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['headline']["prefix"]),
             'location_form': PROFILE_FIELD_FORM_CONFIG['location']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['location']["prefix"]),
+            'commute_radius_form': PROFILE_FIELD_FORM_CONFIG['commute_radius']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['commute_radius']["prefix"]),
             'skills_form': PROFILE_FIELD_FORM_CONFIG['skills']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['skills']["prefix"]),
             'work_style_form': PROFILE_FIELD_FORM_CONFIG['work_style']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['work_style']["prefix"]),
             'experience_form': PROFILE_FIELD_FORM_CONFIG['experience']["form_class"](instance=profile, prefix=PROFILE_FIELD_FORM_CONFIG['experience']["prefix"]),
@@ -244,11 +257,13 @@ def search_candidates(request):
     recruiter_jobs = []
     if request.user.is_recruiter():
         from jobs.models import Job, Application
-        from django.db.models import Count
-        # Get jobs with application counts
-        recruiter_jobs = Job.objects.filter(users=request.user).annotate(
-            applicant_count=Count('application')
-        ).order_by('-date')
+        # Get jobs and manually count applications for each
+        jobs = Job.objects.filter(users=request.user).order_by('-date')
+        recruiter_jobs = []
+        for job_item in jobs:
+            # Count applications for this job directly from the database
+            job_item.applicant_count = Application.objects.filter(job=job_item).count()
+            recruiter_jobs.append(job_item)
     
     # Get all unique skills for autocomplete
     all_profiles = Profile.objects.filter(user__role=CustomUser.Role.JOB_SEEKER)
@@ -380,7 +395,8 @@ def search_candidates(request):
             profiles = sorted(profiles, key=lambda p: (p.user.first_name or '', p.user.last_name or '', p.user.username))
         elif sort_by == 'headline':
             profiles = sorted(profiles, key=lambda p: (p.headline or '', p.user.username))
-        else:
+        else: # 'recent'
+            # Assuming user objects have a date_joined attribute
             profiles = sorted(profiles, key=lambda p: p.user.date_joined, reverse=True)
     else:
         # Sort QuerySet
@@ -388,8 +404,38 @@ def search_candidates(request):
             profiles = profiles.order_by('user__first_name', 'user__last_name', 'user__username')
         elif sort_by == 'headline':
             profiles = profiles.order_by('headline', 'user__username')
-        else:
+        else: # 'recent'
             profiles = profiles.order_by('-user__date_joined')
+
+    saved_search_form = SavedSearchForm()
+    total_profiles_count = Profile.objects.filter(user__role=CustomUser.Role.JOB_SEEKER).count()
+
+    if request.method == 'POST' and 'save_search' in request.POST:
+        if not request.user.is_authenticated or not request.user.is_recruiter():
+            return redirect('users.login')
+
+        post_data = request.POST.copy()
+        post_data.update({
+            'experience': data.get('experience', ''),
+            'skills': ','.join(bubble_skills),
+            'skills_mode': request.GET.get('skills_mode', 'OR'),
+            'location': data.get('location', ''),
+            'distance': distance_param,
+            'work_style': data.get('work_style', ''),
+        })
+        
+        form = SavedSearchForm(post_data)
+        if form.is_valid():
+            saved_search = form.save(commit=False)
+            saved_search.recruiter = request.user
+            saved_search.save()
+            messages.success(request, f"Search '{saved_search.name}' saved successfully!")
+            return redirect(request.get_full_path())
+        else:
+            # If form is invalid, it's likely a duplicate name or other validation error.
+            # We can pass the form with errors back to the template.
+            saved_search_form = form
+
 
     context = {
         'form': form,
@@ -400,6 +446,17 @@ def search_candidates(request):
         'skills_mode': skills_mode,
         'job': job,
         'recruiter_jobs': recruiter_jobs,
+        'selected_job_id': int(job_id) if job_id else None,
+        'total_profiles': total_profiles_count,
+        'saved_search_form': saved_search_form,
+        'current_filters': {
+            'experience': experience,
+            'skills': ','.join(bubble_skills),
+            'skills_mode': skills_mode,
+            'location': data.get('location'),
+            'distance': distance_param,
+            'work_style': work_style,
+        }
     }
     return render(request, 'home/candidate_search.html', context)
 
@@ -426,3 +483,134 @@ def privacy_settings(request):
         'user': request.user
     }
     return render(request, 'home/privacy_settings.html', context)
+
+@login_required
+def saved_searches(request):
+    if not request.user.is_recruiter():
+        return HttpResponseForbidden()
+    
+    searches = SavedSearch.objects.filter(recruiter=request.user)
+    
+    context = {
+        'saved_searches': searches
+    }
+    return render(request, 'home/saved_searches.html', context)
+
+@login_required
+@require_POST
+def delete_saved_search(request, search_id):
+    if not request.user.is_recruiter():
+        return HttpResponseForbidden()
+    
+    search = get_object_or_404(SavedSearch, id=search_id, recruiter=request.user)
+    search.delete()
+    messages.success(request, "Saved search deleted successfully.")
+    return redirect('saved_searches')
+
+
+@login_required
+def notifications(request):
+    if not request.user.is_recruiter():
+        return HttpResponseForbidden()
+    
+    user_notifications = Notification.objects.filter(recipient=request.user)
+    unread_count = user_notifications.filter(is_read=False).count()
+    
+    context = {
+        'notifications': user_notifications,
+        'unread_count': unread_count
+    }
+    return render(request, 'home/notifications.html', context)
+
+
+@login_required
+@require_POST
+def mark_notification_read(request, notification_id):
+    if not request.user.is_recruiter():
+        return HttpResponseForbidden()
+    
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notification.is_read = True
+    notification.save()
+    return redirect('notifications')
+
+
+@login_required
+@require_POST
+def mark_all_notifications_read(request):
+    if not request.user.is_recruiter():
+        return HttpResponseForbidden()
+    
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    messages.success(request, "All notifications marked as read.")
+    return redirect('notifications')
+
+
+@login_required
+def message_compiler(request):
+    # Only recruiter or admin may send messages
+    if not (request.user.is_recruiter() or request.user.is_admin()):
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            recipient_username = form.cleaned_data['recipient_username'].strip()
+            job_id = form.cleaned_data.get('job_id')
+            message_text = form.cleaned_data['message_text']
+            send_method = form.cleaned_data.get('send_method')
+            send_in_app = True if send_method == 'in_app' else False
+
+            # Resolve recipient
+            recipient = get_object_or_404(CustomUser, username=recipient_username)
+
+            # Resolve optional job
+            job = None
+            if job_id:
+                try:
+                    from jobs.models import Job
+                    job = Job.objects.filter(pk=job_id).first()
+                except Exception:
+                    job = None
+
+            # Create message instance
+            Message.objects.create(
+                job=job,
+                sender=request.user,
+                recipient=recipient,
+                text=message_text,
+                in_app=send_in_app,
+            )
+
+            messages.success(request, 'Message Sent.')
+            return redirect('home.message_compiler')
+    else:
+        recipient_prefill = request.GET.get('recipient', '')
+        job_prefill = request.GET.get('job_id', '')
+        initial = {}
+        if recipient_prefill:
+            initial['recipient_username'] = recipient_prefill
+        if job_prefill:
+            initial['job_id'] = job_prefill
+        form = MessageForm(initial=initial)
+
+    return render(request, 'home/message_compiler.html', {'form': form})
+
+
+@login_required
+@require_GET
+def search_usernames(request):
+    """Return JSON list of job seeker usernames matching query 'q'.
+
+    Accessible only to recruiters or admins.
+    """
+    if not (request.user.is_recruiter() or request.user.is_admin()):
+        return JsonResponse({'results': []}, status=403)
+
+    q = request.GET.get('q', '').strip()
+    if not q:
+        return JsonResponse({'results': []})
+
+    # Match usernames (case-insensitive startswith), limit results
+    matches = CustomUser.objects.filter(username__istartswith=q, role=CustomUser.Role.JOB_SEEKER).order_by('username')[:20]
+    return JsonResponse({'results': [u.username for u in matches]})

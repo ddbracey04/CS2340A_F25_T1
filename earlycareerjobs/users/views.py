@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
+import csv
+from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import CustomUserCreationForm
@@ -52,6 +54,35 @@ def admin_required(function):
 def user_management(request):
     users = CustomUser.objects.all()
     return render(request, 'admin/user_management.html', {'users': users})
+
+@login_required
+@admin_required
+def export_users_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="ECJ_User_Usage.csv"'
+
+    writer = csv.writer(response)
+    
+    headers = ['username', 'email', 'role', 'company_name', 'is_active', 'date_joined', 'applied_to_companies']
+    writer.writerow(headers)
+
+    users = CustomUser.objects.all().prefetch_related('application_set__job__users')
+
+    for user in users:
+        # get applied companies
+        applied_companies = set()
+        if user.role == CustomUser.Role.JOB_SEEKER:
+            for app in user.application_set.all():
+                if app.job:
+                    recruiter = app.job.users.filter(role=CustomUser.Role.RECRUITER).first()
+                    if recruiter and recruiter.company_name:
+                        applied_companies.add(recruiter.company_name)
+    
+        applied_str = "; ".join(sorted(list(applied_companies)))
+
+        writer.writerow([user.username, user.email, user.get_role_display(), user.company_name, user.is_active, user.date_joined.strftime('%Y-%m-%d'), applied_str])
+
+    return response
 
 
 @login_required
