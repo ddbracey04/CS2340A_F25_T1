@@ -195,10 +195,6 @@
                               {% elif user.is_admin %}
                                 <li><a href="{% url 'jobs.create' %}" style="text-align: left; padding-left: 15px;">Post a Job</a></li>
                                 <li><a href="{% url 'jobs.application_board_redirect' %}" style="text-align: left; padding-left: 15px;">Application Board</a></li>
-                                <li><a href="{% url 'jobs.application_board_redirect' %}" style="text-align: left; padding-left: 15px;">Application Board</a></li>
-                              {% elif user.is_admin %}
-                                <li><a href="{% url 'jobs.create' %}" style="text-align: left; padding-left: 15px;">Post a Job</a></li>
-                                <li><a href="{% url 'jobs.application_board_redirect' %}" style="text-align: left; padding-left: 15px;">Application Board</a></li>
                               {% endif %}
 
                               <li>
