@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Inbox</h2>
+    
+    {% if unread_count > 0 %}
+    <div class="alert alert-info">
+        You have {{ unread_count }} unread message{{ unread_count|pluralize }}.
+    </div>
+    {% endif %}
+    
+    {% if messages_list %}
+    <div class="list-group">
+        {% for msg in messages_list %}
+        <div class="list-group-item {% if not msg.is_read %}list-group-item-primary{% endif %}">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">
+                    {% if not msg.is_read %}<strong>{% endif %}
+                    From: {{ msg.sender.get_full_name|default:msg.sender.username }}
+                    {% if not msg.is_read %}</strong>{% endif %}
+                </h5>
+                <small>{{ msg.created_at|date:"M d, Y g:i A" }}</small>
+            </div>
+            
+            {% if msg.job %}
+            <p class="mb-1"><small class="text-muted">Regarding job: {{ msg.job.title }}</small></p>
+            {% endif %}
+            
+            <p class="mb-1">{{ msg.text|linebreaks }}</p>
+            
+            <small class="text-muted">
+                Sent via: {% if msg.in_app %}In-App Message{% else %}Email{% endif %}
+            </small>
+            
+            {% if not msg.is_read %}
+            <form method="post" action="{% url 'home.mark_message_read' msg.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-primary mt-2">Mark as Read</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-secondary mt-3">
+        No messages yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
