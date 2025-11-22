@@ -145,10 +145,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'your-email@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-app-password'
-DEFAULT_FROM_EMAIL = 'Early Career Jobs <your-email@gmail.com>'
+def _env_bool(name, default=False):
+    return os.getenv(name, str(default)).lower() in ('1', 'true', 'yes')
+
+
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_USE_SSL = _env_bool('EMAIL_USE_SSL', False)
+EMAIL_USE_TLS = _env_bool('EMAIL_USE_TLS', not EMAIL_USE_SSL)
+if EMAIL_USE_SSL and EMAIL_USE_TLS:
+    # Avoid conflicting flags; prefer SSL if explicitly enabled
+    EMAIL_USE_TLS = False
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '465' if EMAIL_USE_SSL else '587'))
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '30'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+
+# Default from address; falls back to host user if provided
+DEFAULT_FROM_EMAIL = os.getenv(
+    'DEFAULT_FROM_EMAIL',
+    f"Early Career Jobs <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else 'Early Career Jobs <no-reply@example.com>'
+)
