@@ -93,6 +93,11 @@
                     
                     {% if user.is_job_seeker %}
                       <li><a class="dropdown-item" href="{% url 'profile.view' username=request.user.username %}"> My Profile</a></li>
+                      <li><a class="dropdown-item" href="{% url 'home.inbox' %}">Inbox
+                        {% if unread_messages_count > 0 %}
+                          <span class="badge bg-danger ms-1">{{ unread_messages_count }}</span>
+                        {% endif %}
+                      </a></li>
                       <li><a class="dropdown-item" href="{% url 'privacy_settings' %}">Privacy Settings</a></li>
                       <li><a class="dropdown-item" href="{% url 'jobs.track_applications' id=request.user.id %}">Track Applications</a></li>
                     {% elif user.is_recruiter %}
@@ -179,6 +184,11 @@
                               
                               {% if user.is_job_seeker %}
                                 <li><a href="{% url 'profile.view' username=request.user.username %}" style="text-align: left; padding-left: 15px;">My Profile</a></li>
+                                <li><a href="{% url 'home.inbox' %}" style="text-align: left; padding-left: 15px;">Inbox
+                                  {% if unread_messages_count > 0 %}
+                                    <span class="badge bg-danger ms-1">{{ unread_messages_count }}</span>
+                                  {% endif %}
+                                </a></li>
                                 <li><a href="{% url 'privacy_settings' %}" style="text-align: left; padding-left: 15px;">Privacy Settings</a></li>
                                 <li><a href="{% url 'jobs.track_applications' id=request.user.id %}" style="text-align: left; padding-left: 15px;">Track Applications</a></li>
                               {% elif user.is_recruiter %}

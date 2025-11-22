@@ -1,3 +1,4 @@
+from urllib import request
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import Http404, HttpResponseForbidden, JsonResponse
@@ -574,13 +575,44 @@ def message_compiler(request):
                     job = None
 
             # Create message instance
-            Message.objects.create(
+            message_obj = Message.objects.create(
                 job=job,
                 sender=request.user,
                 recipient=recipient,
                 text=message_text,
                 in_app=send_in_app,
             )
+
+            # If email option selected, send actual email
+            if not send_in_app:
+                from django.core.mail import send_mail
+
+                subject = f"Message from {request.user.get_full_name() or request.user.username}"
+                if job:
+                    subject += f" regarding {job.title}"
+
+                email_body = f"""Hello {recipient.get_full_name() or recipient.username},
+
+You have received a message from {request.user.get_full_name() or request.user.username}:
+
+{message_text}
+
+---
+This message was sent via Early Career Jobs platform.
+"""
+
+                try:
+                    send_mail(
+                        subject=subject,
+                        message=email_body,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[recipient.email],
+                        fail_silently=False,
+                    )
+                    messages.success(request, 'Email sent successfully!')
+                except Exception as e:
+                    messages.error(request, f'Message saved but email failed to send: {str(e)}')
+                    return redirect('home.message_compiler')
 
             messages.success(request, 'Message Sent.')
             return redirect('home.message_compiler')
@@ -614,3 +646,31 @@ def search_usernames(request):
     # Match usernames (case-insensitive startswith), limit results
     matches = CustomUser.objects.filter(username__istartswith=q, role=CustomUser.Role.JOB_SEEKER).order_by('username')[:20]
     return JsonResponse({'results': [u.username for u in matches]})
+
+@login_required
+def inbox(request):
+    # Display inbox for job seekers to view messages sent to them.
+    if not request.user.is_job_seeker():
+        return HttpResponseForbidden("Only job seekers can access the inbox.")
+    
+    # Get all messages where current user is the recipient
+    messages_list = Message.objects.filter(recipient=request.user).select_related('sender', 'job').order_by('-created_at')
+    
+    # Count unread messages
+    unread_count = messages_list.filter(is_read=False).count()
+    
+    context = {
+        'messages_list': messages_list,
+        'unread_count': unread_count,
+    }
+    return render(request, 'home/inbox.html', context)
+
+
+@login_required
+@require_POST
+def mark_message_read(request, message_id):
+    # Mark a specific message as read.
+    message = get_object_or_404(Message, id=message_id, recipient=request.user)
+    message.is_read = True
+    message.save()
+    return redirect('home.inbox')

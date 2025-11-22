@@ -18,4 +18,6 @@ urlpatterns = [
     path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     path('message/', views.message_compiler, name='home.message_compiler'),
     path('api/usernames/', views.search_usernames, name='home.search_usernames'),
+    path('inbox/', views.inbox, name='home.inbox'),
+    path('inbox/mark-read/<int:message_id>/', views.mark_message_read, name='home.mark_message_read'),
 ]
